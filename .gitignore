@@ -1,0 +1,34 @@
+# Firebase Service Account Keys (SENSITIVE!)
+*.json
+!firebase.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!firestore.indexes.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+
+# Build outputs
+build/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+firebase-debug.log
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Firebase cache
+.firebase/

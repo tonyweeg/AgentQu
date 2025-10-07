@@ -1,9 +1,15 @@
 const {onRequest} = require("firebase-functions/v2/https");
 const {onCall} = require("firebase-functions/v2/https");
+const {defineString} = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const axios = require("axios");
 
 admin.initializeApp();
+
+// Define config parameters (modern approach)
+const googlePlacesApiKey = defineString("GOOGLE_PLACES_API_KEY");
+const googleSearchApiKey = defineString("GOOGLE_SEARCH_API_KEY");
+const googleSearchEngineId = defineString("GOOGLE_SEARCH_ENGINE_ID");
 
 /**
  * Helper: Calculate distance between two points (Haversine formula)
@@ -59,8 +65,8 @@ function calculateScore(activity, userLat, userLng) {
  * This searches for "things to do near [location]"
  */
 async function fetchGoogleSearch(lat, lng, city = null) {
-  const GOOGLE_SEARCH_API_KEY = process.env.GOOGLE_SEARCH_API_KEY;
-  const GOOGLE_SEARCH_ENGINE_ID = process.env.GOOGLE_SEARCH_ENGINE_ID;
+  const GOOGLE_SEARCH_API_KEY = googleSearchApiKey.value();
+  const GOOGLE_SEARCH_ENGINE_ID = googleSearchEngineId.value();
 
   if (!GOOGLE_SEARCH_API_KEY || !GOOGLE_SEARCH_ENGINE_ID) {
     console.warn("Google Search API not configured");
@@ -137,7 +143,7 @@ async function fetchGoogleSearch(lat, lng, city = null) {
  * Fetch places from Google Places API
  */
 async function fetchGooglePlaces(lat, lng, radius = 5) {
-  const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+  const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
 
   if (!GOOGLE_PLACES_API_KEY) {
     console.warn("Google Places API key not configured");
