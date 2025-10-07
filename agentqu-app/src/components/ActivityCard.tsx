@@ -1,0 +1,99 @@
+import React from 'react';
+import { Activity } from '../lib/types';
+
+interface ActivityCardProps {
+  activity: Activity;
+}
+
+const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
+  return (
+    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      {/* Image */}
+      {activity.images && activity.images[0] && (
+        <div className="relative h-48 bg-gray-100">
+          <img
+            src={activity.images[0]}
+            alt={activity.name}
+            className="w-full h-full object-cover"
+          />
+          {/* Type Badge */}
+          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-sm font-medium text-dark-text">
+            {activity.type}
+          </div>
+        </div>
+      )}
+
+      <div className="p-5">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-xl mb-2 text-dark-text">{activity.name}</h3>
+
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="font-medium">{activity.distance?.toFixed(1)} mi</span>
+              <span>•</span>
+              <span>{activity.primaryCategory}</span>
+              {activity.cost.free && (
+                <>
+                  <span>•</span>
+                  <span className="text-green-600 font-medium">Free</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Score */}
+          {activity.score !== undefined && (
+            <div className="ml-4">
+              <div className="bg-peach/20 text-peach px-4 py-2 rounded-full text-sm font-bold">
+                {activity.score}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        {activity.description && (
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{activity.description}</p>
+        )}
+
+        {/* Accessibility Badges */}
+        {activity.accessibility && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {activity.accessibility.wheelchairAccessible && (
+              <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                ♿ Wheelchair Accessible
+              </span>
+            )}
+            {activity.accessibility.mobilityLevel && (
+              <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                {activity.accessibility.mobilityLevel.charAt(0).toUpperCase() +
+                  activity.accessibility.mobilityLevel.slice(1)}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Quick Info */}
+        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+          {activity.openNow && <span className="text-green-600 font-medium">🟢 Open now</span>}
+
+          {activity.rating && (
+            <span>
+              ⭐ {activity.rating.toFixed(1)} ({activity.reviewCount || 0})
+            </span>
+          )}
+
+          {activity.duration && <span>⏱️ {activity.duration} min</span>}
+        </div>
+
+        {/* Action Button */}
+        <button className="w-full bg-peach hover:bg-peach/90 text-white font-medium py-3 px-6 rounded-xl transition-colors">
+          View Details
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default ActivityCard;
