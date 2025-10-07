@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "context-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/context-server"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    }
+  }
+}
