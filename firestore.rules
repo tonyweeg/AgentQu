@@ -2,19 +2,173 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read access to activities for authenticated users
-    match /activities/{activity} {
-      allow read: if request.auth != null;
+
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
     }
 
-    // Users can read/write their own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isModerator() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isModerator == true;
+    }
+
+    // ========================================================================
+    // USERS COLLECTION
+    // ========================================================================
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Anyone can read public user profiles
+      allow read: if true;
+
+      // Users can only create/update their own profile
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) &&
+                       // Prevent privilege escalation
+                       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isModerator', 'isBanned']));
+
+      // No deletion allowed
+      allow delete: if false;
     }
 
-    // Cache can be read by authenticated users
-    match /cache/{document=**} {
-      allow read: if request.auth != null;
+    // ========================================================================
+    // ACTIVITIES COLLECTION
+    // ========================================================================
+
+    match /activities/{activityId} {
+      // Anyone can read active activities
+      allow read: if resource.data.expiration.isActive == true;
+
+      // No direct writes - only through Cloud Functions
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // SEARCH CACHE COLLECTION
+    // ========================================================================
+
+    match /search_cache/{cacheId} {
+      // Read-only for everyone
+      allow read: if true;
+
+      // No direct writes - only through Cloud Functions
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // REVIEWS COLLECTION
+    // ========================================================================
+
+    match /reviews/{reviewId} {
+      // Anyone can read approved reviews
+      allow read: if resource.data.moderation.status == 'approved';
+
+      // Moderators can read all reviews
+      allow read: if isModerator();
+
+      // Users can read their own reviews (even if pending)
+      allow read: if isOwner(resource.data.userId);
+
+      // Only Cloud Functions can create reviews (for profanity filtering)
+      allow create: if false;
+
+      // Users can update their own reviews (content only, not moderation status)
+      allow update: if isOwner(resource.data.userId) &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['content', 'title', 'updatedAt', 'photos']);
+
+      // Moderators can update moderation status
+      allow update: if isModerator();
+
+      // Users can delete their own reviews
+      allow delete: if isOwner(resource.data.userId);
+
+      // Moderators can delete any review
+      allow delete: if isModerator();
+    }
+
+    // ========================================================================
+    // USER VOTES COLLECTION (Legacy - kept for backwards compatibility)
+    // ========================================================================
+
+    match /user_votes/{voteId} {
+      // Anyone can read votes
+      allow read: if true;
+
+      // Only Cloud Functions can write votes
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // USER QU-UPS COLLECTION
+    // ========================================================================
+
+    match /user_qups/{qupId} {
+      // Anyone can read Qu-ups
+      allow read: if true;
+
+      // Only Cloud Functions can write Qu-ups (to update ratings atomically)
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // USER ACTIVITY HISTORY COLLECTION
+    // ========================================================================
+
+    match /user_activity_history/{historyId} {
+      // Users can only read their own history
+      allow read: if isAuthenticated() && historyId.matches(request.auth.uid + '_.*');
+
+      // Only Cloud Functions can write (check-ins, visits)
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // ACTIVITY SUGGESTIONS COLLECTION
+    // ========================================================================
+
+    match /activity_suggestions/{suggestionId} {
+      // Anyone can read approved suggestions
+      allow read: if resource.data.status == 'approved';
+
+      // Moderators can read all suggestions
+      allow read: if isModerator();
+
+      // Users can read their own suggestions
+      allow read: if isOwner(resource.data.userId);
+
+      // Only Cloud Functions can create suggestions (for validation)
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // ACTIVITY SHARES COLLECTION
+    // ========================================================================
+
+    match /activity_shares/{shareId} {
+      // Users can read shares they created or received
+      allow read: if isAuthenticated() &&
+                     (request.auth.uid == resource.data.sharedBy ||
+                      request.auth.uid in resource.data.sharedWith);
+
+      // Only Cloud Functions can create shares
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // DEFAULT DENY
+    // ========================================================================
+
+    // Deny access to all other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

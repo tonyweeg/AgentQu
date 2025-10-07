@@ -1,11 +1,16 @@
 import React from 'react';
 import { Activity } from '../lib/types';
+import { useAuth } from '../hooks/useAuth';
+import QuupButton from './QuupButton';
+import CheckInButton from './CheckInButton';
+import ShareButton from './ShareButton';
 
 interface ActivityCardProps {
   activity: Activity;
 }
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
+  const { user } = useAuth();
   return (
     <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Image */}
@@ -33,7 +38,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <span className="font-medium">{activity.distance?.toFixed(1)} mi</span>
               <span>•</span>
               <span>{activity.primaryCategory}</span>
-              {activity.cost.free && (
+              {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
                 <>
                   <span>•</span>
                   <span className="text-green-600 font-medium">Free</span>
@@ -87,10 +92,33 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           {activity.duration && <span>⏱️ {activity.duration} min</span>}
         </div>
 
-        {/* Action Button */}
-        <button className="w-full bg-peach hover:bg-peach/90 text-white font-medium py-3 px-6 rounded-xl transition-colors">
-          View Details
-        </button>
+        {/* Action Buttons */}
+        {user && (
+          <div className="space-y-3">
+            {/* Check In Button */}
+            <CheckInButton
+              activityId={activity.activityId || activity.id}
+              userId={user.uid}
+              activityLat={activity.location?.lat || activity.lat}
+              activityLng={activity.location?.lng || activity.lng}
+            />
+
+            {/* Qu-up and Share Row */}
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <QuupButton
+                  activityId={activity.activityId || activity.id}
+                  userId={user.uid}
+                />
+              </div>
+              <ShareButton
+                activityId={activity.activityId || activity.id}
+                activityName={activity.name}
+                userId={user.uid}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

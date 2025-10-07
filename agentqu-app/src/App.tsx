@@ -5,10 +5,15 @@ import { useDiscovery } from './hooks/useDiscovery';
 import AuthScreen from './components/AuthScreen';
 import OnboardingScreen from './components/OnboardingScreen';
 import ActivityCard from './components/ActivityCard';
+import ActivityMap from './components/ActivityMap';
+import Settings from './components/Settings';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
-  const [filters, setFilters] = useState<DiscoveryFilters>({});
+  const [filters, setFilters] = useState<DiscoveryFilters>({ maxDistance: 10 });
+  const [radius, setRadius] = useState(10); // miles
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [showSettings, setShowSettings] = useState(false);
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -20,10 +25,11 @@ function App() {
   } = useLocation();
 
   // Fetch activities (only when user is onboarded)
-  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery(
-    profile?.onboarded ? location : null,
+  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery({
+    location: profile?.onboarded ? location : null,
+    userId: user?.uid || null,
     filters
-  );
+  });
 
   // Request location when user completes onboarding
   useEffect(() => {
@@ -108,6 +114,12 @@ function App() {
               )}
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowSettings(true)}
+                className="text-sm text-gray-600 hover:text-peach transition-colors font-medium"
+              >
+                ⚙️ Settings
+              </button>
               {profile.photoURL && (
                 <img
                   src={profile.photoURL}
@@ -128,9 +140,9 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
-        {/* Results Header */}
+        {/* Results Header with Radius Control */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-2xl font-bold text-dark-text mb-1">
                 {activities.length} activities for you
@@ -143,6 +155,58 @@ function App() {
                   </span>
                 )}
               </p>
+            </div>
+          </div>
+
+          {/* Radius Slider & View Toggle */}
+          <div className="border-t pt-4 flex gap-6">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Search Radius: {radius} miles
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={radius}
+                onChange={(e) => {
+                  const newRadius = parseInt(e.target.value);
+                  setRadius(newRadius);
+                  setFilters({ ...filters, maxDistance: newRadius });
+                }}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-peach"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>1 mi</span>
+                <span>25 mi</span>
+                <span>50 mi</span>
+              </div>
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-end">
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-white text-peach shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  📋 List
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'map'
+                      ? 'bg-white text-peach shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  🗺️ Map
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -172,15 +236,105 @@ function App() {
                 <p className="text-gray-600">Try expanding your search radius</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {activities.map((activity) => (
-                  <ActivityCard key={activity.id} activity={activity} />
-                ))}
-              </div>
+              <>
+                {/* Map View */}
+                {viewMode === 'map' && (
+                  <ActivityMap activities={activities} userLocation={location} />
+                )}
+
+                {/* List View - Grouped by Category */}
+                {viewMode === 'list' && (
+                  <>
+                    {/* Group activities by primary category */}
+                    {(() => {
+                      // Group activities by category
+                      const grouped = activities.reduce((acc, activity) => {
+                        const category = activity.primaryCategory || 'Other';
+                        if (!acc[category]) {
+                          acc[category] = [];
+                        }
+                        acc[category].push(activity);
+                        return acc;
+                      }, {} as Record<string, typeof activities>);
+
+                      // Sort each group by score (desc), then name (asc)
+                      Object.keys(grouped).forEach(category => {
+                        grouped[category].sort((a, b) => {
+                          const scoreDiff = (b.score || 0) - (a.score || 0);
+                          if (scoreDiff !== 0) return scoreDiff;
+                          return a.name.localeCompare(b.name);
+                        });
+                      });
+
+                      // Get categories sorted by highest score in each group
+                      const sortedCategories = Object.keys(grouped).sort((a, b) => {
+                        const maxScoreA = Math.max(...grouped[a].map(act => act.score || 0));
+                        const maxScoreB = Math.max(...grouped[b].map(act => act.score || 0));
+                        return maxScoreB - maxScoreA;
+                      });
+
+                      return (
+                        <div className="space-y-8">
+                          {sortedCategories.map(category => (
+                            <div key={category}>
+                              {/* Category Header */}
+                              <div className="mb-4">
+                                <h3 className="text-xl font-bold text-dark-text capitalize">
+                                  {category.replace(/_/g, ' ')}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  {grouped[category].length} {grouped[category].length === 1 ? 'activity' : 'activities'}
+                                </p>
+                              </div>
+
+                              {/* Activities Grid */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {grouped[category].map((activity) => (
+                                  <ActivityCard key={activity.id || activity.activityId} activity={activity} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Edge Suggestions - Try Something New! */}
+                    {activities.length > 3 && (
+                      <div className="mt-12">
+                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-6">
+                          <h3 className="text-2xl font-bold text-dark-text mb-2">
+                            ✨ Try Something New
+                          </h3>
+                          <p className="text-gray-600">
+                            Step outside your comfort zone with these edge suggestions
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {activities
+                            .sort((a, b) => (a.score || 0) - (b.score || 0))
+                            .slice(0, 3)
+                            .map((activity) => (
+                              <div key={`edge-${activity.id || activity.activityId}`} className="relative">
+                                <div className="absolute -top-2 -right-2 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold z-10 shadow-lg">
+                                  🌟 NEW!
+                                </div>
+                                <ActivityCard activity={activity} />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
           </>
         )}
       </main>
+
+      {/* Settings Modal */}
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

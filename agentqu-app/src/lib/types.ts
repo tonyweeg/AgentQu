@@ -6,13 +6,22 @@ export interface Location {
 
 export interface Activity {
   id: string;
+  activityId?: string; // New backend format
   name: string;
-  type: 'cache' | 'volunteer' | 'hike' | 'venue' | 'event';
+  type: 'cache' | 'volunteer' | 'hike' | 'venue' | 'event' | 'permanent';
   description?: string;
 
-  // Location
+  // Location (supports both old and new formats)
   lat: number;
   lng: number;
+  location?: {
+    lat: number;
+    lng: number;
+    geohash?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+  };
   address?: string;
   city?: string;
   state?: string;
