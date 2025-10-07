@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from './hooks/useAuth';
 import { useLocation } from './hooks/useLocation';
 import { useDiscovery } from './hooks/useDiscovery';
+import AuthScreen from './components/AuthScreen';
+import OnboardingScreen from './components/OnboardingScreen';
 import ActivityCard from './components/ActivityCard';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
   const [filters, setFilters] = useState<DiscoveryFilters>({});
+  const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
   const {
@@ -15,14 +19,49 @@ function App() {
     requestLocation,
   } = useLocation();
 
-  // Fetch activities
-  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery(location, filters);
+  // Fetch activities (only when user is onboarded)
+  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery(
+    profile?.onboarded ? location : null,
+    filters
+  );
 
-  // Request location on mount
+  // Request location when user completes onboarding
   useEffect(() => {
-    requestLocation();
-  }, [requestLocation]);
+    if (profile?.onboarded && !location) {
+      requestLocation();
+    }
+  }, [profile?.onboarded, location, requestLocation]);
 
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-cream">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
+          <p className="text-dark-text text-lg font-medium">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated - show login
+  if (!user || !profile) {
+    return <AuthScreen onSuccess={() => {}} />;
+  }
+
+  // Authenticated but not onboarded - show onboarding
+  if (!profile.onboarded) {
+    return (
+      <OnboardingScreen
+        userName={profile.displayName || 'there'}
+        onComplete={async (affinities) => {
+          await updateAffinities(affinities);
+        }}
+      />
+    );
+  }
+
+  // Location permission needed
   if (locationLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-cream">
@@ -53,19 +92,35 @@ function App() {
     );
   }
 
+  // Main app - show discoveries
   return (
     <div className="min-h-screen bg-cream">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-peach">AgentQu</h1>
-            <div className="text-sm text-gray-600">
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-bold text-peach">AgentQu</h1>
               {location && (
-                <>
+                <div className="text-sm text-gray-600">
                   📍 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-                </>
+                </div>
               )}
+            </div>
+            <div className="flex items-center gap-4">
+              {profile.photoURL && (
+                <img
+                  src={profile.photoURL}
+                  alt={profile.displayName || 'User'}
+                  className="w-10 h-10 rounded-full border-2 border-peach"
+                />
+              )}
+              <button
+                onClick={signOut}
+                className="text-sm text-gray-600 hover:text-peach transition-colors"
+              >
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
@@ -78,10 +133,15 @@ function App() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-dark-text mb-1">
-                {activities.length} activities near you
+                {activities.length} activities for you
               </h2>
               <p className="text-gray-600">
                 {metadata && `Found in ${metadata.queryTimeMs}ms`}
+                {metadata?.sources && (
+                  <span className="ml-2 text-sm">
+                    ({metadata.sources.google_search || 0} from search, {metadata.sources.google_places || 0} from places)
+                  </span>
+                )}
               </p>
             </div>
           </div>
