@@ -11,12 +11,19 @@ import Settings from './components/Settings';
 import GeocacheView from './components/GeocacheView';
 import OffGridView from './components/OffGridView';
 import TripCreation from './components/TripCreation';
+import CirqleManager from './components/CirqleManager';
+import JoinCirqle from './components/JoinCirqle';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
+  // Check URL for special routes
+  const urlPath = window.location.pathname;
+  const urlParams = new URLSearchParams(window.location.search);
+  const isJoinCirqle = urlPath === '/join-cirqle' || urlParams.has('token');
+
   const [filters, setFilters] = useState<DiscoveryFilters>({ maxDistance: 10 });
   const [radius, setRadius] = useState(10); // miles
-  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'trip'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'trip' | 'cirqle'>('list');
   const [showSettings, setShowSettings] = useState(false);
   const [showGeocaches, setShowGeocaches] = useState(false);
   const [enablePlaces, setEnablePlaces] = useState(true);
@@ -167,6 +174,11 @@ function App() {
     );
   }
 
+  // Join Cirqle flow (special route)
+  if (isJoinCirqle) {
+    return <JoinCirqle />;
+  }
+
   // Not authenticated - show login
   if (!user || !profile) {
     return <AuthScreen onSuccess={() => {}} />;
@@ -314,6 +326,19 @@ function App() {
                     </div>
                   </div>
                 )}
+
+                {/* Cirqle Button */}
+                <button
+                  onClick={() => setViewMode('cirqle')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
+                    viewMode === 'cirqle'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
+                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  <span>👥</span>
+                  <span>Cirqle</span>
+                </button>
 
                 {/* There-Then Trip Planning Button */}
                 <button
@@ -1056,6 +1081,9 @@ function App() {
                     }}
                   />
                 )}
+
+                {/* Cirqle View */}
+                {viewMode === 'cirqle' && <CirqleManager />}
 
                 {/* Trip Planning View */}
                 {viewMode === 'trip' && <TripCreation />}

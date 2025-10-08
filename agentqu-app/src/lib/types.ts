@@ -255,15 +255,15 @@ export interface SolarForecast {
 }
 
 // ============================================
-// FAMILY GRAPH: Family Member Management
+// CIRQLE: Family & Friends Circle System
 // ============================================
 
-export interface FamilyMember {
-  familyMemberId: string;
+export interface CirqleMember {
+  memberId: string;
   userId?: string; // Optional - only if they've registered
 
-  // Relationship to the owner
-  ownerUserId: string; // Who owns this family member record
+  // Relationship to the circle owner
+  ownerUserId: string; // Who invited this person
   relationship: string; // "daughter", "son", "spouse", "parent", "friend", etc.
   nickname: string; // Display name (e.g., "Emma", "Dad", "Sarah")
 
@@ -274,21 +274,31 @@ export interface FamilyMember {
   // Their preferences (for trip planning)
   affinities?: Record<string, number>;
 
-  // Status
-  status: 'invited' | 'registered' | 'active';
-  invitedAt?: number;
+  // Invite & Status
+  status: 'pending' | 'accepted' | 'active';
+  inviteToken?: string; // Unique token for joining
+  invitedAt: number;
   joinedAt?: number;
 
   // Metadata
   avatarUrl?: string;
+  photoURL?: string; // From Google OAuth
+  displayName?: string; // From Google OAuth
   age?: number;
   allergies?: string[]; // For pollen/food warnings
   notes?: string;
 }
 
-export interface FamilyGraph {
+export interface Cirqle {
+  cirqleId: string;
   ownerId: string; // Primary account holder
-  members: FamilyMember[];
+  ownerName: string;
+  members: CirqleMember[];
+
+  // Settings
+  cirqleName?: string; // e.g., "The Weeg Family", "Adventure Squad"
+
+  // Timestamps
   createdAt: number;
   updatedAt: number;
 }
