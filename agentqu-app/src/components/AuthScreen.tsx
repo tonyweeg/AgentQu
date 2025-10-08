@@ -18,6 +18,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
       const provider = new GoogleAuthProvider();
       provider.addScope('profile');
       provider.addScope('email');
+      // Force account selection every time
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
 
       const result = await signInWithPopup(auth, provider);
       const user = result.user;

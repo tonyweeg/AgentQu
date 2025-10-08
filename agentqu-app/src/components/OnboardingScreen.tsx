@@ -4,9 +4,10 @@ import { AFFINITY_CATEGORIES, AffinityCategory } from '../lib/affinityCategories
 interface OnboardingScreenProps {
   userName: string;
   onComplete: (selectedAffinities: Record<string, number>) => void;
+  onSignOut?: () => void;
 }
 
-const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplete }) => {
+const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplete, onSignOut }) => {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
   const toggleCategory = (categoryId: string) => {
@@ -45,6 +46,14 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
           <p className="text-gray-600">
             Select all that apply - we'll personalize your discoveries
           </p>
+          {onSignOut && (
+            <button
+              onClick={onSignOut}
+              className="mt-4 text-sm text-gray-500 hover:text-ocean-bright underline transition-colors"
+            >
+              Not {firstName}? Sign in as a different user
+            </button>
+          )}
         </div>
 
         {/* Progress */}

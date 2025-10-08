@@ -5,6 +5,8 @@ import { TripPlan } from '../lib/types';
 const TripCreation: React.FC = () => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [destination, setDestination] = useState('');
@@ -12,11 +14,42 @@ const TripCreation: React.FC = () => {
   const [endDate, setEndDate] = useState('');
   const [collaborators, setCollaborators] = useState<string[]>([]);
 
-  const handleContinue = () => {
+  // Trip data after geocoding
+  const [tripLocation, setTripLocation] = useState<{ lat: number; lng: number; address: string; city: string; state: string } | null>(null);
+
+  const handleContinue = async () => {
     if (step === 1 && destination && startDate && endDate) {
-      // TODO: Geocode destination and create trip
-      console.log('Creating trip:', { destination, startDate, endDate });
-      setStep(2);
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Geocode the destination using existing Firebase function
+        const { getFunctions, httpsCallable } = await import('firebase/functions');
+        const functions = getFunctions();
+        const geocode = httpsCallable(functions, 'geocode');
+
+        console.log('🌍 Geocoding trip destination:', destination);
+        const result = await geocode({ address: destination });
+        const data = result.data as { success: boolean; location?: { lat: number; lng: number }; city?: string; state?: string; country?: string; error?: string };
+
+        if (data.success && data.location) {
+          setTripLocation({
+            lat: data.location.lat,
+            lng: data.location.lng,
+            address: destination,
+            city: data.city || '',
+            state: data.state || '',
+          });
+          setStep(2);
+        } else {
+          setError(data.error || `Could not find location: ${destination}`);
+        }
+      } catch (err: any) {
+        console.error('Error geocoding destination:', err);
+        setError('Failed to find location. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -89,29 +122,81 @@ const TripCreation: React.FC = () => {
               </button>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+            )}
+
             {/* Continue Button */}
             <button
               onClick={handleContinue}
-              disabled={!destination || !startDate || !endDate}
-              className="w-full bg-ocean-bright hover:bg-ocean-mid disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg text-lg transition-colors shadow-md"
+              disabled={!destination || !startDate || !endDate || loading}
+              className="w-full bg-ocean-bright hover:bg-ocean-mid disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg text-lg transition-colors shadow-md flex items-center justify-center gap-2"
             >
-              Continue →
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <span>Finding location...</span>
+                </>
+              ) : (
+                <>Continue →</>
+              )}
             </button>
           </div>
         )}
 
-        {/* Step 2: Activity Discovery (Coming Soon) */}
-        {step === 2 && (
+        {/* Step 2: Activity Discovery */}
+        {step === 2 && tripLocation && (
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-navy-text mb-4">
-              🎯 {destination}
-            </h2>
-            <p className="text-gray-600 mb-4">
-              {startDate} to {endDate}
-            </p>
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                Activity Discovery Coming Soon...
+            {/* Location Header */}
+            <div className="mb-6">
+              <button
+                onClick={() => setStep(1)}
+                className="text-ocean-bright hover:text-ocean-mid font-medium mb-4 flex items-center gap-1"
+              >
+                ← Back
+              </button>
+              <h2 className="text-3xl font-bold text-navy-text mb-2">
+                {tripLocation.city}{tripLocation.state ? `, ${tripLocation.state}` : ''}
+              </h2>
+              <p className="text-gray-600">
+                {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+
+            {/* Trip Summary */}
+            <div className="bg-seafoam/20 rounded-xl p-6 mb-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">Destination</p>
+                  <p className="font-bold text-navy-text">{destination}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Duration</p>
+                  <p className="font-bold text-navy-text">
+                    {Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Coordinates</p>
+                  <p className="font-mono text-xs text-navy-text">
+                    {tripLocation.lat.toFixed(4)}, {tripLocation.lng.toFixed(4)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Travelers</p>
+                  <p className="font-bold text-navy-text">{collaborators.length + 1}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Coming Soon */}
+            <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
+              <p className="text-gray-500 text-lg mb-2">🎯 Activity Discovery</p>
+              <p className="text-sm text-gray-400">
+                Next: Discover personalized activities for your trip dates and location
               </p>
             </div>
           </div>

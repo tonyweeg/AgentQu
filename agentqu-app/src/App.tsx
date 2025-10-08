@@ -180,6 +180,7 @@ function App() {
         onComplete={async (affinities) => {
           await updateAffinities(affinities);
         }}
+        onSignOut={signOut}
       />
     );
   }
