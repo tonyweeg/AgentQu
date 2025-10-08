@@ -84,39 +84,43 @@ function MapDragHandler({ onLocationChange }: { onLocationChange?: (lat: number,
       <div
         style={{
           position: 'absolute',
-          top: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          top: '80px',
+          left: '10px',
           zIndex: 1000,
         }}
       >
         <button
           onClick={handleSearchClick}
           style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-            padding: '12px 24px',
-            borderRadius: '12px',
-            border: 'none',
+            background: 'white',
+            color: '#003D5B',
+            padding: '0',
+            width: '30px',
+            height: '30px',
+            borderRadius: '4px',
+            border: '2px solid rgba(0,0,0,0.2)',
             fontWeight: 'bold',
-            fontSize: '16px',
+            fontSize: '18px',
             cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            justifyContent: 'center',
+            fontFamily: 'Arial, sans-serif',
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+            e.currentTarget.style.background = '#30B1BB';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseOut={(e) => {
+            e.currentTarget.style.background = 'white';
+            e.currentTarget.style.color = '#003D5B';
             e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
           }}
+          title="Search this area"
         >
-          <span style={{ fontSize: '20px' }}>🔍</span>
-          <span>Search Here</span>
+          Q
         </button>
       </div>
     );
