@@ -85,6 +85,13 @@ function App() {
   // Filter geocaches from activities
   const geocaches = activities.filter((activity) => activity.type === 'cache');
 
+  // Handle map drag to search new location
+  const handleMapLocationChange = (lat: number, lng: number) => {
+    console.log('🗺️ Searching new location from map drag:', lat, lng);
+    setManualLocation({ lat, lng });
+    setRefreshKey(prev => prev + 1);
+  };
+
   // Debug: Log activity types
   useEffect(() => {
     if (activities.length > 0) {
@@ -430,7 +437,11 @@ function App() {
               <>
                 {/* Map View */}
                 {viewMode === 'map' && (
-                  <ActivityMap activities={activities} userLocation={location} />
+                  <ActivityMap
+                    activities={activities}
+                    userLocation={activeLocation}
+                    onLocationChange={handleMapLocationChange}
+                  />
                 )}
 
                 {/* List View - Grouped by Category */}
