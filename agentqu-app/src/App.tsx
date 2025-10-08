@@ -628,20 +628,20 @@ function App() {
                                 ? activities.reduce((sum, a) => sum + (a.score || 0), 0) / activities.length
                                 : 0;
 
-                              let stokedText = "Worth exploring";
+                              let stokedText = "Give it a shot!";
                               let stokedColor = "bg-gradient-to-r from-gray-400 to-gray-500";
 
                               if (avgScore >= 280) {
-                                stokedText = "🔥 STOKED";
+                                stokedText = "You'll love it";
                                 stokedColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
                               } else if (avgScore >= 220) {
-                                stokedText = "⚡ EXCITED";
+                                stokedText = "You'll like it";
                                 stokedColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
                               } else if (avgScore >= 180) {
-                                stokedText = "👍 GOOD VIBES";
+                                stokedText = "You should like it";
                                 stokedColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
                               } else if (avgScore >= 140) {
-                                stokedText = "🤔 POTENTIAL";
+                                stokedText = "Give it a shot!";
                                 stokedColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
                               }
 
