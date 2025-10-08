@@ -84,7 +84,7 @@ function MapDragHandler({ onLocationChange }: { onLocationChange?: (lat: number,
       style={{
         position: 'absolute',
         top: '10px',
-        left: '10px',
+        right: '10px',
         zIndex: 1000,
       }}
     >

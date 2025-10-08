@@ -11,7 +11,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
 
   return (
     <>
-      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      <div className="bg-gradient-to-br from-seafoam to-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-ocean-bright/20">
       {/* Image */}
       {activity.images && activity.images[0] && (
         <div

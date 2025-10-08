@@ -601,8 +601,7 @@ function App() {
                       <ActivityMap
                         activities={[]}
                         userLocation={activeLocation}
-                        onLocationChange={handleMapLocationChange}
-                        compact={false}
+                        compact={true}
                       />
                     </div>
                   )}
