@@ -9,9 +9,29 @@ interface ActivityCardProps {
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   const [showDetails, setShowDetails] = useState(false);
 
+  // Determine card gradient based on activity score
+  let cardGradient = 'from-gray-50 to-white'; // Default/low score
+  let borderColor = 'border-gray-200';
+
+  if (activity.score !== undefined) {
+    if (activity.score >= 300) {
+      cardGradient = 'from-[#FFE5EE] to-white'; // Perfect - soft pink glow
+      borderColor = 'border-[#FF6B9D]/30';
+    } else if (activity.score >= 250) {
+      cardGradient = 'from-[#FFF4E5] to-white'; // High - warm coral glow
+      borderColor = 'border-[#FEC163]/30';
+    } else if (activity.score >= 200) {
+      cardGradient = 'from-[#E5F9FF] to-white'; // Good - cool cyan glow
+      borderColor = 'border-[#4FACFE]/30';
+    } else if (activity.score >= 150) {
+      cardGradient = 'from-[#F0E5FF] to-white'; // Medium - purple glow
+      borderColor = 'border-[#667EEA]/30';
+    }
+  }
+
   return (
     <>
-      <div className="bg-gradient-to-br from-seafoam to-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-ocean-bright/20">
+      <div className={`bg-gradient-to-br ${cardGradient} rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border ${borderColor}`}>
       {/* Image */}
       {activity.images && activity.images[0] && (
         <div
