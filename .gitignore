@@ -32,3 +32,4 @@ firebase-debug.log
 
 # Firebase cache
 .firebase/
+functions/.env
