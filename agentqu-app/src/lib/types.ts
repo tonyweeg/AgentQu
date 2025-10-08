@@ -59,6 +59,8 @@ export interface Activity {
 
   // Scoring
   score?: number;
+  baseScore?: number;
+  affinityScore?: number;
   scoreBreakdown?: {
     distance: number;
     time: number;

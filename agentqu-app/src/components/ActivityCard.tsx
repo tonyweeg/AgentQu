@@ -60,12 +60,57 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
             </div>
           </div>
 
-          {/* Score */}
+          {/* Q Meter - Visual Match Indicator */}
           {activity.score !== undefined && (
-            <div className="ml-4">
-              <div className="bg-peach/20 text-peach px-4 py-2 rounded-full text-sm font-bold">
-                {activity.score}
-              </div>
+            <div className="ml-4 flex flex-col items-center gap-1">
+              {(() => {
+                // Convert score to Q rating (1-5)
+                // Score ranges: 0-150=Low, 150-200=Medium, 200-250=High, 250-300=VeryHigh, 300+=Perfect
+                let qLevel = 1;
+                let qLabel = "Worth a try";
+                let qColor = "bg-gray-400";
+
+                if (activity.score >= 300) {
+                  qLevel = 5;
+                  qLabel = "Perfect match!";
+                  qColor = "bg-gradient-to-r from-peach to-orange-500";
+                } else if (activity.score >= 250) {
+                  qLevel = 4;
+                  qLabel = "You'll love it";
+                  qColor = "bg-gradient-to-r from-orange-400 to-peach";
+                } else if (activity.score >= 200) {
+                  qLevel = 3;
+                  qLabel = "Good match";
+                  qColor = "bg-yellow-500";
+                } else if (activity.score >= 150) {
+                  qLevel = 2;
+                  qLabel = "Might like it";
+                  qColor = "bg-blue-400";
+                }
+
+                return (
+                  <>
+                    {/* Q Meter Bars */}
+                    <div className="flex gap-1 items-end">
+                      {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                          key={level}
+                          className={`w-1.5 rounded-t transition-all ${
+                            level <= qLevel
+                              ? qColor
+                              : 'bg-gray-200'
+                          }`}
+                          style={{ height: `${level * 6}px` }}
+                        />
+                      ))}
+                    </div>
+                    {/* Q Label */}
+                    <div className="text-xs font-bold text-dark-text whitespace-nowrap">
+                      {qLabel}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
         </div>

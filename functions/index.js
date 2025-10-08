@@ -209,7 +209,7 @@ async function fetchGoogleSearch(lat, lng, city = null) {
   const GOOGLE_SEARCH_ENGINE_ID = googleSearchEngineId.value();
 
   if (!GOOGLE_SEARCH_API_KEY || !GOOGLE_SEARCH_ENGINE_ID) {
-    console.warn("Google Search API not configured");
+    console.warn("🔍 SEARCH API: Not configured");
     return [];
   }
 
@@ -225,27 +225,61 @@ async function fetchGoogleSearch(lat, lng, city = null) {
       return `${month} ${day}`;
     };
 
-    // Create search query for upcoming events
     const dateRange = `${formatDate(today)}-${formatDate(threeDaysFromNow)}`;
-    const searchQuery = city
-      ? `events activities things to do near ${city} ${dateRange} 2025`
-      : `events activities near ${lat},${lng} ${dateRange} 2025`;
 
-    console.log(`🔍 SEARCH API: Query with dates: "${searchQuery}"`);
+    // Use city name if available, otherwise skip Custom Search (coordinates don't work well)
+    if (!city) {
+      console.log('🔍 SEARCH API: Skipping - no city name available (coordinates not supported)');
+      return [];
+    }
 
-    const response = await axios.get(`https://www.googleapis.com/customsearch/v1`, {
-      params: {
-        key: GOOGLE_SEARCH_API_KEY,
-        cx: GOOGLE_SEARCH_ENGINE_ID,
-        q: searchQuery,
-        num: 10,
-        dateRestrict: 'd7', // Results from last 7 days (for fresh event listings)
-      },
-    });
+    // Multiple search queries for better coverage
+    const queries = [
+      `events ${city} this week`,
+      `events site:facebook.com ${city}`,
+      `things to do ${city}`,
+    ];
 
-    if (!response.data.items) return [];
+    const allResults = [];
 
-    return response.data.items
+    for (const searchQuery of queries) {
+      try {
+        console.log(`🔍 SEARCH API: Trying query: "${searchQuery}"`);
+
+        const response = await axios.get(`https://www.googleapis.com/customsearch/v1`, {
+          params: {
+            key: GOOGLE_SEARCH_API_KEY,
+            cx: GOOGLE_SEARCH_ENGINE_ID,
+            q: searchQuery,
+            num: 10,
+          },
+        });
+
+        console.log(`🔍 SEARCH API: Got ${response.data.items?.length || 0} results for "${searchQuery}"`);
+
+        if (response.data.items) {
+          allResults.push(...response.data.items);
+        }
+      } catch (queryError) {
+        console.error(`🔍 SEARCH API: Query "${searchQuery}" failed:`, queryError.message);
+        if (queryError.response) {
+          console.error(`🔍 SEARCH API: Status ${queryError.response.status}:`, queryError.response.data);
+        }
+      }
+    }
+
+    console.log(`🔍 SEARCH API: Total results from all queries: ${allResults.length}`);
+
+    if (allResults.length === 0) return [];
+
+    // Deduplicate by URL
+    const uniqueResults = Array.from(
+      new Map(allResults.map(item => [item.link, item])).values()
+    );
+
+    console.log(`🔍 SEARCH API: Unique results after deduplication: ${uniqueResults.length}`);
+
+    return uniqueResults
       .map((item, index) => ({
         activityId: `search_${Buffer.from(item.link).toString("base64").substring(0, 16)}`,
         name: item.title,
@@ -286,7 +320,7 @@ async function fetchGoogleSearch(lat, lng, city = null) {
           lastSearched: Date.now(),
           searchCount: 1,
           source: "google_search",
-          sourceId: item.cacheId || item.link,
+          sourceId: item.cacheId || item.link || `search_${index}`,
         },
         openNow: true,
       }))
@@ -312,6 +346,7 @@ function affinityToPlaceTypes(affinities) {
     'outdoor_adventure': ['park', 'campground', 'hiking_area'],
     'live_music': ['night_club', 'live_music_venue', 'performing_arts_theater'],
     'sports': ['stadium', 'gym', 'sports_complex'],
+    'skateparks': ['park', 'sports_complex'],
     'art_culture': ['art_gallery', 'museum', 'cultural_center'],
     'nightlife': ['bar', 'night_club', 'dance_club'],
     'shopping': ['shopping_mall', 'clothing_store', 'book_store'],
@@ -669,8 +704,40 @@ exports.discoverActivities = onCall(
     // Cache miss - fetch from APIs
     console.log("Cache MISS - fetching from APIs");
 
+    // Try to get city name from reverse geocoding for better search results
+    let cityName = null;
+    try {
+      const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+      const geocodeResponse = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json`,
+        {
+          params: {
+            latlng: `${lat},${lng}`,
+            key: GOOGLE_PLACES_API_KEY,
+          },
+        }
+      );
+
+      console.log(`🔍 Reverse geocoding response:`, geocodeResponse.data.results?.[0]?.formatted_address);
+
+      if (geocodeResponse.data.results?.[0]) {
+        const addressComponents = geocodeResponse.data.results[0].address_components;
+        const city = addressComponents.find(c => c.types.includes('locality'));
+        const state = addressComponents.find(c => c.types.includes('administrative_area_level_1'));
+
+        if (city && state) {
+          cityName = `${city.long_name}, ${state.short_name}`;
+          console.log(`🔍 Reverse geocoded to: ${cityName}`);
+        } else {
+          console.warn(`🔍 Reverse geocoding: No city/state found in components`);
+        }
+      }
+    } catch (geocodeError) {
+      console.error('🔍 Reverse geocoding failed:', geocodeError.message);
+    }
+
     const [googleSearch, googlePlaces] = await Promise.all([
-      fetchGoogleSearch(lat, lng),
+      fetchGoogleSearch(lat, lng, cityName),
       fetchGooglePlaces(lat, lng, radius, userAffinities),
     ]);
 
