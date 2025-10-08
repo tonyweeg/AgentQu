@@ -126,23 +126,17 @@ function MapDragHandler({ onLocationChange }: { onLocationChange?: (lat: number,
 }
 
 // Component to update map center when location changes
-function MapUpdater({ center }: { center: [number, number] }) {
+function MapUpdater({ center, compact }: { center: [number, number], compact: boolean }) {
   const map = useMap();
 
   useEffect(() => {
-    // Force map to recalculate size and fit bounds properly for rectangular containers
+    // Force map to recalculate size
     setTimeout(() => {
       map.invalidateSize();
-      // Use fitBounds instead of setView for proper centering in non-square containers
-      // Create a small bounding box around the center point
-      const offset = 0.01; // roughly 1km
-      const bounds: [[number, number], [number, number]] = [
-        [center[0] - offset, center[1] - offset],
-        [center[0] + offset, center[1] + offset]
-      ];
-      map.fitBounds(bounds, { padding: [50, 50] });
+      // For compact mode, just use setView for perfect centering
+      map.setView(center, compact ? 12 : 14);
     }, 100);
-  }, [center, map]);
+  }, [center, map, compact]);
 
   return null;
 }
@@ -178,7 +172,7 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
         doubleClickZoom={!compact}
         touchZoom={!compact}
       >
-        <MapUpdater center={center} />
+        <MapUpdater center={center} compact={compact} />
         {!compact && <MapDragHandler onLocationChange={onLocationChange} />}
 
         {/* Map tiles */}
