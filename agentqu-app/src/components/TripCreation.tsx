@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { TripPlan, Activity } from '../lib/types';
 import ActivityCard from './ActivityCard';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
 const TripCreation: React.FC = () => {
   const { user, profile } = useAuth();
@@ -21,6 +22,10 @@ const TripCreation: React.FC = () => {
   // Activities discovered for trip location
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
+
+  // Save trip state
+  const [savingTrip, setSavingTrip] = useState(false);
+  const [tripSaved, setTripSaved] = useState(false);
 
   const handleContinue = async () => {
     if (step === 1 && destination && startDate && endDate) {
@@ -91,6 +96,92 @@ const TripCreation: React.FC = () => {
       fetchActivities();
     }
   }, [step, tripLocation, user, profile]);
+
+  const handleSaveTrip = async () => {
+    if (!user || !tripLocation || !startDate || !endDate) return;
+
+    setSavingTrip(true);
+    setError(null);
+
+    try {
+      const db = getFirestore();
+      const tripId = `${user.uid}_${Date.now()}`;
+      const tripRef = doc(db, 'trips', tripId);
+
+      // Create trip plan object
+      const tripPlan: TripPlan = {
+        tripId,
+        createdBy: user.uid,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+
+        destination: {
+          location: { lat: tripLocation.lat, lng: tripLocation.lng },
+          address: tripLocation.address,
+          city: tripLocation.city,
+          state: tripLocation.state,
+          country: 'USA', // Default for now
+        },
+
+        dates: {
+          startDate: new Date(startDate).getTime(),
+          endDate: new Date(endDate).getTime(),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+
+        participants: [
+          {
+            userId: user.uid,
+            nickname: profile?.displayName || 'Me',
+            role: 'owner',
+            invitedAt: Date.now(),
+            joinedAt: Date.now(),
+            affinities: profile?.affinities,
+          },
+        ],
+
+        itinerary: [], // Empty for now - will be filled in itinerary builder
+
+        suggestedActivities: activities.slice(0, 10).map((activity) => ({
+          activityId: activity.id,
+          affinityScore: activity.affinityScore || 0,
+          bestTimeSlots: [],
+          environmentalFit: {
+            weatherRating: 0,
+            airQualityOk: true,
+            pollenWarning: false,
+          },
+        })),
+
+        sharing: {
+          isPublic: false,
+          allowComments: false,
+        },
+
+        status: 'draft',
+
+        metadata: {
+          totalParticipants: 1,
+          totalActivities: activities.length,
+        },
+      };
+
+      await setDoc(tripRef, tripPlan);
+
+      console.log('✅ Trip saved:', tripId);
+      setTripSaved(true);
+
+      // Redirect to My Trips after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/?view=trips';
+      }, 2000);
+    } catch (err) {
+      console.error('Error saving trip:', err);
+      setError('Failed to save trip. Please try again.');
+    } finally {
+      setSavingTrip(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-seafoam to-white p-4">
@@ -261,11 +352,32 @@ const TripCreation: React.FC = () => {
             </div>
 
             {/* Save Trip Button */}
-            <button
-              className="w-full bg-ocean-bright hover:bg-ocean-mid text-white font-bold py-4 rounded-lg text-lg transition-colors shadow-md"
-            >
-              Save Trip
-            </button>
+            {tripSaved ? (
+              <div className="bg-green-100 border-2 border-green-500 rounded-lg p-6 text-center">
+                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-green-800 mb-2">Trip Saved!</h3>
+                <p className="text-green-700">Redirecting to My Trips...</p>
+              </div>
+            ) : (
+              <button
+                onClick={handleSaveTrip}
+                disabled={savingTrip}
+                className="w-full bg-ocean-bright hover:bg-ocean-mid disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg text-lg transition-colors shadow-md flex items-center justify-center gap-2"
+              >
+                {savingTrip ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    <span>Saving trip...</span>
+                  </>
+                ) : (
+                  <>Save Trip</>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>

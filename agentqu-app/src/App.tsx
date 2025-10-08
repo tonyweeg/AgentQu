@@ -13,6 +13,8 @@ import OffGridView from './components/OffGridView';
 import TripCreation from './components/TripCreation';
 import CirqleManager from './components/CirqleManager';
 import JoinCirqle from './components/JoinCirqle';
+import MyTrips from './components/MyTrips';
+import TripDetail from './components/TripDetail';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -20,10 +22,14 @@ function App() {
   const urlPath = window.location.pathname;
   const urlParams = new URLSearchParams(window.location.search);
   const isJoinCirqle = urlPath === '/join-cirqle' || urlParams.has('token');
+  const urlView = urlParams.get('view');
+  const tripId = urlParams.get('id');
 
   const [filters, setFilters] = useState<DiscoveryFilters>({ maxDistance: 10 });
   const [radius, setRadius] = useState(10); // miles
-  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'trip' | 'cirqle'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'trip-creation' | 'trips' | 'trip-detail' | 'cirqle'>(
+    (urlView as any) || 'list'
+  );
   const [showSettings, setShowSettings] = useState(false);
   const [showGeocaches, setShowGeocaches] = useState(false);
   const [enablePlaces, setEnablePlaces] = useState(true);
@@ -329,7 +335,10 @@ function App() {
 
                 {/* Cirqle Button */}
                 <button
-                  onClick={() => setViewMode('cirqle')}
+                  onClick={() => {
+                    setViewMode('cirqle');
+                    window.history.pushState({}, '', '/?view=cirqle');
+                  }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
                     viewMode === 'cirqle'
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
@@ -342,15 +351,34 @@ function App() {
 
                 {/* There-Then Trip Planning Button */}
                 <button
-                  onClick={() => setViewMode('trip')}
+                  onClick={() => {
+                    setViewMode('trip-creation');
+                    window.history.pushState({}, '', '/?view=trip-creation');
+                  }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
-                    viewMode === 'trip'
+                    viewMode === 'trip-creation'
                       ? 'bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E] text-white shadow-md'
                       : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
                   <span>🌍</span>
                   <span>There-Then</span>
+                </button>
+
+                {/* My Trips Button */}
+                <button
+                  onClick={() => {
+                    setViewMode('trips');
+                    window.history.pushState({}, '', '/?view=trips');
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
+                    viewMode === 'trips'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
+                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  <span>✈️</span>
+                  <span>My Trips</span>
                 </button>
 
                 {/* Off Grid Button */}
@@ -1086,7 +1114,13 @@ function App() {
                 {viewMode === 'cirqle' && <CirqleManager />}
 
                 {/* Trip Planning View */}
-                {viewMode === 'trip' && <TripCreation />}
+                {viewMode === 'trip-creation' && <TripCreation />}
+
+                {/* My Trips View */}
+                {viewMode === 'trips' && <MyTrips />}
+
+                {/* Trip Detail View */}
+                {viewMode === 'trip-detail' && tripId && <TripDetail tripId={tripId} />}
 
                 {/* List View - Grouped by Category */}
                 {viewMode === 'list' && (
