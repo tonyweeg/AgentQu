@@ -69,6 +69,7 @@ export interface Activity {
 
   // Media
   images?: string[];
+  website?: string;
 }
 
 export interface DiscoveryFilters {

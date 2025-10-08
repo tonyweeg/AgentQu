@@ -7,6 +7,7 @@ import OnboardingScreen from './components/OnboardingScreen';
 import ActivityCard from './components/ActivityCard';
 import ActivityMap from './components/ActivityMap';
 import Settings from './components/Settings';
+import GeocacheView from './components/GeocacheView';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const [radius, setRadius] = useState(10); // miles
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [showSettings, setShowSettings] = useState(false);
+  const [showGeocaches, setShowGeocaches] = useState(false);
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -38,11 +40,28 @@ function App() {
     }
   }, [profile?.onboarded, location, requestLocation]);
 
+  // Filter geocaches from activities
+  const geocaches = activities.filter((activity) => activity.type === 'cache');
+
+  // Debug: Log activity types
+  useEffect(() => {
+    if (activities.length > 0) {
+      console.log('🗺️ CLIENT DEBUG: Total activities:', activities.length);
+      console.log('🗺️ CLIENT DEBUG: Activity types:', activities.map(a => a.type));
+      console.log('🗺️ CLIENT DEBUG: Geocaches found:', geocaches.length);
+    }
+  }, [activities.length, geocaches.length]);
+
   // Loading state
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-cream">
         <div className="text-center">
+          <img
+            src="/agentqu-logo.png"
+            alt="AgentQu"
+            className="h-24 w-auto mx-auto mb-6 opacity-90"
+          />
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
           <p className="text-dark-text text-lg font-medium">Loading...</p>
         </div>
@@ -72,6 +91,11 @@ function App() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-cream">
         <div className="text-center">
+          <img
+            src="/agentqu-logo.png"
+            alt="AgentQu"
+            className="h-24 w-auto mx-auto mb-6 opacity-90"
+          />
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
           <p className="text-dark-text text-lg font-medium">Getting your location...</p>
           <p className="text-gray-600 mt-2 text-sm">Please allow location access</p>
@@ -106,10 +130,28 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-bold text-peach">AgentQu</h1>
+              <div className="flex items-center gap-2">
+                <img
+                  src="/agentqu-glyph.png"
+                  alt="AgentQu"
+                  className="h-8 w-8"
+                />
+                <h1 className="text-3xl font-bold text-black" style={{ letterSpacing: '-0.05em' }}>AgentQu</h1>
+              </div>
               {location && (
-                <div className="text-sm text-gray-600">
-                  📍 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-gray-600">
+                    📍 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  </div>
+                  {geocaches.length > 0 && (
+                    <button
+                      onClick={() => setShowGeocaches(true)}
+                      className="flex items-center gap-2 bg-peach/10 hover:bg-peach/20 text-peach px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
+                    >
+                      <span className="text-lg">🗺️</span>
+                      <span>{geocaches.length} Geocache{geocaches.length !== 1 ? 's' : ''}</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -214,6 +256,11 @@ function App() {
         {/* Loading State */}
         {activitiesLoading && (
           <div className="text-center py-16">
+            <img
+              src="/agentqu-logo.png"
+              alt="AgentQu"
+              className="h-20 w-auto mx-auto mb-4 opacity-75"
+            />
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
             <p className="text-dark-text font-medium">Finding activities...</p>
           </div>
@@ -335,6 +382,11 @@ function App() {
 
       {/* Settings Modal */}
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+
+      {/* Geocache View Modal */}
+      {showGeocaches && (
+        <GeocacheView geocaches={geocaches} onClose={() => setShowGeocaches(false)} />
+      )}
     </div>
   );
 }

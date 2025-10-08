@@ -82,6 +82,27 @@ export const AFFINITY_CATEGORIES: AffinityCategory[] = [
     description: 'Beaches, waterfronts, coastal areas',
     subcategories: ['beaches', 'waterfront', 'coastal', 'lakefront'],
   },
+  {
+    id: 'geocaching',
+    name: 'Geocaching',
+    emoji: '🗺️',
+    description: 'Geocaching adventures, treasure hunts, outdoor exploring',
+    subcategories: ['geocaching', 'treasure_hunt', 'caching', 'outdoor_adventure'],
+  },
+  {
+    id: 'disc_golf',
+    name: 'Disc Golf',
+    emoji: '🥏',
+    description: 'Disc golf courses, frisbee golf, outdoor sports',
+    subcategories: ['disc_golf', 'frisbee_golf', 'disc_sports'],
+  },
+  {
+    id: 'skate_parks',
+    name: 'Skate Parks',
+    emoji: '🛹',
+    description: 'Skateparks, BMX, roller skating, skating spots',
+    subcategories: ['skate_parks', 'skateboarding', 'bmx', 'roller_skating'],
+  },
 
   // Water Sports & Activities
   {

@@ -1,29 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-
-interface AffinityCategory {
-  name: string;
-  emoji: string;
-  description: string;
-}
-
-const AVAILABLE_CATEGORIES: AffinityCategory[] = [
-  { name: 'local_favorites', emoji: '🍽️', description: 'Hidden gems and local spots' },
-  { name: 'museums', emoji: '🏛️', description: 'Art, history, and culture' },
-  { name: 'hiking', emoji: '🥾', description: 'Trails and outdoor adventures' },
-  { name: 'festivals', emoji: '🎉', description: 'Events and celebrations' },
-  { name: 'happy_hour', emoji: '🍻', description: 'Bars and social spots' },
-  { name: 'coffee_shops', emoji: '☕', description: 'Cafes and work-friendly spots' },
-  { name: 'fine_dining', emoji: '🍷', description: 'Upscale restaurants' },
-  { name: 'outdoor_adventure', emoji: '🏔️', description: 'Camping, climbing, and more' },
-  { name: 'live_music', emoji: '🎸', description: 'Concerts and performances' },
-  { name: 'sports', emoji: '⚽', description: 'Games and athletics' },
-  { name: 'art_culture', emoji: '🎨', description: 'Galleries and cultural centers' },
-  { name: 'nightlife', emoji: '🌃', description: 'Clubs and late-night spots' },
-  { name: 'shopping', emoji: '🛍️', description: 'Retail and boutiques' },
-  { name: 'wellness', emoji: '🧘', description: 'Spas, yoga, and fitness' },
-  { name: 'family_friendly', emoji: '👨‍👩‍👧‍👦', description: 'Kid-friendly activities' }
-];
+import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
 
 interface SettingsProps {
   onClose: () => void;
@@ -104,16 +81,16 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
           </div>
 
           <div className="space-y-4">
-            {AVAILABLE_CATEGORIES.map(category => {
-              const value = affinities[category.name] || 0;
+            {AFFINITY_CATEGORIES.map(category => {
+              const value = affinities[category.id] || 0;
               return (
-                <div key={category.name} className="bg-gray-50 rounded-xl p-4">
+                <div key={category.id} className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{category.emoji}</span>
                       <div>
                         <h4 className="font-medium text-dark-text capitalize">
-                          {category.name.replace('_', ' ')}
+                          {category.name}
                         </h4>
                         <p className="text-xs text-gray-600">{category.description}</p>
                       </div>
@@ -127,7 +104,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                     min="0"
                     max="9"
                     value={value}
-                    onChange={(e) => handleSliderChange(category.name, parseInt(e.target.value))}
+                    onChange={(e) => handleSliderChange(category.id, parseInt(e.target.value))}
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-peach"
                   />
                   <div className="flex justify-between text-xs text-gray-500 mt-1">

@@ -45,9 +45,11 @@ export function useDiscovery({ location, userId, filters = {} }: UseDiscoveryOpt
       const data = result.data as any;
 
       console.log('🔍 AGENTQU_DEBUG: Cloud Function response:', data);
+      console.log('🔍 AGENTQU_DEBUG: Response JSON:', JSON.stringify(data, null, 2));
 
       if (data.success) {
         console.log(`🔍 AGENTQU_DEBUG: Got ${data.activities?.length || 0} activities`);
+        console.log('🔍 AGENTQU_DEBUG: Metadata:', JSON.stringify(data.metadata, null, 2));
         setActivities(data.activities || []);
         setMetadata(data.metadata);
       } else {

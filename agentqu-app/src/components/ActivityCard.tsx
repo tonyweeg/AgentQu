@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Activity } from '../lib/types';
 import { useAuth } from '../hooks/useAuth';
 import QuupButton from './QuupButton';
 import CheckInButton from './CheckInButton';
 import ShareButton from './ShareButton';
+import ActivityDetails from './ActivityDetails';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -11,16 +12,28 @@ interface ActivityCardProps {
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   const { user } = useAuth();
+  const [showDetails, setShowDetails] = useState(false);
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <>
+      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
       {/* Image */}
       {activity.images && activity.images[0] && (
-        <div className="relative h-48 bg-gray-100">
+        <div
+          className="relative h-48 bg-gray-100 cursor-pointer group"
+          onClick={() => setShowDetails(true)}
+        >
           <img
             src={activity.images[0]}
             alt={activity.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+            <span className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              View Details
+            </span>
+          </div>
           {/* Type Badge */}
           <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-sm font-medium text-dark-text">
             {activity.type}
@@ -121,6 +134,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
         )}
       </div>
     </div>
+
+    {/* Activity Details Modal */}
+    {showDetails && (
+      <ActivityDetails activity={activity} onClose={() => setShowDetails(false)} />
+    )}
+  </>
   );
 };
 

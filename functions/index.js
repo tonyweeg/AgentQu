@@ -338,69 +338,60 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
   try {
     const radiusMeters = radius * 1609; // miles to meters
 
-    // Convert affinities to place types
-    const includedTypes = affinityToPlaceTypes(userAffinities);
-    console.log(`🎯 Using place types based on affinities:`, includedTypes);
+    // Convert affinities to place types (for OLD API, we'll use 'type' param)
+    const placeTypes = affinityToPlaceTypes(userAffinities);
+    console.log(`🎯 PLACES API: Using place types:`, placeTypes);
+    console.log(`🎯 PLACES API: Searching radius ${radius} miles (${radiusMeters}m) at ${lat},${lng}`);
 
-    // Use Places API (New) - nearbysearch endpoint
-    const response = await axios.post(
-      `https://places.googleapis.com/v1/places:searchNearby`,
+    // Use OLD Places API - nearbysearch endpoint
+    const response = await axios.get(
+      `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
       {
-        includedTypes: includedTypes,
-        maxResultCount: 20,
-        locationRestriction: {
-          circle: {
-            center: {
-              latitude: lat,
-              longitude: lng
-            },
-            radius: radiusMeters
-          }
-        }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos'
+        params: {
+          key: GOOGLE_PLACES_API_KEY,
+          location: `${lat},${lng}`,
+          radius: radiusMeters,
+          type: placeTypes.join('|'), // OLD API uses pipe-separated types
         }
       }
     );
 
-    console.log("🔍 PLACES API RESPONSE:", JSON.stringify(response.data, null, 2));
+    console.log(`🎯 PLACES API: Got ${response.data.results?.length || 0} places`);
+    console.log(`🎯 PLACES API: Status: ${response.data.status}`);
 
-    if (!response.data.places || response.data.places.length === 0) {
-      console.log("Google Places API returned 0 results");
-      console.log("Request params:", {lat, lng, radiusMeters, includedTypes: ["restaurant", "cafe", "park", "museum", "tourist_attraction", "bar", "night_club", "art_gallery", "shopping_mall", "movie_theater"]});
+    if (!response.data.results || response.data.results.length === 0) {
+      console.warn("🎯 PLACES API: Returned 0 results");
+      console.warn("🎯 PLACES API: Request:", {lat, lng, radiusMeters, placeTypes});
       return [];
     }
 
-    return response.data.places.map((place) => {
-      const placeLat = place.location.latitude;
-      const placeLng = place.location.longitude;
+    return response.data.results.map((place) => {
+      const placeLat = place.geometry.location.lat;
+      const placeLng = place.geometry.location.lng;
       const categories = mapPlaceTypeToCategories(place.types || []);
 
       return {
-        activityId: `place_${place.id}`,
-        name: place.displayName?.text || place.displayName || 'Unknown Place',
+        activityId: `place_${place.place_id}`,
+        name: place.name || 'Unknown Place',
         type: "permanent",
         location: {
           lat: placeLat,
           lng: placeLng,
           geohash: geohash.encode(placeLat, placeLng, 7),
           geohashPrecise: geohash.encode(placeLat, placeLng, 9),
-          address: place.formattedAddress,
-          placeId: place.id,
+          address: place.vicinity || place.formatted_address || '',
+          placeId: place.place_id,
         },
         categories,
         primaryCategory: categories[0] || place.types?.[0] || "venue",
         details: {
-          description: place.formattedAddress,
-          shortDescription: place.formattedAddress,
-          imageUrl: place.photos?.[0]?.name
-            ? `https://places.googleapis.com/v1/${place.photos[0].name}/media?key=${GOOGLE_PLACES_API_KEY}&maxHeightPx=400&maxWidthPx=400`
+          description: place.vicinity || place.formatted_address || '',
+          shortDescription: place.vicinity || place.formatted_address || '',
+          imageUrl: place.photos?.[0]?.photo_reference
+            ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${place.photos[0].photo_reference}&key=${GOOGLE_PLACES_API_KEY}`
             : null,
-          priceLevel: null,
+          website: null, // OLD API doesn't return website in nearbysearch
+          priceLevel: place.price_level || null,
         },
         schedule: {
           isOpen24Hours: false,
@@ -415,7 +406,7 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         ratings: {
           googleRating: place.rating || null,
           agentQuRating: null,
-          totalReviews: place.userRatingCount || 0,
+          totalReviews: place.user_ratings_total || 0,
           totalVotes: 0,
           upvotes: 0,
           downvotes: 0,
@@ -425,7 +416,7 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
           firstSeen: Date.now(),
           lastSearched: Date.now(),
           searchCount: 1,
-          source: "google_places",
+          source: "google_places_old_api",
           sourceId: place.place_id,
         },
         openNow: place.opening_hours?.open_now || false,
