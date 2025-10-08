@@ -146,15 +146,15 @@ function App() {
   // Loading state
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream">
+      <div className="flex items-center justify-center min-h-screen bg-seafoam">
         <div className="text-center">
           <img
             src="/agentqu-logo.png"
             alt="AgentQu"
             className="h-24 w-auto mx-auto mb-6 opacity-90"
           />
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
-          <p className="text-dark-text text-lg font-medium">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-ocean-bright border-t-transparent mx-auto mb-4"></div>
+          <p className="text-navy-text text-lg font-medium">Loading...</p>
         </div>
       </div>
     );
@@ -180,15 +180,15 @@ function App() {
   // Location permission needed
   if (locationLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream">
+      <div className="flex items-center justify-center min-h-screen bg-seafoam">
         <div className="text-center">
           <img
             src="/agentqu-logo.png"
             alt="AgentQu"
             className="h-24 w-auto mx-auto mb-6 opacity-90"
           />
-          <div className="animate-spin rounded-full h-16 w-16 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
-          <p className="text-dark-text text-lg font-medium">Getting your location...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-ocean-bright border-t-transparent mx-auto mb-4"></div>
+          <p className="text-navy-text text-lg font-medium">Getting your location...</p>
           <p className="text-gray-600 mt-2 text-sm">Please allow location access</p>
         </div>
       </div>
@@ -197,14 +197,14 @@ function App() {
 
   if (locationError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-cream">
+      <div className="flex items-center justify-center min-h-screen bg-seafoam">
         <div className="text-center max-w-md p-6">
           <div className="text-6xl mb-4">📍</div>
-          <h2 className="text-2xl font-bold text-dark-text mb-3">Location Access Required</h2>
+          <h2 className="text-2xl font-bold text-navy-text mb-3">Location Access Required</h2>
           <p className="text-gray-600 mb-6">AgentQu needs your location to find activities near you.</p>
           <button
             onClick={requestLocation}
-            className="bg-peach text-white px-8 py-3 rounded-xl hover:bg-peach/90 transition-colors font-medium"
+            className="bg-ocean-bright text-white px-8 py-3 rounded-xl hover:bg-ocean-mid transition-colors font-medium"
           >
             Enable Location
           </button>
@@ -215,7 +215,7 @@ function App() {
 
   // Main app - show discoveries
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen bg-transparent">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
@@ -241,11 +241,11 @@ function App() {
             {location && (
               <div className="hidden lg:flex items-center gap-3">
                 {/* Location Display */}
-                <div className="flex items-center gap-2 bg-gradient-to-r from-peach/10 to-orange-100/50 px-4 py-2.5 rounded-full border border-peach/20">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/10 to-orange-100/50 px-4 py-2.5 rounded-full border border-ocean-bright/20">
                   <span className="text-lg">📍</span>
                   {city && state ? (
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-dark-text leading-tight">
+                      <span className="text-sm font-bold text-navy-text leading-tight">
                         {city}, {state}
                       </span>
                       <span className="text-xs text-gray-500">
@@ -279,7 +279,7 @@ function App() {
                               setManualLocation({ lat: town.lat, lng: town.lng });
                               setRefreshKey(prev => prev + 1);
                             }}
-                            className="w-full text-left px-3 py-2 hover:bg-peach/10 rounded-md text-sm text-gray-700 hover:text-peach transition-colors flex items-center justify-between"
+                            className="w-full text-left px-3 py-2 hover:bg-ocean-bright/10 rounded-md text-sm text-gray-700 hover:text-ocean-bright transition-colors flex items-center justify-between"
                           >
                             <span>{town.name}</span>
                             <span className="text-xs text-gray-400">{town.distance.toFixed(0)} mi</span>
@@ -312,8 +312,8 @@ function App() {
                   onClick={() => setViewMode('offgrid')}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
                     viewMode === 'offgrid'
-                      ? 'bg-dark-text text-white shadow-md'
-                      : 'bg-white text-dark-text hover:bg-gray-50 border border-gray-200'
+                      ? 'bg-ocean-deep text-white shadow-md'
+                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
                   }`}
                 >
                   <span className="text-lg">🏕️</span>
@@ -323,7 +323,7 @@ function App() {
                 {geocaches.length > 0 && (
                   <button
                     onClick={() => setShowGeocaches(true)}
-                    className="flex items-center gap-2 bg-peach/10 hover:bg-peach/20 text-peach px-4 py-2.5 rounded-full text-sm font-medium transition-colors h-[42px]"
+                    className="flex items-center gap-2 bg-ocean-bright/10 hover:bg-ocean-bright/20 text-ocean-bright px-4 py-2.5 rounded-full text-sm font-medium transition-colors h-[42px]"
                   >
                     <span className="text-lg">🗺️</span>
                     <span>{geocaches.length} Geocache{geocaches.length !== 1 ? 's' : ''}</span>
@@ -336,7 +336,7 @@ function App() {
             <div className="hidden lg:flex items-center gap-4">
               <button
                 onClick={() => setShowSettings(true)}
-                className="text-sm text-gray-600 hover:text-peach transition-colors font-medium"
+                className="text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
               >
                 ⚙️ Settings
               </button>
@@ -344,12 +344,12 @@ function App() {
                 <img
                   src={profile.photoURL}
                   alt={profile.displayName || 'User'}
-                  className="w-10 h-10 rounded-full border-2 border-peach"
+                  className="w-10 h-10 rounded-full border-2 border-ocean-bright"
                 />
               )}
               <button
                 onClick={signOut}
-                className="text-sm text-gray-600 hover:text-peach transition-colors"
+                className="text-sm text-gray-600 hover:text-ocean-bright transition-colors"
               >
                 Sign Out
               </button>
@@ -375,10 +375,10 @@ function App() {
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-3">
               {/* Location Display */}
               {location && city && state && (
-                <div className="flex items-center gap-2 bg-gradient-to-r from-peach/10 to-orange-100/50 px-4 py-2.5 rounded-full border border-peach/20">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/10 to-orange-100/50 px-4 py-2.5 rounded-full border border-ocean-bright/20">
                   <span className="text-lg">📍</span>
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-dark-text leading-tight">
+                    <span className="text-sm font-bold text-navy-text leading-tight">
                       {city}, {state}
                     </span>
                     <span className="text-xs text-gray-500">
@@ -396,8 +396,8 @@ function App() {
                 }}
                 className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all ${
                   viewMode === 'offgrid'
-                    ? 'bg-dark-text text-white shadow-md'
-                    : 'bg-white text-dark-text hover:bg-gray-50 border border-gray-200'
+                    ? 'bg-ocean-deep text-white shadow-md'
+                    : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
                 }`}
               >
                 <span className="text-lg">🏕️</span>
@@ -416,7 +416,7 @@ function App() {
                         setRefreshKey(prev => prev + 1);
                         setShowMobileMenu(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-peach/10 rounded-md text-sm text-gray-700 hover:text-peach transition-colors flex items-center justify-between"
+                      className="w-full text-left px-4 py-2 hover:bg-ocean-bright/10 rounded-md text-sm text-gray-700 hover:text-ocean-bright transition-colors flex items-center justify-between"
                     >
                       <span>{town.name}</span>
                       <span className="text-xs text-gray-400">{town.distance.toFixed(0)} mi</span>
@@ -445,7 +445,7 @@ function App() {
                     setShowGeocaches(true);
                     setShowMobileMenu(false);
                   }}
-                  className="w-full flex items-center gap-2 bg-peach/10 hover:bg-peach/20 text-peach px-4 py-2.5 rounded-full text-sm font-medium transition-colors"
+                  className="w-full flex items-center gap-2 bg-ocean-bright/10 hover:bg-ocean-bright/20 text-ocean-bright px-4 py-2.5 rounded-full text-sm font-medium transition-colors"
                 >
                   <span className="text-lg">🗺️</span>
                   <span>{geocaches.length} Geocache{geocaches.length !== 1 ? 's' : ''}</span>
@@ -458,7 +458,7 @@ function App() {
                   setShowSettings(true);
                   setShowMobileMenu(false);
                 }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:text-peach transition-colors font-medium"
+                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
               >
                 ⚙️ Settings
               </button>
@@ -469,14 +469,14 @@ function App() {
                   <img
                     src={profile.photoURL}
                     alt={profile.displayName || 'User'}
-                    className="w-10 h-10 rounded-full border-2 border-peach"
+                    className="w-10 h-10 rounded-full border-2 border-ocean-bright"
                   />
                 )}
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-dark-text">{profile.displayName || 'User'}</div>
+                  <div className="text-sm font-medium text-navy-text">{profile.displayName || 'User'}</div>
                   <button
                     onClick={signOut}
-                    className="text-xs text-gray-600 hover:text-peach transition-colors"
+                    className="text-xs text-gray-600 hover:text-ocean-bright transition-colors"
                   >
                     Sign Out
                   </button>
@@ -514,7 +514,7 @@ function App() {
                   onClick={() => setViewMode('list')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     viewMode === 'list'
-                      ? 'bg-white text-peach shadow-sm'
+                      ? 'bg-white text-ocean-bright shadow-sm'
                       : 'text-gray-600'
                   }`}
                 >
@@ -524,7 +524,7 @@ function App() {
                   onClick={() => setViewMode('map')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     viewMode === 'map'
-                      ? 'bg-white text-peach shadow-sm'
+                      ? 'bg-white text-ocean-bright shadow-sm'
                       : 'text-gray-600'
                   }`}
                 >
@@ -560,7 +560,7 @@ function App() {
                       />
                       <div className="flex justify-between mt-0.5">
                         <span className="text-xs text-gray-400">1</span>
-                        <span className="text-xs font-bold text-dark-text">{radius} mi</span>
+                        <span className="text-xs font-bold text-navy-text">{radius} mi</span>
                         <span className="text-xs text-gray-400">50</span>
                       </div>
                     </div>
@@ -588,7 +588,7 @@ function App() {
                       <button
                         onClick={() => setRefreshKey(prev => prev + 1)}
                         disabled={activitiesLoading}
-                        className="px-2.5 py-1 bg-peach text-white rounded text-xs font-medium hover:bg-peach/90 transition-colors disabled:opacity-50"
+                        className="px-2.5 py-1 bg-ocean-bright text-white rounded text-xs font-medium hover:bg-ocean-bright/90 transition-colors disabled:opacity-50"
                       >
                         🔄
                       </button>
@@ -612,7 +612,7 @@ function App() {
                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">About This Area</h3>
                     {city && state ? (
                       <div>
-                        <p className="text-lg font-bold text-dark-text mb-2">{city}, {state}</p>
+                        <p className="text-lg font-bold text-navy-text mb-2">{city}, {state}</p>
                         <p className="text-sm text-gray-600 leading-relaxed">
                           {locationInfo || 'Loading local information...'}
                         </p>
@@ -643,7 +643,7 @@ function App() {
                       />
                       <div className="flex justify-between mt-1">
                         <span className="text-xs text-gray-400">1</span>
-                        <span className="text-sm font-bold text-dark-text">{radius} mi</span>
+                        <span className="text-sm font-bold text-navy-text">{radius} mi</span>
                         <span className="text-xs text-gray-400">50</span>
                       </div>
                     </div>
@@ -679,7 +679,7 @@ function App() {
                     <button
                       onClick={() => setRefreshKey(prev => prev + 1)}
                       disabled={activitiesLoading}
-                      className="w-full px-3 py-1.5 bg-peach text-white rounded-md text-xs font-medium hover:bg-peach/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      className="w-full px-3 py-1.5 bg-ocean-bright text-white rounded-md text-xs font-medium hover:bg-ocean-bright/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                     >
                       <span>🔄</span>
                       <span>Refresh</span>
@@ -718,8 +718,8 @@ function App() {
               alt="AgentQu"
               className="h-20 w-auto mx-auto mb-4 opacity-75"
             />
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-peach border-t-transparent mx-auto mb-4"></div>
-            <p className="text-dark-text font-medium">Finding activities...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-ocean-bright border-t-transparent mx-auto mb-4"></div>
+            <p className="text-navy-text font-medium">Finding activities...</p>
           </div>
         )}
 
@@ -736,7 +736,7 @@ function App() {
             {activities.length === 0 ? (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-bold text-dark-text mb-2">No activities found</h3>
+                <h3 className="text-xl font-bold text-navy-text mb-2">No activities found</h3>
                 <p className="text-gray-600">Try expanding your search radius</p>
               </div>
             ) : (
@@ -753,7 +753,7 @@ function App() {
 
                     {/* Rich Activity List with Details */}
                     <div className="bg-white rounded-2xl shadow-sm p-6">
-                      <h3 className="text-xl font-bold text-dark-text mb-4">Activities on Map</h3>
+                      <h3 className="text-xl font-bold text-navy-text mb-4">Activities on Map</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {activities.slice(0, 12).map((activity) => {
                           // Check for images in multiple possible locations
@@ -777,7 +777,7 @@ function App() {
                                       e.currentTarget.style.display = 'none';
                                       const parent = e.currentTarget.parentElement;
                                       if (parent) {
-                                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-peach/20 to-orange-100/50"><span class="text-6xl">${
+                                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-ocean-bright/20 to-orange-100/50"><span class="text-6xl">${
                                           activity.primaryCategory === 'hiking' ? '🥾' :
                                           activity.primaryCategory === 'events' ? '🎉' :
                                           activity.primaryCategory === 'food_and_dining' ? '🍽️' :
@@ -792,7 +792,7 @@ function App() {
                                   />
                                 </div>
                               ) : (
-                                <div className="h-48 bg-gradient-to-br from-peach/20 to-orange-100/50 flex items-center justify-center">
+                                <div className="h-48 bg-gradient-to-br from-ocean-bright/20 to-orange-100/50 flex items-center justify-center">
                                   <span className="text-6xl">
                                     {activity.primaryCategory === 'hiking' ? '🥾' :
                                      activity.primaryCategory === 'events' ? '🎉' :
@@ -808,13 +808,13 @@ function App() {
 
                               {/* Content */}
                               <div className="p-4">
-                                <h4 className="font-bold text-base text-dark-text mb-2 line-clamp-2">
+                                <h4 className="font-bold text-base text-navy-text mb-2 line-clamp-2">
                                   {activity.name}
                                 </h4>
 
                                 {/* Category & Distance */}
                                 <div className="flex items-center gap-2 mb-3">
-                                  <span className="text-xs bg-peach/10 text-peach px-2 py-1 rounded-full font-medium capitalize">
+                                  <span className="text-xs bg-ocean-bright/10 text-ocean-bright px-2 py-1 rounded-full font-medium capitalize">
                                     {activity.primaryCategory?.replace(/_/g, ' ')}
                                   </span>
                                   <span className="text-xs text-gray-600">
@@ -893,7 +893,7 @@ function App() {
                                 {activity.score !== undefined && (
                                   <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                                     <span className="text-xs text-gray-600">Match Score</span>
-                                    <span className="text-sm font-bold text-peach">
+                                    <span className="text-sm font-bold text-ocean-bright">
                                       {activity.score >= 300 ? '⭐⭐⭐⭐⭐' :
                                        activity.score >= 250 ? '⭐⭐⭐⭐' :
                                        activity.score >= 200 ? '⭐⭐⭐' :
@@ -983,7 +983,7 @@ function App() {
                             <div key={category}>
                               {/* Category Header */}
                               <div className="mb-4">
-                                <h3 className="text-xl font-bold text-dark-text capitalize">
+                                <h3 className="text-xl font-bold text-navy-text capitalize">
                                   {category.replace(/_/g, ' ')}
                                 </h3>
                                 <p className="text-sm text-gray-600">
@@ -1007,7 +1007,7 @@ function App() {
                     {activities.length > 3 && (
                       <div className="mt-12">
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-6">
-                          <h3 className="text-2xl font-bold text-dark-text mb-2">
+                          <h3 className="text-2xl font-bold text-navy-text mb-2">
                             ✨ Try Something New
                           </h3>
                           <p className="text-gray-600">

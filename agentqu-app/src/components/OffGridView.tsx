@@ -55,7 +55,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-3xl font-bold text-dark-text flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-navy-text flex items-center gap-3">
               <span className="text-4xl">🏕️</span>
               <span>Off Grid</span>
             </h2>
@@ -80,7 +80,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
             </div>
             <button
               type="submit"
-              className="bg-dark-text text-white hover:bg-gray-800 px-6 py-3 rounded-xl font-bold transition-colors"
+              className="bg-ocean-deep text-white hover:bg-ocean-mid px-6 py-3 rounded-xl font-bold transition-colors"
             >
               Search
             </button>
@@ -90,11 +90,11 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
         {/* Stats */}
         <div className="flex gap-4">
           <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-dark-text">{offGridActivities.length}</div>
+            <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
             <div className="text-xs text-gray-600">Activities</div>
           </div>
           <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-dark-text">{Object.keys(groupedActivities).length}</div>
+            <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
             <div className="text-xs text-gray-600">Categories</div>
           </div>
         </div>
@@ -122,10 +122,10 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
 
               return (
                 <div>
-                  <h3 className="text-2xl font-bold text-dark-text mb-4 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-navy-text mb-4 flex items-center gap-2">
                     <span>🥾</span>
                     <span>Hiking & Trails</span>
-                    <span className="text-sm bg-gray-100 text-dark-text px-2 py-1 rounded-full">
+                    <span className="text-sm bg-gray-100 text-navy-text px-2 py-1 rounded-full">
                       {hikingActivities.length}
                     </span>
                   </h3>
@@ -150,10 +150,10 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
 
               return (
                 <div>
-                  <h3 className="text-2xl font-bold text-dark-text mb-4 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-navy-text mb-4 flex items-center gap-2">
                     <span>🌲</span>
                     <span>Parks & Nature</span>
-                    <span className="text-sm bg-gray-100 text-dark-text px-2 py-1 rounded-full">
+                    <span className="text-sm bg-gray-100 text-navy-text px-2 py-1 rounded-full">
                       {parksActivities.length}
                     </span>
                   </h3>
@@ -177,10 +177,10 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
 
               return (
                 <div>
-                  <h3 className="text-2xl font-bold text-dark-text mb-4 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-navy-text mb-4 flex items-center gap-2">
                     <span>⚽</span>
                     <span>Sports & Recreation</span>
-                    <span className="text-sm bg-gray-100 text-dark-text px-2 py-1 rounded-full">
+                    <span className="text-sm bg-gray-100 text-navy-text px-2 py-1 rounded-full">
                       {sportsActivities.length}
                     </span>
                   </h3>
@@ -208,10 +208,10 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
 
               return (
                 <div>
-                  <h3 className="text-2xl font-bold text-dark-text mb-4 flex items-center gap-2">
+                  <h3 className="text-2xl font-bold text-navy-text mb-4 flex items-center gap-2">
                     <span>🏞️</span>
                     <span>Other Outdoor Activities</span>
-                    <span className="text-sm bg-gray-100 text-dark-text px-2 py-1 rounded-full">
+                    <span className="text-sm bg-gray-100 text-navy-text px-2 py-1 rounded-full">
                       {otherActivities.length}
                     </span>
                   </h3>

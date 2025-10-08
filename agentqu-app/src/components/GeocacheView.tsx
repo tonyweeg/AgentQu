@@ -10,11 +10,11 @@ interface GeocacheViewProps {
 const GeocacheView: React.FC<GeocacheViewProps> = ({ geocaches, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-cream rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="sticky top-0 bg-white rounded-t-3xl shadow-sm p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-3xl font-bold text-dark-text mb-1">
+            <h2 className="text-3xl font-bold text-navy-text mb-1">
               📍 Geocaches Nearby
             </h2>
             <p className="text-gray-600">
@@ -36,7 +36,7 @@ const GeocacheView: React.FC<GeocacheViewProps> = ({ geocaches, onClose }) => {
           {geocaches.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-bold text-dark-text mb-2">No Geocaches Found</h3>
+              <h3 className="text-xl font-bold text-navy-text mb-2">No Geocaches Found</h3>
               <p className="text-gray-600">Try expanding your search radius to find geocaches nearby</p>
             </div>
           ) : (

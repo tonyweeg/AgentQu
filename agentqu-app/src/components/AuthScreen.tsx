@@ -32,12 +32,12 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-4">
+    <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-peach mb-3">AgentQu</h1>
-          <p className="text-xl text-dark-text mb-2">
+          <h1 className="text-5xl font-bold text-ocean-bright mb-3">AgentQu</h1>
+          <p className="text-xl text-navy-text mb-2">
             Discover what's happening near you
           </p>
           <p className="text-gray-600">
@@ -47,7 +47,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
         {/* Sign In Card */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-dark-text mb-6 text-center">
+          <h2 className="text-2xl font-bold text-navy-text mb-6 text-center">
             Get Started
           </h2>
 
@@ -60,11 +60,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full bg-white border-2 border-gray-300 hover:border-peach text-dark-text font-medium py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-white border-2 border-gray-300 hover:border-ocean-bright text-navy-text font-medium py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-peach border-t-transparent"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-ocean-bright border-t-transparent"></div>
                 <span>Signing in...</span>
               </>
             ) : (

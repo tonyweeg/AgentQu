@@ -9,7 +9,9 @@ body {
   font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #F5EDE4;
+  background: linear-gradient(135deg, #E8F6F3 0%, #D0EEE8 50%, #B8E6DD 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 code {

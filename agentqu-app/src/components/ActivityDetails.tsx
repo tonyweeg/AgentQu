@@ -34,7 +34,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
           {/* Title and Score */}
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
-              <h2 className="text-3xl font-bold text-dark-text mb-2">{activity.name}</h2>
+              <h2 className="text-3xl font-bold text-navy-text mb-2">{activity.name}</h2>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <span className="font-medium">{activity.distance?.toFixed(1)} mi away</span>
                 <span>•</span>
@@ -48,7 +48,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
               </div>
             </div>
             {activity.score !== undefined && (
-              <div className="bg-peach/20 text-peach px-5 py-2 rounded-full text-lg font-bold ml-4">
+              <div className="bg-ocean-bright/20 text-ocean-bright px-5 py-2 rounded-full text-lg font-bold ml-4">
                 {activity.score}
               </div>
             )}
@@ -99,7 +99,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
           {/* Description */}
           {activity.description && (
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-dark-text mb-2">About</h3>
+              <h3 className="text-xl font-bold text-navy-text mb-2">About</h3>
               <p className="text-gray-700 leading-relaxed">{activity.description}</p>
             </div>
           )}
@@ -107,7 +107,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
           {/* Location */}
           {activity.address && (
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-dark-text mb-2">Location</h3>
+              <h3 className="text-xl font-bold text-navy-text mb-2">Location</h3>
               <p className="text-gray-700">{activity.address}</p>
               {activity.city && activity.state && (
                 <p className="text-gray-600">
@@ -120,7 +120,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
           {/* Categories */}
           {activity.categories && activity.categories.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-dark-text mb-2">Categories</h3>
+              <h3 className="text-xl font-bold text-navy-text mb-2">Categories</h3>
               <div className="flex flex-wrap gap-2">
                 {activity.categories.map((cat, idx) => (
                   <span
@@ -141,7 +141,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
                 href={activity.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-peach text-white px-6 py-3 rounded-xl hover:bg-peach/90 transition-colors font-medium text-center"
+                className="flex-1 bg-ocean-bright text-white px-6 py-3 rounded-xl hover:bg-ocean-bright/90 transition-colors font-medium text-center"
               >
                 Visit Website
               </a>

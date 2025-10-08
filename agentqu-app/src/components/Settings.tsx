@@ -60,7 +60,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-dark-text">Settings</h2>
+            <h2 className="text-2xl font-bold text-navy-text">Settings</h2>
             <p className="text-gray-600 mt-1">Manage your discovery preferences</p>
           </div>
           <button
@@ -74,7 +74,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
         {/* Affinity Categories */}
         <div className="p-6 space-y-6">
           <div>
-            <h3 className="text-lg font-bold text-dark-text mb-2">Your Interests</h3>
+            <h3 className="text-lg font-bold text-navy-text mb-2">Your Interests</h3>
             <p className="text-sm text-gray-600 mb-4">
               Adjust the sliders to tell us what you're interested in. This helps us find better activities for you!
             </p>
@@ -89,13 +89,13 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{category.emoji}</span>
                       <div>
-                        <h4 className="font-medium text-dark-text capitalize">
+                        <h4 className="font-medium text-navy-text capitalize">
                           {category.name}
                         </h4>
                         <p className="text-xs text-gray-600">{category.description}</p>
                       </div>
                     </div>
-                    <span className="text-sm font-medium text-peach">
+                    <span className="text-sm font-medium text-ocean-bright">
                       {getAffinityLevel(value)}
                     </span>
                   </div>
@@ -105,7 +105,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
                     max="9"
                     value={value}
                     onChange={(e) => handleSliderChange(category.id, parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-peach"
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-ocean-bright"
                   />
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>Not interested</span>
@@ -127,7 +127,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 px-6 py-3 bg-peach text-white rounded-xl hover:bg-peach/90 transition-colors font-medium disabled:opacity-50"
+              className="flex-1 px-6 py-3 bg-ocean-bright text-white rounded-xl hover:bg-ocean-bright/90 transition-colors font-medium disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

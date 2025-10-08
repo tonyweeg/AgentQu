@@ -30,7 +30,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
             </span>
           </div>
           {/* Type Badge */}
-          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-sm font-medium text-dark-text">
+          <div className="absolute top-3 right-3 bg-white/95 backdrop-blur px-3 py-1 rounded-full text-sm font-medium text-navy-text">
             {activity.type}
           </div>
         </div>
@@ -40,7 +40,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="font-bold text-xl mb-2 text-dark-text">{activity.name}</h3>
+            <h3 className="font-bold text-xl mb-2 text-navy-text">{activity.name}</h3>
 
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span className="font-medium">{activity.distance?.toFixed(1)} mi</span>
@@ -68,19 +68,19 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
                 if (activity.score >= 300) {
                   qLevel = 5;
                   qLabel = "Perfect match!";
-                  qColor = "bg-gradient-to-r from-peach to-orange-500";
+                  qColor = "bg-gradient-to-r from-coral to-sand";
                 } else if (activity.score >= 250) {
                   qLevel = 4;
                   qLabel = "You'll love it";
-                  qColor = "bg-gradient-to-r from-orange-400 to-peach";
+                  qColor = "bg-gradient-to-r from-sand to-coral";
                 } else if (activity.score >= 200) {
                   qLevel = 3;
                   qLabel = "Good match";
-                  qColor = "bg-yellow-500";
+                  qColor = "bg-ocean-bright";
                 } else if (activity.score >= 150) {
                   qLevel = 2;
                   qLabel = "Might like it";
-                  qColor = "bg-blue-400";
+                  qColor = "bg-ocean-mid";
                 }
 
                 return (
@@ -100,7 +100,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
                       ))}
                     </div>
                     {/* Q Label */}
-                    <div className="text-xs font-bold text-dark-text whitespace-nowrap">
+                    <div className="text-xs font-bold text-navy-text whitespace-nowrap">
                       {qLabel}
                     </div>
                   </>
@@ -161,7 +161,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           {(activity as any).details?.phone && (
             <div className="flex items-center gap-2 text-sm">
               <span className="text-gray-500">📞</span>
-              <a href={`tel:${(activity as any).details.phone}`} className="text-peach hover:underline font-medium">
+              <a href={`tel:${(activity as any).details.phone}`} className="text-ocean-bright hover:underline font-medium">
                 {(activity as any).details.phone}
               </a>
             </div>
@@ -175,7 +175,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
                 href={activity.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-peach hover:underline font-medium truncate"
+                className="text-ocean-bright hover:underline font-medium truncate"
               >
                 Visit Website
               </a>
@@ -195,7 +195,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           {/* View on Map Button */}
           <button
             onClick={() => setShowDetails(true)}
-            className="w-full mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-dark-text rounded-lg text-sm font-medium transition-colors"
+            className="w-full mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-text rounded-lg text-sm font-medium transition-colors"
           >
             View Full Details
           </button>

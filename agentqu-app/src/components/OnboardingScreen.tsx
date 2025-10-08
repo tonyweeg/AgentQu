@@ -32,11 +32,11 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
   const firstName = userName.split(' ')[0];
 
   return (
-    <div className="min-h-screen bg-cream p-4 pb-24">
+    <div className="min-h-screen bg-transparent p-4 pb-24">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 pt-8">
-          <h1 className="text-4xl font-bold text-dark-text mb-3">
+          <h1 className="text-4xl font-bold text-navy-text mb-3">
             Welcome, {firstName}! 👋
           </h1>
           <p className="text-xl text-gray-700 mb-2">
@@ -50,7 +50,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
         {/* Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-            <span className="font-medium text-peach">
+            <span className="font-medium text-ocean-bright">
               {selectedCategories.size} selected
             </span>
             <span>•</span>
@@ -70,22 +70,22 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
                   p-6 rounded-2xl border-2 transition-all text-left
                   ${
                     isSelected
-                      ? 'bg-peach/10 border-peach shadow-md scale-105'
-                      : 'bg-white border-gray-200 hover:border-peach/50 hover:shadow-sm'
+                      ? 'bg-ocean-bright/10 border-ocean-bright shadow-md scale-105'
+                      : 'bg-white border-gray-200 hover:border-ocean-bright/50 hover:shadow-sm'
                   }
                 `}
               >
                 <div className="flex items-start gap-3">
                   <span className="text-4xl">{category.emoji}</span>
                   <div className="flex-1">
-                    <h3 className="font-bold text-dark-text mb-1">{category.name}</h3>
+                    <h3 className="font-bold text-navy-text mb-1">{category.name}</h3>
                     <p className="text-sm text-gray-600 line-clamp-2">
                       {category.description}
                     </p>
                   </div>
                   {isSelected && (
                     <div className="flex-shrink-0">
-                      <div className="w-6 h-6 bg-peach rounded-full flex items-center justify-center">
+                      <div className="w-6 h-6 bg-ocean-bright rounded-full flex items-center justify-center">
                         <svg
                           className="w-4 h-4 text-white"
                           fill="none"
@@ -122,7 +122,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
           <button
             onClick={handleContinue}
             disabled={selectedCategories.size < 3}
-            className="bg-peach hover:bg-peach/90 text-white font-bold py-4 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-ocean-bright hover:bg-ocean-bright/90 text-white font-bold py-4 px-8 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Continue
           </button>
