@@ -52,7 +52,6 @@ interface ActivityMapProps {
 
 // Component to handle map drag events with manual search button
 function MapDragHandler({ onLocationChange }: { onLocationChange?: (lat: number, lng: number) => void }) {
-  const [showSearchButton, setShowSearchButton] = useState(false);
   const [pendingCenter, setPendingCenter] = useState<{ lat: number; lng: number } | null>(null);
   const map = useMap();
 
@@ -65,68 +64,65 @@ function MapDragHandler({ onLocationChange }: { onLocationChange?: (lat: number,
       console.log('🗺️ MAP_DEBUG: New center:', center.lat, center.lng);
 
       setPendingCenter({ lat: center.lat, lng: center.lng });
-      setShowSearchButton(true);
     },
   });
 
   const handleSearchClick = () => {
     console.log('🗺️ MAP_DEBUG: Search button clicked');
-    if (pendingCenter && onLocationChange) {
-      console.log('🗺️ MAP_DEBUG: Calling onLocationChange callback with:', pendingCenter);
-      onLocationChange(pendingCenter.lat, pendingCenter.lng);
-      setShowSearchButton(false);
+    const center = map.getCenter();
+    const currentCenter = pendingCenter || { lat: center.lat, lng: center.lng };
+
+    if (onLocationChange) {
+      console.log('🗺️ MAP_DEBUG: Calling onLocationChange callback with:', currentCenter);
+      onLocationChange(currentCenter.lat, currentCenter.lng);
       setPendingCenter(null);
     }
   };
 
-  if (showSearchButton) {
-    return (
-      <div
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        zIndex: 1000,
+      }}
+    >
+      <button
+        onClick={handleSearchClick}
         style={{
-          position: 'absolute',
-          top: '80px',
-          left: '10px',
-          zIndex: 1000,
+          background: 'white',
+          color: '#003D5B',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          border: '2px solid rgba(0,0,0,0.2)',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          cursor: 'pointer',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          fontFamily: 'Arial, sans-serif',
+          whiteSpace: 'nowrap',
         }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = '#30B1BB';
+          e.currentTarget.style.color = 'white';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = 'white';
+          e.currentTarget.style.color = '#003D5B';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        title="Search this area"
       >
-        <button
-          onClick={handleSearchClick}
-          style={{
-            background: 'white',
-            color: '#003D5B',
-            padding: '0',
-            width: '30px',
-            height: '30px',
-            borderRadius: '4px',
-            border: '2px solid rgba(0,0,0,0.2)',
-            fontWeight: 'bold',
-            fontSize: '18px',
-            cursor: 'pointer',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: 'Arial, sans-serif',
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = '#30B1BB';
-            e.currentTarget.style.color = 'white';
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = 'white';
-            e.currentTarget.style.color = '#003D5B';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-          title="Search this area"
-        >
-          Q
-        </button>
-      </div>
-    );
-  }
-
-  return null;
+        <span style={{ fontSize: '16px', fontWeight: 'bold' }}>Q</span>
+        <span>AgentQu Search</span>
+      </button>
+    </div>
+  );
 }
 
 // Component to update map center when location changes
