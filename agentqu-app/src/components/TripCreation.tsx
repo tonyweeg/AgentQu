@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { TripPlan } from '../lib/types';
+import { TripPlan, Activity } from '../lib/types';
+import ActivityCard from './ActivityCard';
 
 const TripCreation: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,6 +17,10 @@ const TripCreation: React.FC = () => {
 
   // Trip data after geocoding
   const [tripLocation, setTripLocation] = useState<{ lat: number; lng: number; address: string; city: string; state: string } | null>(null);
+
+  // Activities discovered for trip location
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
 
   const handleContinue = async () => {
     if (step === 1 && destination && startDate && endDate) {
@@ -52,6 +57,40 @@ const TripCreation: React.FC = () => {
       }
     }
   };
+
+  // Fetch activities when we get to step 2
+  useEffect(() => {
+    if (step === 2 && tripLocation && user && profile) {
+      const fetchActivities = async () => {
+        setLoadingActivities(true);
+        try {
+          const { getFunctions, httpsCallable } = await import('firebase/functions');
+          const functions = getFunctions();
+          const discoverActivities = httpsCallable(functions, 'discoverActivities');
+
+          console.log('🎯 Discovering activities for trip:', tripLocation);
+          const result = await discoverActivities({
+            location: { lat: tripLocation.lat, lng: tripLocation.lng },
+            userId: user.uid,
+            filters: { maxDistance: 25 }, // Larger radius for trip planning
+            enablePlaces: true,
+            enableCustomSearch: true,
+          });
+
+          const data = result.data as { success: boolean; activities?: Activity[]; error?: string };
+          if (data.success && data.activities) {
+            setActivities(data.activities);
+          }
+        } catch (err) {
+          console.error('Error fetching activities:', err);
+        } finally {
+          setLoadingActivities(false);
+        }
+      };
+
+      fetchActivities();
+    }
+  }, [step, tripLocation, user, profile]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-seafoam to-white p-4">
@@ -192,13 +231,41 @@ const TripCreation: React.FC = () => {
               </div>
             </div>
 
-            {/* Coming Soon */}
-            <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
-              <p className="text-gray-500 text-lg mb-2">🎯 Activity Discovery</p>
-              <p className="text-sm text-gray-400">
-                Next: Discover personalized activities for your trip dates and location
-              </p>
+            {/* Activities Section */}
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-navy-text mb-4">
+                🎯 Suggested Activities
+              </h3>
+
+              {loadingActivities ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-ocean-bright border-t-transparent mx-auto mb-4"></div>
+                  <p className="text-gray-500">Discovering activities...</p>
+                </div>
+              ) : activities.length > 0 ? (
+                <div className="space-y-4">
+                  {activities.slice(0, 6).map((activity) => (
+                    <ActivityCard key={activity.id} activity={activity} />
+                  ))}
+                  {activities.length > 6 && (
+                    <p className="text-center text-sm text-gray-500 mt-4">
+                      +{activities.length - 6} more activities available
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-xl">
+                  <p className="text-gray-500">No activities found for this location</p>
+                </div>
+              )}
             </div>
+
+            {/* Save Trip Button */}
+            <button
+              className="w-full bg-ocean-bright hover:bg-ocean-mid text-white font-bold py-4 rounded-lg text-lg transition-colors shadow-md"
+            >
+              Save Trip
+            </button>
           </div>
         )}
       </div>

@@ -164,7 +164,10 @@ export interface TripPlan {
 }
 
 export interface TripParticipant {
-  userId: string;
+  userId?: string; // Optional if family member hasn't registered yet
+  familyMemberId?: string; // Reference to FamilyMember if applicable
+  nickname: string; // Display name for the participant
+  relationship?: string; // "daughter", "spouse", etc.
   role: 'owner' | 'editor' | 'viewer';
   invitedAt: number;
   joinedAt?: number;
@@ -249,4 +252,43 @@ export interface SolarForecast {
     time: string;
     value: number;
   }[];
+}
+
+// ============================================
+// FAMILY GRAPH: Family Member Management
+// ============================================
+
+export interface FamilyMember {
+  familyMemberId: string;
+  userId?: string; // Optional - only if they've registered
+
+  // Relationship to the owner
+  ownerUserId: string; // Who owns this family member record
+  relationship: string; // "daughter", "son", "spouse", "parent", "friend", etc.
+  nickname: string; // Display name (e.g., "Emma", "Dad", "Sarah")
+
+  // Contact info (for invites if they haven't registered)
+  email?: string;
+  phone?: string;
+
+  // Their preferences (for trip planning)
+  affinities?: Record<string, number>;
+
+  // Status
+  status: 'invited' | 'registered' | 'active';
+  invitedAt?: number;
+  joinedAt?: number;
+
+  // Metadata
+  avatarUrl?: string;
+  age?: number;
+  allergies?: string[]; // For pollen/food warnings
+  notes?: string;
+}
+
+export interface FamilyGraph {
+  ownerId: string; // Primary account holder
+  members: FamilyMember[];
+  createdAt: number;
+  updatedAt: number;
 }
