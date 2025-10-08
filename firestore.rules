@@ -163,6 +163,44 @@ service cloud.firestore {
     }
 
     // ========================================================================
+    // TRIPS COLLECTION (There-Then Trip Planning)
+    // ========================================================================
+
+    match /trips/{tripId} {
+      // Users can read trips they created or are invited to
+      allow read: if isAuthenticated() &&
+                     (resource.data.createdBy == request.auth.uid ||
+                      resource.data.sharing.isPublic == true);
+
+      // Users can create trips
+      allow create: if isAuthenticated() && request.resource.data.createdBy == request.auth.uid;
+
+      // Users can update their own trips
+      allow update: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+
+      // Users can delete their own trips
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // ========================================================================
+    // CIRQLES COLLECTION (Family & Friends Circles)
+    // ========================================================================
+
+    match /cirqles/{cirqleId} {
+      // Users can read their own Cirqle (where they're the owner)
+      allow read: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // Users can create their own Cirqle
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+
+      // Users can update their own Cirqle
+      allow update: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+
+      // Users can delete their own Cirqle
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+    }
+
+    // ========================================================================
     // DEFAULT DENY
     // ========================================================================
 
