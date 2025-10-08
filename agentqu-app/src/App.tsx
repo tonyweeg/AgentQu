@@ -130,14 +130,21 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setViewMode('list');
+                  setShowSettings(false);
+                  setShowGeocaches(false);
+                }}
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+              >
                 <img
                   src="/agentqu-glyph.png"
                   alt="AgentQu"
                   className="h-8 w-8"
                 />
                 <h1 className="text-3xl font-bold text-black" style={{ letterSpacing: '-0.05em' }}>AgentQu</h1>
-              </div>
+              </button>
               {location && (
                 <div className="flex items-center gap-3">
                   <div className="text-sm text-gray-600">
