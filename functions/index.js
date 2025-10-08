@@ -22,6 +22,7 @@ const googlePlacesApiKey = defineString("GOOGLE_PLACES_API_KEY");
 const googleSearchApiKey = defineString("GOOGLE_SEARCH_API_KEY");
 const googleSearchEngineId = defineString("GOOGLE_SEARCH_ENGINE_ID");
 const googleGeocodingApiKey = defineString("GOOGLE_GEOCODING_API_KEY");
+const openWeatherApiKey = defineString("OPENWEATHER_API_KEY");
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -1604,6 +1605,168 @@ exports.geocode = onCall(
 );
 
 /**
+ * Invite someone to your Cirqle
+ */
+exports.inviteToCirqle = onCall(
+  {
+    cors: true,
+    maxInstances: 10,
+  },
+  async (request) => {
+    try {
+      const { email, nickname, relationship } = request.data;
+      const userId = request.auth?.uid;
+
+      if (!userId) {
+        throw new Error("Authentication required");
+      }
+
+      if (!email || !nickname || !relationship) {
+        throw new Error("Email, nickname, and relationship are required");
+      }
+
+      console.log("👥 CIRQLE INVITE:", { userId, email, nickname, relationship });
+
+      // Generate unique invite token
+      const inviteToken = `${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      // Create member object
+      const member = {
+        memberId: inviteToken,
+        ownerUserId: userId,
+        email: email.toLowerCase(),
+        nickname,
+        relationship,
+        status: "pending",
+        inviteToken,
+        invitedAt: Date.now(),
+      };
+
+      // Add to Cirqle
+      const cirqleRef = db.collection("cirqles").doc(userId);
+      const cirqleDoc = await cirqleRef.get();
+
+      if (cirqleDoc.exists()) {
+        await cirqleRef.update({
+          members: admin.firestore.FieldValue.arrayUnion(member),
+          updatedAt: Date.now(),
+        });
+      } else {
+        // Create new Cirqle
+        const userDoc = await db.collection("users").doc(userId).get();
+        const userName = userDoc.exists ? userDoc.data().displayName : "My Cirqle";
+
+        await cirqleRef.set({
+          cirqleId: userId,
+          ownerId: userId,
+          ownerName: userName,
+          members: [member],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+
+      // Create invite link
+      const inviteLink = `https://agentqu-platform.web.app/join-cirqle?token=${inviteToken}`;
+
+      console.log("👥 CIRQLE INVITE: Created invite link:", inviteLink);
+
+      // TODO: Send email invite (future enhancement)
+      // For now, just return the member and link
+
+      return {
+        success: true,
+        member,
+        inviteLink,
+      };
+    } catch (error) {
+      console.error("Error inviting to Cirqle:", error);
+      throw new Error(`Failed to invite to Cirqle: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Join a Cirqle using invite token
+ */
+exports.joinCirqle = onCall(
+  {
+    cors: true,
+    maxInstances: 10,
+  },
+  async (request) => {
+    try {
+      const { inviteToken } = request.data;
+      const userId = request.auth?.uid;
+
+      if (!userId) {
+        throw new Error("Authentication required");
+      }
+
+      if (!inviteToken) {
+        throw new Error("Invite token is required");
+      }
+
+      console.log("👥 JOIN CIRQLE:", { userId, inviteToken });
+
+      // Find the Cirqle with this invite token
+      const cirqlesSnapshot = await db.collection("cirqles").get();
+      let foundCirqle = null;
+      let foundMember = null;
+
+      cirqlesSnapshot.forEach((doc) => {
+        const cirqle = doc.data();
+        const member = cirqle.members?.find((m) => m.inviteToken === inviteToken);
+        if (member) {
+          foundCirqle = { id: doc.id, ...cirqle };
+          foundMember = member;
+        }
+      });
+
+      if (!foundCirqle || !foundMember) {
+        throw new Error("Invalid invite token");
+      }
+
+      // Get user info
+      const userDoc = await db.collection("users").doc(userId).get();
+      const userData = userDoc.data();
+
+      // Update member status
+      const updatedMembers = foundCirqle.members.map((m) =>
+        m.inviteToken === inviteToken
+          ? {
+              ...m,
+              userId,
+              displayName: userData?.displayName,
+              photoURL: userData?.photoURL,
+              status: "active",
+              joinedAt: Date.now(),
+            }
+          : m
+      );
+
+      await db.collection("cirqles").doc(foundCirqle.id).update({
+        members: updatedMembers,
+        updatedAt: Date.now(),
+      });
+
+      console.log("👥 JOIN CIRQLE: Successfully joined:", foundCirqle.ownerName);
+
+      return {
+        success: true,
+        cirqle: {
+          ...foundCirqle,
+          members: updatedMembers,
+        },
+      };
+    } catch (error) {
+      console.error("Error joining Cirqle:", error);
+      throw new Error(`Failed to join Cirqle: ${error.message}`);
+    }
+  }
+);
+
+/**
  * Health check endpoint
  */
 exports.healthCheck = onRequest((req, res) => {
@@ -1613,4 +1776,209 @@ exports.healthCheck = onRequest((req, res) => {
     service: "agentqu-api",
     version: "3.0-social-tracking",
   });
+});
+
+// ============================================================================
+// THERE-THEN: Environmental Data APIs
+// ============================================================================
+
+/**
+ * Get weather forecast for trip location and dates
+ * Uses OpenWeatherMap 5-day/3-hour forecast API (free tier)
+ */
+exports.getWeatherForecast = onCall(async (request) => {
+  try {
+    const {lat, lng, startDate, endDate} = request.data;
+
+    if (!lat || !lng || !startDate || !endDate) {
+      throw new Error("Missing required parameters: lat, lng, startDate, endDate");
+    }
+
+    console.log("🌤️ Fetching weather forecast:", {lat, lng, startDate, endDate});
+
+    // OpenWeatherMap 5 Day / 3 Hour Forecast API
+    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${openWeatherApiKey.value()}&units=imperial`;
+
+    const response = await axios.get(url);
+    const data = response.data;
+
+    console.log(`✅ Weather forecast retrieved: ${data.list.length} data points`);
+
+    // Filter forecast data to only include dates within trip range
+    const tripStart = new Date(startDate);
+    const tripEnd = new Date(endDate);
+
+    const filteredForecast = data.list.filter((item) => {
+      const forecastDate = new Date(item.dt * 1000);
+      return forecastDate >= tripStart && forecastDate <= tripEnd;
+    });
+
+    // Group by day
+    const dailyForecasts = {};
+
+    filteredForecast.forEach((item) => {
+      const date = new Date(item.dt * 1000);
+      const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
+
+      if (!dailyForecasts[dateKey]) {
+        dailyForecasts[dateKey] = {
+          date: dateKey,
+          hourly: [],
+        };
+      }
+
+      dailyForecasts[dateKey].hourly.push({
+        time: date.toTimeString().slice(0, 5), // HH:MM
+        temp: Math.round(item.main.temp),
+        feelsLike: Math.round(item.main.feels_like),
+        condition: item.weather[0].main.toLowerCase(),
+        conditionDescription: item.weather[0].description,
+        precipitation: item.pop * 100, // Probability of precipitation (0-100%)
+        windSpeed: Math.round(item.wind.speed),
+        humidity: item.main.humidity,
+        uv: 0, // UV not available in 5-day forecast, would need One Call API
+        icon: item.weather[0].icon,
+      });
+    });
+
+    return {
+      success: true,
+      location: {
+        lat,
+        lng,
+        city: data.city.name,
+        country: data.city.country,
+      },
+      forecasts: Object.values(dailyForecasts),
+      totalDataPoints: filteredForecast.length,
+    };
+  } catch (error) {
+    console.error("Error fetching weather forecast:", error);
+    throw new Error(`Failed to fetch weather forecast: ${error.message}`);
+  }
+});
+
+/**
+ * Get Air Quality forecast for trip location and dates
+ * Uses OpenWeatherMap Air Pollution API (free tier)
+ */
+exports.getAirQuality = onCall(async (request) => {
+  try {
+    const {lat, lng, startDate, endDate} = request.data;
+
+    if (!lat || !lng || !startDate || !endDate) {
+      throw new Error("Missing required parameters: lat, lng, startDate, endDate");
+    }
+
+    console.log("🌫️ Fetching air quality data:", {lat, lng, startDate, endDate});
+
+    // Current air pollution
+    const currentUrl = `http://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lng}&appid=${openWeatherApiKey.value()}`;
+
+    // Note: OpenWeatherMap doesn't have AQ forecast in free tier
+    // We'll return current AQ data as a baseline
+    const response = await axios.get(currentUrl);
+    const data = response.data;
+
+    console.log("✅ Air quality data retrieved");
+
+    // AQI Categories
+    const getAQICategory = (aqi) => {
+      const categories = [
+        "Good",
+        "Fair",
+        "Moderate",
+        "Poor",
+        "Very Poor",
+      ];
+      return categories[aqi - 1] || "Unknown";
+    };
+
+    const aqData = data.list[0];
+    const airQuality = {
+      date: new Date(aqData.dt * 1000).toISOString().split("T")[0],
+      aqi: aqData.main.aqi,
+      category: getAQICategory(aqData.main.aqi),
+      pollutants: {
+        pm25: aqData.components.pm2_5.toFixed(2),
+        pm10: aqData.components.pm10.toFixed(2),
+        o3: aqData.components.o3.toFixed(2),
+        no2: aqData.components.no2.toFixed(2),
+        so2: aqData.components.so2.toFixed(2),
+        co: aqData.components.co.toFixed(2),
+      },
+    };
+
+    return {
+      success: true,
+      location: {lat, lng},
+      current: airQuality,
+      note: "Air quality forecast requires premium API. Showing current conditions.",
+    };
+  } catch (error) {
+    console.error("Error fetching air quality:", error);
+    throw new Error(`Failed to fetch air quality: ${error.message}`);
+  }
+});
+
+/**
+ * Get solar data (sunrise/sunset/golden hour) for trip dates
+ * Uses sunrise-sunset.org free API
+ */
+exports.getSolarData = onCall(async (request) => {
+  try {
+    const {lat, lng, startDate, endDate} = request.data;
+
+    if (!lat || !lng || !startDate || !endDate) {
+      throw new Error("Missing required parameters: lat, lng, startDate, endDate");
+    }
+
+    console.log("🌅 Fetching solar data:", {lat, lng, startDate, endDate});
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const solarData = [];
+
+    // Fetch solar data for each day in trip
+    let currentDate = new Date(start);
+    while (currentDate <= end) {
+      const dateStr = currentDate.toISOString().split("T")[0];
+
+      const url = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lng}&date=${dateStr}&formatted=0`;
+      const response = await axios.get(url);
+      const data = response.data.results;
+
+      // Calculate golden hour (1 hour after sunrise, 1 hour before sunset)
+      const sunrise = new Date(data.sunrise);
+      const sunset = new Date(data.sunset);
+      const goldenHourMorning = new Date(sunrise.getTime() + 60 * 60 * 1000);
+      const goldenHourEvening = new Date(sunset.getTime() - 60 * 60 * 1000);
+
+      solarData.push({
+        date: dateStr,
+        sunrise: sunrise.toTimeString().slice(0, 5),
+        sunset: sunset.toTimeString().slice(0, 5),
+        goldenHour: {
+          morning: goldenHourMorning.toTimeString().slice(0, 5),
+          evening: goldenHourEvening.toTimeString().slice(0, 5),
+        },
+        dayLength: Math.round(data.day_length / 3600), // Convert to hours
+        solarNoon: new Date(data.solar_noon).toTimeString().slice(0, 5),
+      });
+
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    console.log(`✅ Solar data retrieved for ${solarData.length} days`);
+
+    return {
+      success: true,
+      location: {lat, lng},
+      solarData,
+    };
+  } catch (error) {
+    console.error("Error fetching solar data:", error);
+    throw new Error(`Failed to fetch solar data: ${error.message}`);
+  }
 });

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { TripPlan } from '../lib/types';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import EnvironmentalDashboard from './EnvironmentalDashboard';
 
 interface TripDetailProps {
   tripId: string;
@@ -136,6 +137,13 @@ const TripDetail: React.FC<TripDetailProps> = ({ tripId }) => {
               ))}
             </div>
           </div>
+
+          {/* Environmental Dashboard */}
+          <EnvironmentalDashboard
+            tripId={trip.tripId}
+            destination={trip.destination}
+            dates={trip.dates}
+          />
 
           {/* Suggested Activities */}
           {trip.suggestedActivities.length > 0 && (
