@@ -435,13 +435,159 @@ function App() {
               </div>
             ) : (
               <>
-                {/* Map View */}
+                {/* Map View with Condensed List */}
                 {viewMode === 'map' && (
-                  <ActivityMap
-                    activities={activities}
-                    userLocation={activeLocation}
-                    onLocationChange={handleMapLocationChange}
-                  />
+                  <div className="space-y-6">
+                    {/* Map */}
+                    <ActivityMap
+                      activities={activities}
+                      userLocation={activeLocation}
+                      onLocationChange={handleMapLocationChange}
+                    />
+
+                    {/* Rich Activity List with Details */}
+                    <div className="bg-white rounded-2xl shadow-sm p-6">
+                      <h3 className="text-xl font-bold text-dark-text mb-4">Activities on Map</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {activities.slice(0, 12).map((activity) => {
+                          const hasImage = activity.images && activity.images.length > 0;
+
+                          return (
+                            <div
+                              key={activity.id || activity.activityId}
+                              className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer"
+                            >
+                              {/* Image */}
+                              {hasImage ? (
+                                <div className="h-48 overflow-hidden">
+                                  <img
+                                    src={activity.images![0]}
+                                    alt={activity.name}
+                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="h-48 bg-gradient-to-br from-peach/20 to-orange-100/50 flex items-center justify-center">
+                                  <span className="text-6xl">
+                                    {activity.primaryCategory === 'hiking' ? '🥾' :
+                                     activity.primaryCategory === 'events' ? '🎉' :
+                                     activity.primaryCategory === 'food_and_dining' ? '🍽️' :
+                                     activity.primaryCategory === 'arts_and_culture' ? '🎨' :
+                                     activity.primaryCategory === 'sports_and_recreation' ? '⚽' :
+                                     activity.primaryCategory === 'nature_and_outdoors' ? '🌲' :
+                                     activity.primaryCategory === 'entertainment' ? '🎭' :
+                                     activity.primaryCategory === 'shopping' ? '🛍️' : '📍'}
+                                  </span>
+                                </div>
+                              )}
+
+                              {/* Content */}
+                              <div className="p-4">
+                                <h4 className="font-bold text-base text-dark-text mb-2 line-clamp-2">
+                                  {activity.name}
+                                </h4>
+
+                                {/* Category & Distance */}
+                                <div className="flex items-center gap-2 mb-3">
+                                  <span className="text-xs bg-peach/10 text-peach px-2 py-1 rounded-full font-medium capitalize">
+                                    {activity.primaryCategory?.replace(/_/g, ' ')}
+                                  </span>
+                                  <span className="text-xs text-gray-600">
+                                    📍 {activity.distance?.toFixed(1)} mi
+                                  </span>
+                                </div>
+
+                                {/* Dynamic Details */}
+                                <div className="space-y-2 mb-3 text-sm">
+                                  {/* Trail/Hike Info */}
+                                  {(activity.primaryCategory === 'hiking' || activity.primaryCategory === 'nature_and_outdoors') && (
+                                    <>
+                                      {activity.accessibility?.mobilityLevel && (
+                                        <div className="flex items-center gap-2 text-gray-700">
+                                          <span className="font-medium">Difficulty:</span>
+                                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                            activity.accessibility.mobilityLevel === 'easy' ? 'bg-green-100 text-green-700' :
+                                            activity.accessibility.mobilityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
+                                          }`}>
+                                            {activity.accessibility.mobilityLevel}
+                                          </span>
+                                        </div>
+                                      )}
+                                      {activity.duration && (
+                                        <div className="flex items-center gap-2 text-gray-700">
+                                          <span>⏱️</span>
+                                          <span>{Math.round(activity.duration / 60)} hours</span>
+                                        </div>
+                                      )}
+                                    </>
+                                  )}
+
+                                  {/* Event Info */}
+                                  {activity.primaryCategory === 'events' && activity.hoursToday && (
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                      <span>🕐</span>
+                                      <span>{activity.hoursToday.open} - {activity.hoursToday.close}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Rating */}
+                                  {activity.rating && (
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                      <span>⭐</span>
+                                      <span>{activity.rating.toFixed(1)}</span>
+                                      {activity.reviewCount && (
+                                        <span className="text-xs text-gray-500">({activity.reviewCount} reviews)</span>
+                                      )}
+                                    </div>
+                                  )}
+
+                                  {/* Cost */}
+                                  {activity.cost.free ? (
+                                    <div className="flex items-center gap-2 text-green-600 font-medium">
+                                      <span>💰</span>
+                                      <span>Free</span>
+                                    </div>
+                                  ) : activity.cost.priceLevel && (
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                      <span>💰</span>
+                                      <span>{'$'.repeat(activity.cost.priceLevel)}</span>
+                                    </div>
+                                  )}
+
+                                  {/* Accessibility */}
+                                  {activity.accessibility?.wheelchairAccessible && (
+                                    <div className="flex items-center gap-2 text-blue-600">
+                                      <span>♿</span>
+                                      <span className="text-xs">Wheelchair Accessible</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Match Score */}
+                                {activity.score !== undefined && (
+                                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                                    <span className="text-xs text-gray-600">Match Score</span>
+                                    <span className="text-sm font-bold text-peach">
+                                      {activity.score >= 300 ? '⭐⭐⭐⭐⭐' :
+                                       activity.score >= 250 ? '⭐⭐⭐⭐' :
+                                       activity.score >= 200 ? '⭐⭐⭐' :
+                                       activity.score >= 150 ? '⭐⭐' : '⭐'}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {activities.length > 12 && (
+                        <p className="text-center text-sm text-gray-500 mt-4">
+                          +{activities.length - 12} more activities (switch to List view to see all)
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 {/* List View - Grouped by Category */}

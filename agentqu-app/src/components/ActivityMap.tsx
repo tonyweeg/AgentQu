@@ -49,43 +49,79 @@ interface ActivityMapProps {
   onLocationChange?: (lat: number, lng: number) => void;
 }
 
-// Component to handle map drag events
+// Component to handle map drag events with manual search button
 function MapDragHandler({ onLocationChange }: { onLocationChange?: (lat: number, lng: number) => void }) {
-  const [isDragging, setIsDragging] = useState(false);
+  const [showSearchButton, setShowSearchButton] = useState(false);
+  const [pendingCenter, setPendingCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const map = useMap();
+
+  console.log('🗺️ MAP_DEBUG: MapDragHandler mounted, onLocationChange callback:', !!onLocationChange);
 
   useMapEvents({
-    dragstart: () => {
-      setIsDragging(true);
-    },
     dragend: (e) => {
-      setIsDragging(false);
+      console.log('🗺️ MAP_DEBUG: Drag ENDED');
       const center = e.target.getCenter();
-      if (onLocationChange) {
-        console.log('🗺️ Map dragged to:', center.lat, center.lng);
-        onLocationChange(center.lat, center.lng);
-      }
+      console.log('🗺️ MAP_DEBUG: New center:', center.lat, center.lng);
+
+      setPendingCenter({ lat: center.lat, lng: center.lng });
+      setShowSearchButton(true);
     },
   });
 
-  return isDragging ? (
-    <div
-      style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 1000,
-        background: 'rgba(255,255,255,0.95)',
-        padding: '12px 20px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-        fontWeight: 'bold',
-        color: '#333',
-      }}
-    >
-      🗺️ Release to search here
-    </div>
-  ) : null;
+  const handleSearchClick = () => {
+    console.log('🗺️ MAP_DEBUG: Search button clicked');
+    if (pendingCenter && onLocationChange) {
+      console.log('🗺️ MAP_DEBUG: Calling onLocationChange callback with:', pendingCenter);
+      onLocationChange(pendingCenter.lat, pendingCenter.lng);
+      setShowSearchButton(false);
+      setPendingCenter(null);
+    }
+  };
+
+  if (showSearchButton) {
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+        }}
+      >
+        <button
+          onClick={handleSearchClick}
+          style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            padding: '12px 24px',
+            borderRadius: '12px',
+            border: 'none',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+          }}
+        >
+          <span style={{ fontSize: '20px' }}>🔍</span>
+          <span>Search Here</span>
+        </button>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 // Component to update map center when location changes
@@ -100,6 +136,11 @@ function MapUpdater({ center }: { center: [number, number] }) {
 }
 
 const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onLocationChange }) => {
+  console.log('🗺️ MAP_DEBUG: ActivityMap rendering with', activities.length, 'activities');
+  console.log('🗺️ MAP_DEBUG: onLocationChange callback provided:', !!onLocationChange);
+  console.log('🗺️ MAP_DEBUG: Q icon created:', !!qIcon);
+  console.log('🗺️ MAP_DEBUG: User icon created:', !!userIcon);
+
   if (!userLocation) {
     return (
       <div className="h-[500px] bg-gray-100 rounded-2xl flex items-center justify-center">
@@ -109,6 +150,7 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
   }
 
   const center: [number, number] = [userLocation.lat, userLocation.lng];
+  console.log('🗺️ MAP_DEBUG: Map center:', center);
 
   return (
     <div className="h-[500px] rounded-2xl overflow-hidden shadow-md">
@@ -137,32 +179,103 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
         </Marker>
 
         {/* Activity markers with custom Q icon */}
-        {activities.map((activity) => {
+        {activities.map((activity, index) => {
           const lat = activity.location?.lat || activity.lat;
           const lng = activity.location?.lng || activity.lng;
 
-          if (!lat || !lng) return null;
+          console.log(`🗺️ MAP_DEBUG: Activity ${index} - ${activity.name}:`, { lat, lng, hasLocation: !!(lat && lng) });
+
+          if (!lat || !lng) {
+            console.log(`🗺️ MAP_DEBUG: Skipping activity ${index} - no coordinates`);
+            return null;
+          }
+
+          // Google Maps link
+          const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
           return (
             <Marker key={activity.id || activity.activityId} position={[lat, lng]} icon={qIcon}>
               <Popup>
-                <div className="min-w-[200px]">
-                  <h3 className="font-bold text-base mb-1">{activity.name}</h3>
+                <div style={{ minWidth: '250px', padding: '8px' }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    marginBottom: '12px',
+                    color: '#1f2937',
+                    lineHeight: '1.3'
+                  }}>
+                    {activity.name}
+                  </h3>
+
                   {activity.distance && (
-                    <p className="text-sm text-gray-600 mb-1">
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#4b5563',
+                      marginBottom: '8px',
+                      fontWeight: '500'
+                    }}>
                       📍 {activity.distance.toFixed(1)} miles away
                     </p>
                   )}
+
                   {activity.score && (
-                    <p className="text-sm font-medium text-peach">
+                    <p style={{
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#f97316',
+                      marginBottom: '8px'
+                    }}>
                       Match Score: {activity.score}
                     </p>
                   )}
+
                   {activity.primaryCategory && (
-                    <p className="text-xs text-gray-500 mt-1 capitalize">
-                      {activity.primaryCategory}
+                    <p style={{
+                      fontSize: '13px',
+                      color: '#6b7280',
+                      marginBottom: '16px',
+                      textTransform: 'capitalize',
+                      fontWeight: '500'
+                    }}>
+                      {activity.primaryCategory.replace(/_/g, ' ')}
                     </p>
                   )}
+
+                  {/* Google Maps Link */}
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                      color: 'white',
+                      padding: '12px 20px',
+                      borderRadius: '10px',
+                      textDecoration: 'none',
+                      fontSize: '15px',
+                      fontWeight: '700',
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
+                      transition: 'all 0.2s',
+                      width: '100%',
+                      justifyContent: 'center',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
+                    }}
+                  >
+                    <span style={{ fontSize: '20px' }}>🗺️</span>
+                    <span>Open in Google Maps</span>
+                  </a>
                 </div>
               </Popup>
             </Marker>
