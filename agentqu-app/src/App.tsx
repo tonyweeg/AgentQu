@@ -617,69 +617,64 @@ function App() {
                     <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">About This Area</h3>
                     {city && state ? (
                       <div className="space-y-3">
-                        {/* City Header with Wikipedia Link */}
-                        <div className="flex items-center justify-between">
+                        {/* City Header with Wikipedia Link and STOKED Badge */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
                           <p className="text-lg font-bold text-navy-text">{city}, {state}</p>
-                          {wikiData?.content_urls?.desktop?.page && (
-                            <a
-                              href={wikiData.content_urls.desktop.page}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-ocean-bright hover:text-ocean-mid transition-colors font-medium"
-                            >
-                              Wikipedia →
-                            </a>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {/* Compact STOKED Meter Badge */}
+                            {(() => {
+                              // Calculate STOKED level based on average activity scores
+                              const avgScore = activities.length > 0
+                                ? activities.reduce((sum, a) => sum + (a.score || 0), 0) / activities.length
+                                : 0;
+
+                              let stokedText = "Worth exploring";
+                              let stokedColor = "bg-gradient-to-r from-gray-400 to-gray-500";
+
+                              if (avgScore >= 280) {
+                                stokedText = "🔥 STOKED";
+                                stokedColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+                              } else if (avgScore >= 220) {
+                                stokedText = "⚡ EXCITED";
+                                stokedColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+                              } else if (avgScore >= 180) {
+                                stokedText = "👍 GOOD VIBES";
+                                stokedColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+                              } else if (avgScore >= 140) {
+                                stokedText = "🤔 POTENTIAL";
+                                stokedColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+                              }
+
+                              return (
+                                <div className={`${stokedColor} text-white px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm whitespace-nowrap`}>
+                                  {stokedText}
+                                </div>
+                              );
+                            })()}
+                            {wikiData?.content_urls?.desktop?.page && (
+                              <a
+                                href={wikiData.content_urls.desktop.page}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-ocean-bright hover:text-ocean-mid transition-colors font-medium whitespace-nowrap"
+                              >
+                                Wikipedia →
+                              </a>
+                            )}
+                          </div>
                         </div>
 
-                        {/* STOKED Meter - AI's opinion based on user affinities */}
-                        {(() => {
-                          // Calculate STOKED level based on average activity scores
-                          const avgScore = activities.length > 0
-                            ? activities.reduce((sum, a) => sum + (a.score || 0), 0) / activities.length
-                            : 0;
-                          const stokedPercentage = Math.min(100, (avgScore / 350) * 100);
-
-                          let stokedLabel = "Worth exploring";
-                          let stokedColor = "from-gray-400 to-gray-500";
-
-                          if (avgScore >= 280) {
-                            stokedLabel = "🔥 STOKED! Perfect match";
-                            stokedColor = "from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
-                          } else if (avgScore >= 220) {
-                            stokedLabel = "⚡ Really excited!";
-                            stokedColor = "from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
-                          } else if (avgScore >= 180) {
-                            stokedLabel = "👍 Good vibes here";
-                            stokedColor = "from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
-                          } else if (avgScore >= 140) {
-                            stokedLabel = "🤔 Some potential";
-                            stokedColor = "from-[#667EEA] via-[#764BA2] to-[#F093FB]";
-                          }
-
-                          return (
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">AI's Take</span>
-                                <span className="text-[10px] font-medium text-navy-text">{stokedLabel}</span>
-                              </div>
-                              <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div
-                                  className={`absolute left-0 top-0 h-full bg-gradient-to-r ${stokedColor} transition-all duration-700 rounded-full`}
-                                  style={{ width: `${stokedPercentage}%` }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        })()}
+                        {/* Wikipedia Description - Full Text */}
+                        {wikiData?.extract && (
+                          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                            {wikiData.extract}
+                          </p>
+                        )}
 
                         {/* Rich Data Grid - Tufte style */}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs border-t border-gray-200 pt-2">
                           {wikiData?.extract && (
                             <>
-                              <div className="col-span-2 text-gray-600 leading-relaxed mb-1">
-                                {wikiData.extract.split('.')[0]}.
-                              </div>
                               {/* Population */}
                               {(() => {
                                 const popMatch = wikiData.extract.match(/population[^0-9]*([0-9,]+)/i);
@@ -717,14 +712,6 @@ function App() {
                             {activities.length > 30 ? "⭐⭐⭐" : activities.length > 15 ? "⭐⭐" : activities.length > 5 ? "⭐" : "—"}
                           </span>
                         </div>
-
-                        {/* Cool Fact - if available from Wikipedia */}
-                        {wikiData?.extract && wikiData.extract.split('.').length > 2 && (
-                          <div className="text-xs bg-seafoam/30 rounded p-2 border-l-2 border-ocean-bright">
-                            <span className="font-bold text-gray-600">💡 </span>
-                            <span className="text-gray-700">{wikiData.extract.split('.').slice(1, 2).join('.')}</span>
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 italic">Location information unavailable</p>
