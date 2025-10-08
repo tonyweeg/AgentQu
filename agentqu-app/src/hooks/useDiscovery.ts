@@ -7,9 +7,19 @@ interface UseDiscoveryOptions {
   location: Location | null;
   userId?: string | null;
   filters?: DiscoveryFilters;
+  enablePlaces?: boolean;
+  enableCustomSearch?: boolean;
+  key?: number;
 }
 
-export function useDiscovery({ location, userId, filters = {} }: UseDiscoveryOptions) {
+export function useDiscovery({
+  location,
+  userId,
+  filters = {},
+  enablePlaces = true,
+  enableCustomSearch = true,
+  key = 0
+}: UseDiscoveryOptions) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -32,6 +42,9 @@ export function useDiscovery({ location, userId, filters = {} }: UseDiscoveryOpt
         lng: location.lng,
         radius: filters.maxDistance || 10,
         userId: userId || null,
+        enablePlaces,
+        enableCustomSearch,
+        bypassCache: key > 0,
       });
 
       const result = await discoverActivities({
@@ -40,6 +53,9 @@ export function useDiscovery({ location, userId, filters = {} }: UseDiscoveryOpt
         radius: filters.maxDistance || 10,
         userId: userId || null,
         filters,
+        enablePlaces,
+        enableCustomSearch,
+        bypassCache: key > 0,
       });
 
       const data = result.data as any;
@@ -66,7 +82,7 @@ export function useDiscovery({ location, userId, filters = {} }: UseDiscoveryOpt
     } finally {
       setLoading(false);
     }
-  }, [location, filters]);
+  }, [location, filters, enablePlaces, enableCustomSearch, key]);
 
   useEffect(() => {
     fetchActivities();

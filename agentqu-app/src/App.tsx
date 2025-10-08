@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useLocation } from './hooks/useLocation';
 import { useDiscovery } from './hooks/useDiscovery';
+import { useReverseGeocode } from './hooks/useReverseGeocode';
 import AuthScreen from './components/AuthScreen';
 import OnboardingScreen from './components/OnboardingScreen';
 import ActivityCard from './components/ActivityCard';
@@ -16,6 +17,11 @@ function App() {
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [showSettings, setShowSettings] = useState(false);
   const [showGeocaches, setShowGeocaches] = useState(false);
+  const [enablePlaces, setEnablePlaces] = useState(true);
+  const [enableCustomSearch, setEnableCustomSearch] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [nearbyTowns, setNearbyTowns] = useState<Array<{name: string; lat: number; lng: number; distance: number}>>([]);
+  const [manualLocation, setManualLocation] = useState<{lat: number; lng: number} | null>(null);
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -26,11 +32,20 @@ function App() {
     requestLocation,
   } = useLocation();
 
+  // Use manual location if set, otherwise GPS location
+  const activeLocation = manualLocation || location;
+
+  // Reverse geocode to get city name
+  const { city, state } = useReverseGeocode(activeLocation);
+
   // Fetch activities (only when user is onboarded)
-  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery({
-    location: profile?.onboarded ? location : null,
+  const { activities, loading: activitiesLoading, error: activitiesError, metadata, refetch } = useDiscovery({
+    location: profile?.onboarded ? activeLocation : null,
     userId: user?.uid || null,
-    filters
+    filters,
+    enablePlaces,
+    enableCustomSearch,
+    key: refreshKey
   });
 
   // Request location when user completes onboarding
@@ -39,6 +54,33 @@ function App() {
       requestLocation();
     }
   }, [profile?.onboarded, location, requestLocation]);
+
+  // Fetch nearby towns when location and city are available
+  useEffect(() => {
+    if (!activeLocation || !city) return;
+
+    const fetchNearbyTowns = async () => {
+      try {
+        const { functions } = await import('./lib/firebase');
+        const { httpsCallable } = await import('firebase/functions');
+        const getNearbyTowns = httpsCallable(functions, 'getNearbyTowns');
+
+        const result = await getNearbyTowns({
+          lat: activeLocation.lat,
+          lng: activeLocation.lng,
+          currentCity: city,
+        }) as any;
+
+        if (result.data?.success && result.data?.towns) {
+          setNearbyTowns(result.data.towns);
+        }
+      } catch (error) {
+        console.error('Error fetching nearby towns:', error);
+      }
+    };
+
+    fetchNearbyTowns();
+  }, [activeLocation?.lat, activeLocation?.lng, city]);
 
   // Filter geocaches from activities
   const geocaches = activities.filter((activity) => activity.type === 'cache');
@@ -147,9 +189,73 @@ function App() {
               </button>
               {location && (
                 <div className="flex items-center gap-3">
-                  <div className="text-sm text-gray-600">
-                    📍 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  {/* Location Display */}
+                  <div className="flex items-center gap-2 bg-gradient-to-r from-peach/10 to-orange-100/50 px-4 py-2 rounded-full border border-peach/20">
+                    <span className="text-lg">📍</span>
+                    {city && state ? (
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-dark-text leading-tight">
+                          {city}, {state}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-600">
+                        {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                      </span>
+                    )}
                   </div>
+
+                  {/* Nearby Towns */}
+                  {city && nearbyTowns.length > 0 && (
+                    <div className="relative group">
+                      <button className="flex items-center gap-1 bg-white hover:bg-gray-50 px-3 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 transition-colors">
+                        <span>Nearby</span>
+                        <span className="text-xs">▼</span>
+                      </button>
+
+                      {/* Dropdown */}
+                      <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+                        <div className="p-2">
+                          <div className="px-3 py-2 text-xs text-gray-500 font-medium uppercase">Explore nearby</div>
+
+                          {nearbyTowns.map((town) => (
+                            <button
+                              key={town.name}
+                              onClick={() => {
+                                setManualLocation({ lat: town.lat, lng: town.lng });
+                                setRefreshKey(prev => prev + 1);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-peach/10 rounded-md text-sm text-gray-700 hover:text-peach transition-colors flex items-center justify-between"
+                            >
+                              <span>{town.name}</span>
+                              <span className="text-xs text-gray-400">{town.distance.toFixed(0)} mi</span>
+                            </button>
+                          ))}
+
+                          {/* Reset to GPS location */}
+                          {manualLocation && (
+                            <>
+                              <div className="border-t my-2"></div>
+                              <button
+                                onClick={() => {
+                                  setManualLocation(null);
+                                  setRefreshKey(prev => prev + 1);
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-blue-50 rounded-md text-sm text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-2"
+                              >
+                                <span>📍</span>
+                                <span>Back to my location</span>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {geocaches.length > 0 && (
                     <button
                       onClick={() => setShowGeocaches(true)}
@@ -257,6 +363,37 @@ function App() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Data Source Toggles & Refresh */}
+          <div className="border-t pt-4 mt-4 flex items-center justify-between">
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enablePlaces}
+                  onChange={(e) => setEnablePlaces(e.target.checked)}
+                  className="w-4 h-4 accent-peach rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">Google Places</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={enableCustomSearch}
+                  onChange={(e) => setEnableCustomSearch(e.target.checked)}
+                  className="w-4 h-4 accent-peach rounded"
+                />
+                <span className="text-sm font-medium text-gray-700">Custom Search (Events)</span>
+              </label>
+            </div>
+            <button
+              onClick={() => setRefreshKey(prev => prev + 1)}
+              disabled={activitiesLoading}
+              className="px-4 py-2 bg-peach text-white rounded-lg hover:bg-peach/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+            >
+              🔄 Refresh Results
+            </button>
           </div>
         </div>
 

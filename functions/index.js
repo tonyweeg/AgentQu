@@ -21,6 +21,7 @@ const db = admin.firestore();
 const googlePlacesApiKey = defineString("GOOGLE_PLACES_API_KEY");
 const googleSearchApiKey = defineString("GOOGLE_SEARCH_API_KEY");
 const googleSearchEngineId = defineString("GOOGLE_SEARCH_ENGINE_ID");
+const googleGeocodingApiKey = defineString("GOOGLE_GEOCODING_API_KEY");
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -657,7 +658,15 @@ exports.discoverActivities = onCall(
     invoker: "public",
   },
   async (request) => {
-  const {lat, lng, radius = 10, userId} = request.data;
+  const {
+    lat,
+    lng,
+    radius = 10,
+    userId,
+    enablePlaces = true,
+    enableCustomSearch = true,
+    bypassCache = false
+  } = request.data;
 
   if (!lat || !lng) {
     throw new Error("Missing required parameters: lat, lng");
@@ -679,69 +688,75 @@ exports.discoverActivities = onCall(
     const geohashKey = geohash.encode(lat, lng, 5); // ~5km precision
     const affinitySignature = generateAffinitySignature(userAffinities);
 
-    console.log(`Discovery request: ${geohashKey}, radius: ${radius}, affinity: ${affinitySignature}`);
+    console.log(`Discovery request: ${geohashKey}, radius: ${radius}, affinity: ${affinitySignature}, bypass: ${bypassCache}, places: ${enablePlaces}, search: ${enableCustomSearch}`);
 
-    // Check cache first
-    const cachedData = await checkCache(geohashKey, radius, affinitySignature);
-
-    if (cachedData) {
-      const personalizedResults = await personalizeCachedResults(cachedData, userAffinities);
-
-      return {
-        success: true,
-        activities: personalizedResults.slice(0, 50),
-        metadata: {
-          totalFound: personalizedResults.length,
-          queryTimeMs: Date.now() - startTime,
-          cacheHit: true,
-          cacheAge: Date.now() - cachedData.createdAt,
-          cacheUsers: cachedData.userCount,
-          userLocation: {lat, lng},
-        },
-      };
-    }
-
-    // Cache miss - fetch from APIs
-    console.log("Cache MISS - fetching from APIs");
+    // CACHE DISABLED FOR DEVELOPMENT - Always fetch fresh data
+    console.log("🚧 CACHE DISABLED - fetching fresh data from APIs");
 
     // Try to get city name from reverse geocoding for better search results
     let cityName = null;
     try {
-      const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+      const GOOGLE_GEOCODING_API_KEY = googleGeocodingApiKey.value();
+
+      console.log(`🔍 Attempting reverse geocode for: ${lat},${lng}`);
+
       const geocodeResponse = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json`,
         {
           params: {
             latlng: `${lat},${lng}`,
-            key: GOOGLE_PLACES_API_KEY,
+            key: GOOGLE_GEOCODING_API_KEY,
           },
         }
       );
 
-      console.log(`🔍 Reverse geocoding response:`, geocodeResponse.data.results?.[0]?.formatted_address);
+      console.log(`🔍 Reverse geocoding full response:`, JSON.stringify(geocodeResponse.data, null, 2));
 
-      if (geocodeResponse.data.results?.[0]) {
-        const addressComponents = geocodeResponse.data.results[0].address_components;
+      if (geocodeResponse.data.status !== 'OK') {
+        console.error(`🔍 Reverse geocoding API error: ${geocodeResponse.data.status}`, geocodeResponse.data.error_message);
+      } else if (geocodeResponse.data.results?.[0]) {
+        const result = geocodeResponse.data.results[0];
+        console.log(`🔍 Formatted address: ${result.formatted_address}`);
+
+        const addressComponents = result.address_components;
         const city = addressComponents.find(c => c.types.includes('locality'));
         const state = addressComponents.find(c => c.types.includes('administrative_area_level_1'));
 
         if (city && state) {
           cityName = `${city.long_name}, ${state.short_name}`;
-          console.log(`🔍 Reverse geocoded to: ${cityName}`);
+          console.log(`🔍 ✅ Reverse geocoded to: ${cityName}`);
         } else {
-          console.warn(`🔍 Reverse geocoding: No city/state found in components`);
+          console.warn(`🔍 No city/state found. Address components:`, JSON.stringify(addressComponents, null, 2));
         }
+      } else {
+        console.warn(`🔍 No results from reverse geocoding`);
       }
     } catch (geocodeError) {
-      console.error('🔍 Reverse geocoding failed:', geocodeError.message);
+      console.error('🔍 Reverse geocoding exception:', geocodeError.message);
+      if (geocodeError.response) {
+        console.error('🔍 Response data:', geocodeError.response.data);
+      }
     }
 
-    const [googleSearch, googlePlaces] = await Promise.all([
-      fetchGoogleSearch(lat, lng, cityName),
-      fetchGooglePlaces(lat, lng, radius, userAffinities),
-    ]);
+    // Fetch from enabled sources only
+    const fetchPromises = [];
+    if (enableCustomSearch) {
+      fetchPromises.push(fetchGoogleSearch(lat, lng, cityName));
+    } else {
+      fetchPromises.push(Promise.resolve([]));
+    }
+
+    if (enablePlaces) {
+      fetchPromises.push(fetchGooglePlaces(lat, lng, radius, userAffinities));
+    } else {
+      fetchPromises.push(Promise.resolve([]));
+    }
+
+    const [googleSearch, googlePlaces] = await Promise.all(fetchPromises);
 
     let allActivities = [...googleSearch, ...googlePlaces];
+
+    console.log(`✅ Fetched ${googleSearch.length} from Custom Search, ${googlePlaces.length} from Places API`);
 
     // Calculate distances
     allActivities = allActivities.map((activity) => ({
@@ -766,8 +781,9 @@ exports.discoverActivities = onCall(
     // Sort by score
     allActivities.sort((a, b) => b.score - a.score);
 
-    // Save to database and cache
-    await saveActivitiesAndCache(allActivities, geohashKey, radius, affinitySignature, userAffinities);
+    // CACHE DISABLED FOR DEVELOPMENT - Skip saving to cache
+    console.log("🚧 CACHE DISABLED - skipping cache write");
+    // await saveActivitiesAndCache(allActivities, geohashKey, radius, affinitySignature, userAffinities);
 
     const results = allActivities.slice(0, 50);
 
@@ -1460,6 +1476,72 @@ exports.clearCache = onRequest(async (req, res) => {
     });
   }
 });
+
+/**
+ * Get nearby towns for location exploration
+ */
+exports.getNearbyTowns = onCall(
+  {
+    cors: true,
+    invoker: "public",
+  },
+  async (request) => {
+    const { lat, lng, currentCity } = request.data;
+
+    if (!lat || !lng) {
+      throw new Error("Missing required parameters: lat, lng");
+    }
+
+    try {
+      const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+
+      // Search for nearby localities within 50km
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/place/nearbysearch/json`,
+        {
+          params: {
+            location: `${lat},${lng}`,
+            radius: 50000, // 50km
+            type: "locality",
+            key: GOOGLE_PLACES_API_KEY,
+          },
+        }
+      );
+
+      if (response.data.status === "OK" && response.data.results) {
+        const towns = response.data.results
+          .filter((place) => place.name !== currentCity) // Exclude current city
+          .slice(0, 5) // Get top 5
+          .map((place) => ({
+            name: place.name,
+            lat: place.geometry.location.lat,
+            lng: place.geometry.location.lng,
+            distance: calculateDistance(
+              lat,
+              lng,
+              place.geometry.location.lat,
+              place.geometry.location.lng
+            ),
+          }))
+          .sort((a, b) => a.distance - b.distance) // Sort by distance
+          .slice(0, 3); // Take closest 3
+
+        return {
+          success: true,
+          towns,
+        };
+      }
+
+      return {
+        success: true,
+        towns: [],
+      };
+    } catch (error) {
+      console.error("Error fetching nearby towns:", error);
+      throw new Error(`Failed to fetch nearby towns: ${error.message}`);
+    }
+  }
+);
 
 /**
  * Health check endpoint
