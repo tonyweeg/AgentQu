@@ -9,14 +9,15 @@ module.exports = {
         sans: ['Atkinson Hyperlegible', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Ocean-inspired adventure palette
-        'ocean-deep': '#0A4D68',      // Deep ocean blue
-        'ocean-mid': '#088395',       // Medium ocean blue
-        'ocean-bright': '#05BFDB',    // Vibrant turquoise
-        'coral': '#F16767',           // Coral accent
-        'sand': '#FFB84C',            // Sandy/sunset accent
-        'seafoam': '#E8F6F3',         // Light seafoam background
-        'navy-text': '#1A2238',       // Dark navy text
+        // Rich ocean-inspired adventure palette
+        'ocean-deep': '#003D5B',      // Deep navy blue (darker, richer)
+        'ocean-mid': '#00798C',       // Teal ocean blue
+        'ocean-bright': '#30B1BB',    // Rich turquoise
+        'ocean-accent': '#1F7A8C',    // Medium teal accent
+        'coral': '#E76F51',           // Warm coral (less orange)
+        'sand': '#F4A261',            // Muted sand (reduced orange)
+        'seafoam': '#D8EAF0',         // Soft blue-grey background
+        'navy-text': '#0D1B2A',       // Deep navy text
 
         // Legacy colors (for gradual migration)
         cream: '#F5EDE4',
