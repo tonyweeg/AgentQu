@@ -47,6 +47,7 @@ interface ActivityMapProps {
   activities: Activity[];
   userLocation: Location | null;
   onLocationChange?: (lat: number, lng: number) => void;
+  compact?: boolean;
 }
 
 // Component to handle map drag events with manual search button
@@ -129,21 +130,33 @@ function MapUpdater({ center }: { center: [number, number] }) {
   const map = useMap();
 
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    // Force map to recalculate size and fit bounds properly for rectangular containers
+    setTimeout(() => {
+      map.invalidateSize();
+      // Use fitBounds instead of setView for proper centering in non-square containers
+      // Create a small bounding box around the center point
+      const offset = 0.01; // roughly 1km
+      const bounds: [[number, number], [number, number]] = [
+        [center[0] - offset, center[1] - offset],
+        [center[0] + offset, center[1] + offset]
+      ];
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }, 100);
   }, [center, map]);
 
   return null;
 }
 
-const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onLocationChange }) => {
+const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onLocationChange, compact = false }) => {
   console.log('🗺️ MAP_DEBUG: ActivityMap rendering with', activities.length, 'activities');
   console.log('🗺️ MAP_DEBUG: onLocationChange callback provided:', !!onLocationChange);
   console.log('🗺️ MAP_DEBUG: Q icon created:', !!qIcon);
   console.log('🗺️ MAP_DEBUG: User icon created:', !!userIcon);
+  console.log('🗺️ MAP_DEBUG: Compact mode:', compact);
 
   if (!userLocation) {
     return (
-      <div className="h-[500px] bg-gray-100 rounded-2xl flex items-center justify-center">
+      <div className={`${compact ? 'h-full' : 'h-[500px]'} bg-gray-100 rounded-2xl flex items-center justify-center`}>
         <p className="text-gray-600">Location required to show map</p>
       </div>
     );
@@ -153,15 +166,20 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
   console.log('🗺️ MAP_DEBUG: Map center:', center);
 
   return (
-    <div className="h-[500px] rounded-2xl overflow-hidden shadow-md">
+    <div className={`${compact ? 'h-full' : 'h-[500px]'} rounded-2xl overflow-hidden shadow-md`}>
       <MapContainer
         center={center}
-        zoom={14}
+        zoom={compact ? 12 : 14}
         style={{ height: '100%', width: '100%' }}
         className="z-0"
+        dragging={!compact}
+        zoomControl={!compact}
+        scrollWheelZoom={!compact}
+        doubleClickZoom={!compact}
+        touchZoom={!compact}
       >
         <MapUpdater center={center} />
-        <MapDragHandler onLocationChange={onLocationChange} />
+        {!compact && <MapDragHandler onLocationChange={onLocationChange} />}
 
         {/* Map tiles */}
         <TileLayer
@@ -171,15 +189,17 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
 
         {/* User location marker */}
         <Marker position={center} icon={userIcon}>
-          <Popup>
-            <div className="text-center">
-              <p className="font-bold">You are here</p>
-            </div>
-          </Popup>
+          {!compact && (
+            <Popup>
+              <div className="text-center">
+                <p className="font-bold">You are here</p>
+              </div>
+            </Popup>
+          )}
         </Marker>
 
-        {/* Activity markers with custom Q icon */}
-        {activities.map((activity, index) => {
+        {/* Activity markers with custom Q icon - only show in full mode */}
+        {!compact && activities.map((activity, index) => {
           const lat = activity.location?.lat || activity.lat;
           const lng = activity.location?.lng || activity.lng;
 

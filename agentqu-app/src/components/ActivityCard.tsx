@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
 import { Activity } from '../lib/types';
-import { useAuth } from '../hooks/useAuth';
-import QuupButton from './QuupButton';
-import CheckInButton from './CheckInButton';
-import ShareButton from './ShareButton';
 import ActivityDetails from './ActivityDetails';
 
 interface ActivityCardProps {
@@ -11,7 +7,6 @@ interface ActivityCardProps {
 }
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
-  const { user } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
 
   return (
@@ -150,33 +145,61 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           {activity.duration && <span>⏱️ {activity.duration} min</span>}
         </div>
 
-        {/* Action Buttons */}
-        {user && (
-          <div className="space-y-3">
-            {/* Check In Button */}
-            <CheckInButton
-              activityId={activity.activityId || activity.id}
-              userId={user.uid}
-              activityLat={activity.location?.lat || activity.lat}
-              activityLng={activity.location?.lng || activity.lng}
-            />
-
-            {/* Qu-up and Share Row */}
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <QuupButton
-                  activityId={activity.activityId || activity.id}
-                  userId={user.uid}
-                />
-              </div>
-              <ShareButton
-                activityId={activity.activityId || activity.id}
-                activityName={activity.name}
-                userId={user.uid}
-              />
+        {/* Additional Details Section */}
+        <div className="border-t pt-4 space-y-3">
+          {/* Hours */}
+          {activity.hoursToday && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500">🕐 Hours:</span>
+              <span className="text-gray-700 font-medium">
+                {activity.hoursToday.open} - {activity.hoursToday.close}
+              </span>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Phone (if available in details) */}
+          {(activity as any).details?.phone && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500">📞</span>
+              <a href={`tel:${(activity as any).details.phone}`} className="text-peach hover:underline font-medium">
+                {(activity as any).details.phone}
+              </a>
+            </div>
+          )}
+
+          {/* Website */}
+          {activity.website && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-500">🌐</span>
+              <a
+                href={activity.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-peach hover:underline font-medium truncate"
+              >
+                Visit Website
+              </a>
+            </div>
+          )}
+
+          {/* Address */}
+          {(activity.address || activity.location?.address) && (
+            <div className="flex items-start gap-2 text-sm">
+              <span className="text-gray-500 mt-0.5">📍</span>
+              <span className="text-gray-700 flex-1">
+                {activity.address || activity.location?.address}
+              </span>
+            </div>
+          )}
+
+          {/* View on Map Button */}
+          <button
+            onClick={() => setShowDetails(true)}
+            className="w-full mt-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-dark-text rounded-lg text-sm font-medium transition-colors"
+          >
+            View Full Details
+          </button>
+        </div>
       </div>
     </div>
 

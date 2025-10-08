@@ -1544,6 +1544,66 @@ exports.getNearbyTowns = onCall(
 );
 
 /**
+ * Geocode a city/address to coordinates
+ */
+exports.geocode = onCall(
+  {
+    cors: true,
+    maxInstances: 10,
+  },
+  async (request) => {
+    try {
+      const { address } = request.data;
+
+      if (!address || typeof address !== "string") {
+        throw new Error("Address is required");
+      }
+
+      console.log("🌍 GEOCODE: Geocoding address:", address);
+
+      const GOOGLE_GEOCODING_API_KEY = googleGeocodingApiKey.value();
+
+      const response = await axios.get(
+        "https://maps.googleapis.com/maps/api/geocode/json",
+        {
+          params: {
+            address: address,
+            key: GOOGLE_GEOCODING_API_KEY,
+          },
+        }
+      );
+
+      console.log("🌍 GEOCODE: Response status:", response.data.status);
+
+      if (response.data.status === "OK" && response.data.results && response.data.results.length > 0) {
+        const result = response.data.results[0];
+        const location = result.geometry.location;
+
+        console.log("🌍 GEOCODE: Found location:", location);
+
+        return {
+          success: true,
+          location: {
+            lat: location.lat,
+            lng: location.lng,
+          },
+          formattedAddress: result.formatted_address,
+        };
+      } else {
+        console.log("🌍 GEOCODE: No results found for:", address);
+        return {
+          success: false,
+          error: `Could not find location: ${address}`,
+        };
+      }
+    } catch (error) {
+      console.error("Error geocoding address:", error);
+      throw new Error(`Failed to geocode address: ${error.message}`);
+    }
+  }
+);
+
+/**
  * Health check endpoint
  */
 exports.healthCheck = onRequest((req, res) => {
