@@ -214,9 +214,24 @@ async function fetchGoogleSearch(lat, lng, city = null) {
   }
 
   try {
+    // Calculate date range for next 3 days
+    const today = new Date();
+    const threeDaysFromNow = new Date(today);
+    threeDaysFromNow.setDate(today.getDate() + 3);
+
+    const formatDate = (date) => {
+      const month = date.toLocaleString('en-US', { month: 'short' });
+      const day = date.getDate();
+      return `${month} ${day}`;
+    };
+
+    // Create search query for upcoming events
+    const dateRange = `${formatDate(today)}-${formatDate(threeDaysFromNow)}`;
     const searchQuery = city
-      ? `things to do near ${city} today`
-      : `things to do at ${lat},${lng} today`;
+      ? `events activities things to do near ${city} ${dateRange} 2025`
+      : `events activities near ${lat},${lng} ${dateRange} 2025`;
+
+    console.log(`🔍 SEARCH API: Query with dates: "${searchQuery}"`);
 
     const response = await axios.get(`https://www.googleapis.com/customsearch/v1`, {
       params: {
@@ -224,6 +239,7 @@ async function fetchGoogleSearch(lat, lng, city = null) {
         cx: GOOGLE_SEARCH_ENGINE_ID,
         q: searchQuery,
         num: 10,
+        dateRestrict: 'd7', // Results from last 7 days (for fresh event listings)
       },
     });
 
