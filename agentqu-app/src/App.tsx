@@ -10,12 +10,13 @@ import ActivityMap from './components/ActivityMap';
 import Settings from './components/Settings';
 import GeocacheView from './components/GeocacheView';
 import OffGridView from './components/OffGridView';
+import TripCreation from './components/TripCreation';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
   const [filters, setFilters] = useState<DiscoveryFilters>({ maxDistance: 10 });
   const [radius, setRadius] = useState(10); // miles
-  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'trip'>('list');
   const [showSettings, setShowSettings] = useState(false);
   const [showGeocaches, setShowGeocaches] = useState(false);
   const [enablePlaces, setEnablePlaces] = useState(true);
@@ -312,6 +313,19 @@ function App() {
                     </div>
                   </div>
                 )}
+
+                {/* There-Then Trip Planning Button */}
+                <button
+                  onClick={() => setViewMode('trip')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
+                    viewMode === 'trip'
+                      ? 'bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E] text-white shadow-md'
+                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
+                  }`}
+                >
+                  <span>🌍</span>
+                  <span>There-Then</span>
+                </button>
 
                 {/* Off Grid Button */}
                 <button
@@ -1041,6 +1055,9 @@ function App() {
                     }}
                   />
                 )}
+
+                {/* Trip Planning View */}
+                {viewMode === 'trip' && <TripCreation />}
 
                 {/* List View - Grouped by Category */}
                 {viewMode === 'list' && (
