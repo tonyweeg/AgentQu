@@ -141,6 +141,51 @@ function MapUpdater({ center, compact }: { center: [number, number], compact: bo
   return null;
 }
 
+// Component to auto-zoom to fit all activity markers
+function AutoZoomToMarkers({ activities, userLocation }: { activities: Activity[], userLocation: Location }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!activities || activities.length === 0) {
+      return;
+    }
+
+    // Get all valid activity coordinates
+    const activityCoords = activities
+      .map(activity => {
+        const lat = activity.location?.lat || activity.lat;
+        const lng = activity.location?.lng || activity.lng;
+        return lat && lng ? [lat, lng] as [number, number] : null;
+      })
+      .filter((coord): coord is [number, number] => coord !== null);
+
+    if (activityCoords.length === 0) {
+      return;
+    }
+
+    // Include user location in bounds
+    const allCoords = [[userLocation.lat, userLocation.lng], ...activityCoords];
+
+    // Calculate bounds
+    const bounds = allCoords.reduce(
+      (acc, [lat, lng]) => {
+        return [
+          [Math.min(acc[0][0], lat), Math.min(acc[0][1], lng)],
+          [Math.max(acc[1][0], lat), Math.max(acc[1][1], lng)]
+        ];
+      },
+      [[allCoords[0][0], allCoords[0][1]], [allCoords[0][0], allCoords[0][1]]]
+    ) as [[number, number], [number, number]];
+
+    // Fit bounds with padding
+    setTimeout(() => {
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    }, 200);
+  }, [activities, userLocation, map]);
+
+  return null;
+}
+
 const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onLocationChange, compact = false }) => {
   console.log('🗺️ MAP_DEBUG: ActivityMap rendering with', activities.length, 'activities');
   console.log('🗺️ MAP_DEBUG: onLocationChange callback provided:', !!onLocationChange);
@@ -173,6 +218,7 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
         touchZoom={!compact}
       >
         <MapUpdater center={center} compact={compact} />
+        {!compact && <AutoZoomToMarkers activities={activities} userLocation={userLocation} />}
         {!compact && <MapDragHandler onLocationChange={onLocationChange} />}
 
         {/* Map tiles */}
