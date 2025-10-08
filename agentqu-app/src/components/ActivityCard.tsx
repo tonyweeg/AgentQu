@@ -59,48 +59,38 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           {activity.score !== undefined && (
             <div className="ml-4 flex flex-col items-center gap-1">
               {(() => {
-                // Convert score to Q rating (1-5)
-                // Score ranges: 0-150=Low, 150-200=Medium, 200-250=High, 250-300=VeryHigh, 300+=Perfect
-                let qLevel = 1;
+                // Convert score to Q rating with compact gradient meter
                 let qLabel = "Worth a try";
-                let qColor = "bg-gray-400";
 
+                // Calculate percentage for gradient bar
+                const percentage = Math.min(100, (activity.score / 350) * 100);
+
+                // Rich vibrant gradients based on score
+                let gradientColors = 'from-gray-300 to-gray-400'; // Low
                 if (activity.score >= 300) {
-                  qLevel = 5;
-                  qLabel = "Perfect match!";
-                  qColor = "bg-gradient-to-r from-coral to-sand";
+                  gradientColors = 'from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]'; // Perfect - vibrant pink/coral/red
+                  qLabel = 'Perfect!';
                 } else if (activity.score >= 250) {
-                  qLevel = 4;
-                  qLabel = "You'll love it";
-                  qColor = "bg-gradient-to-r from-sand to-coral";
+                  gradientColors = 'from-[#FEC163] via-[#FF6B9D] to-[#F97171]'; // High - warm coral/orange
+                  qLabel = "Love it";
                 } else if (activity.score >= 200) {
-                  qLevel = 3;
-                  qLabel = "Good match";
-                  qColor = "bg-ocean-bright";
+                  gradientColors = 'from-[#4FACFE] via-[#00F2FE] to-[#43E97B]'; // Good - bright blue/cyan/green
                 } else if (activity.score >= 150) {
-                  qLevel = 2;
-                  qLabel = "Might like it";
-                  qColor = "bg-ocean-mid";
+                  gradientColors = 'from-[#667EEA] via-[#764BA2] to-[#F093FB]'; // Medium - purple/lavender
+                  qLabel = 'Might like';
                 }
 
                 return (
                   <>
-                    {/* Q Meter Bars */}
-                    <div className="flex gap-1 items-end">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <div
-                          key={level}
-                          className={`w-1.5 rounded-t transition-all ${
-                            level <= qLevel
-                              ? qColor
-                              : 'bg-gray-200'
-                          }`}
-                          style={{ height: `${level * 6}px` }}
-                        />
-                      ))}
+                    {/* Compact Q Meter - Horizontal gradient bar */}
+                    <div className="relative w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className={`absolute left-0 top-0 h-full bg-gradient-to-r ${gradientColors} transition-all duration-500 rounded-full`}
+                        style={{ width: `${percentage}%` }}
+                      />
                     </div>
                     {/* Q Label */}
-                    <div className="text-xs font-bold text-navy-text whitespace-nowrap">
+                    <div className="text-[10px] font-bold text-navy-text whitespace-nowrap tracking-tight">
                       {qLabel}
                     </div>
                   </>
