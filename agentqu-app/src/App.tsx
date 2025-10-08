@@ -105,11 +105,13 @@ function App() {
     }
   }, [activities.length, geocaches.length]);
 
-  // Fetch Wikipedia info about the city
+  // Fetch Wikipedia info about the city with rich data
+  const [wikiData, setWikiData] = useState<any>(null);
   useEffect(() => {
     const fetchLocationInfo = async () => {
       if (!city || !state) {
         setLocationInfo('');
+        setWikiData(null);
         return;
       }
 
@@ -123,6 +125,7 @@ function App() {
         if (response.ok) {
           const data = await response.json();
           setLocationInfo(data.extract || 'No information available.');
+          setWikiData(data);
         } else {
           // Fallback: try without state
           const fallbackUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city)}`;
@@ -130,13 +133,16 @@ function App() {
           if (fallbackResponse.ok) {
             const fallbackData = await fallbackResponse.json();
             setLocationInfo(fallbackData.extract || 'No information available.');
+            setWikiData(fallbackData);
           } else {
             setLocationInfo('No information available for this location.');
+            setWikiData(null);
           }
         }
       } catch (error) {
         console.error('Error fetching location info:', error);
         setLocationInfo('Unable to load location information.');
+        setWikiData(null);
       }
     };
 
@@ -606,15 +612,119 @@ function App() {
                     </div>
                   )}
 
-                  {/* Location Info from Wikipedia */}
+                  {/* Location Info from Wikipedia - Enhanced with STOKED meter and rich data */}
                   <div className="flex-1 bg-white rounded-lg border border-gray-300 p-4 overflow-y-auto max-h-64">
-                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">About This Area</h3>
+                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">About This Area</h3>
                     {city && state ? (
-                      <div>
-                        <p className="text-lg font-bold text-navy-text mb-2">{city}, {state}</p>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          {locationInfo || 'Loading local information...'}
-                        </p>
+                      <div className="space-y-3">
+                        {/* City Header with Wikipedia Link */}
+                        <div className="flex items-center justify-between">
+                          <p className="text-lg font-bold text-navy-text">{city}, {state}</p>
+                          {wikiData?.content_urls?.desktop?.page && (
+                            <a
+                              href={wikiData.content_urls.desktop.page}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-ocean-bright hover:text-ocean-mid transition-colors font-medium"
+                            >
+                              Wikipedia →
+                            </a>
+                          )}
+                        </div>
+
+                        {/* STOKED Meter - AI's opinion based on user affinities */}
+                        {(() => {
+                          // Calculate STOKED level based on average activity scores
+                          const avgScore = activities.length > 0
+                            ? activities.reduce((sum, a) => sum + (a.score || 0), 0) / activities.length
+                            : 0;
+                          const stokedPercentage = Math.min(100, (avgScore / 350) * 100);
+
+                          let stokedLabel = "Worth exploring";
+                          let stokedColor = "from-gray-400 to-gray-500";
+
+                          if (avgScore >= 280) {
+                            stokedLabel = "🔥 STOKED! Perfect match";
+                            stokedColor = "from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+                          } else if (avgScore >= 220) {
+                            stokedLabel = "⚡ Really excited!";
+                            stokedColor = "from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+                          } else if (avgScore >= 180) {
+                            stokedLabel = "👍 Good vibes here";
+                            stokedColor = "from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+                          } else if (avgScore >= 140) {
+                            stokedLabel = "🤔 Some potential";
+                            stokedColor = "from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+                          }
+
+                          return (
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">AI's Take</span>
+                                <span className="text-[10px] font-medium text-navy-text">{stokedLabel}</span>
+                              </div>
+                              <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className={`absolute left-0 top-0 h-full bg-gradient-to-r ${stokedColor} transition-all duration-700 rounded-full`}
+                                  style={{ width: `${stokedPercentage}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Rich Data Grid - Tufte style */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs border-t border-gray-200 pt-2">
+                          {wikiData?.extract && (
+                            <>
+                              <div className="col-span-2 text-gray-600 leading-relaxed mb-1">
+                                {wikiData.extract.split('.')[0]}.
+                              </div>
+                              {/* Population */}
+                              {(() => {
+                                const popMatch = wikiData.extract.match(/population[^0-9]*([0-9,]+)/i);
+                                if (popMatch) {
+                                  return (
+                                    <>
+                                      <span className="text-gray-500 font-medium">Population</span>
+                                      <span className="text-navy-text text-right font-bold">{popMatch[1]}</span>
+                                    </>
+                                  );
+                                }
+                                return null;
+                              })()}
+                              {/* Founded/Historical fact */}
+                              {(() => {
+                                const foundedMatch = wikiData.extract.match(/(founded|established|incorporated)[^0-9]*([0-9]{4})/i);
+                                if (foundedMatch) {
+                                  return (
+                                    <>
+                                      <span className="text-gray-500 font-medium">Founded</span>
+                                      <span className="text-navy-text text-right font-bold">{foundedMatch[2]}</span>
+                                    </>
+                                  );
+                                }
+                                return null;
+                              })()}
+                            </>
+                          )}
+                          {/* Activities Found */}
+                          <span className="text-gray-500 font-medium">Activities</span>
+                          <span className="text-navy-text text-right font-bold">{activities.length}</span>
+                          {/* Main Street Rating (based on activity density) */}
+                          <span className="text-gray-500 font-medium">Main St. Rating</span>
+                          <span className="text-navy-text text-right font-bold">
+                            {activities.length > 30 ? "⭐⭐⭐" : activities.length > 15 ? "⭐⭐" : activities.length > 5 ? "⭐" : "—"}
+                          </span>
+                        </div>
+
+                        {/* Cool Fact - if available from Wikipedia */}
+                        {wikiData?.extract && wikiData.extract.split('.').length > 2 && (
+                          <div className="text-xs bg-seafoam/30 rounded p-2 border-l-2 border-ocean-bright">
+                            <span className="font-bold text-gray-600">💡 </span>
+                            <span className="text-gray-700">{wikiData.extract.split('.').slice(1, 2).join('.')}</span>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 italic">Location information unavailable</p>
