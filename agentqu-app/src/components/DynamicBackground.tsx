@@ -290,7 +290,7 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
     const width = isBackground ? (tree.shape === 'palm' ? 'w-12' : 'w-16') : (tree.shape === 'palm' ? 'w-20' : 'w-24');
     const height = isBackground ? (tree.shape === 'palm' ? 'h-24' : 'h-32') : (tree.shape === 'palm' ? 'h-40' : 'h-48');
     const opacity = isBackground ? 'opacity-35' : 'opacity-65';
-    const bottom = isBackground ? 'bottom-32' : 'bottom-0';
+    const bottom = 'bottom-0'; // All trees sit on the coastal waves
     const fillColor = isBackground ? '#2f4f2f' : '#0f4f0f';
 
     let treePath = '';
