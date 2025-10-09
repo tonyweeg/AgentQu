@@ -26,7 +26,13 @@ export type BiomeType =
   | 'forest_mixed'
   | 'forest_temperate_rainforest'
   | 'forest_boreal'
-  | 'forest_oak_woodland';
+  | 'forest_oak_woodland'
+  | 'wetland_everglades'
+  | 'wetland_bayou'
+  | 'wetland_great_lakes'
+  | 'wetland_river_valley'
+  | 'wetland_coastal_marsh'
+  | 'subtropical_humid';
 
 interface BiomeDetectionResult {
   biomeType: BiomeType;
@@ -44,11 +50,14 @@ interface BiomeDetectionResult {
  */
 const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   // Coastal States
-  FL: ['coastal_tropical', 'coastal_sandy'],
+  FL: ['subtropical_humid', 'wetland_everglades', 'coastal_tropical', 'coastal_sandy'],
   CA: ['forest_oak_woodland', 'plains_central_valley', 'coastal_sandy', 'coastal_rocky', 'mountain_desert'],
-  NC: ['coastal_sandy', 'mountain_appalachian'],
-  SC: ['coastal_sandy'],
-  GA: ['coastal_sandy'],
+  NC: ['wetland_coastal_marsh', 'coastal_sandy', 'mountain_appalachian'],
+  SC: ['wetland_coastal_marsh', 'coastal_sandy'],
+  GA: ['wetland_coastal_marsh', 'coastal_sandy', 'subtropical_humid'],
+  LA: ['wetland_bayou', 'wetland_coastal_marsh', 'coastal_sandy'],
+  MS: ['wetland_bayou', 'coastal_sandy'],
+  AL: ['wetland_bayou', 'coastal_sandy'],
   ME: ['forest_boreal', 'forest_coniferous', 'coastal_rocky'],
   OR: ['forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
   WA: ['forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
@@ -78,14 +87,17 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   OK: ['plains_prairie', 'plains_great'],
   SD: ['plains_great', 'mountain_rockies'],
   ND: ['plains_great'],
-  IA: ['plains_prairie', 'plains_great'],
-  IL: ['plains_prairie'],
-  MO: ['plains_prairie', 'plains_great'],
+  IA: ['wetland_river_valley', 'plains_prairie', 'plains_great'],
+  IL: ['wetland_river_valley', 'plains_prairie'],
+  MO: ['wetland_river_valley', 'plains_prairie', 'plains_great'],
+  AR: ['wetland_bayou', 'wetland_river_valley', 'plains_prairie'],
 
-  // Forest States
-  MI: ['forest_deciduous', 'forest_mixed'],
-  WI: ['forest_deciduous', 'forest_mixed'],
-  MN: ['forest_boreal', 'forest_deciduous', 'plains_prairie'],
+  // Forest & Wetland States
+  MI: ['wetland_great_lakes', 'forest_deciduous', 'forest_mixed'],
+  WI: ['wetland_great_lakes', 'forest_deciduous', 'forest_mixed'],
+  MN: ['wetland_great_lakes', 'forest_boreal', 'forest_deciduous', 'plains_prairie'],
+  OH: ['wetland_great_lakes', 'wetland_river_valley', 'forest_deciduous'],
+  IN: ['wetland_river_valley', 'forest_deciduous'],
   NH: ['forest_mixed', 'forest_deciduous'],
   VT: ['forest_mixed', 'forest_deciduous'],
   AK: ['forest_boreal', 'forest_coniferous'],

@@ -35,6 +35,14 @@ import {
   BorealForestBiome,
   OakWoodlandBiome,
 } from '../types/ForestBiome';
+import {
+  EvergladesBiome,
+  BayouSwampBiome,
+  GreatLakesShoreBiome,
+  RiverValleyBiome,
+  CoastalMarshBiome,
+  SubtropicalHumidBiome,
+} from '../types/WetlandBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -93,6 +101,14 @@ export class BiomeFactory {
     this.biomeRegistry.set('forest_temperate_rainforest', () => new TemperateRainforestBiome());
     this.biomeRegistry.set('forest_boreal', () => new BorealForestBiome());
     this.biomeRegistry.set('forest_oak_woodland', () => new OakWoodlandBiome());
+
+    // Wetland & Subtropical biomes
+    this.biomeRegistry.set('wetland_everglades', () => new EvergladesBiome());
+    this.biomeRegistry.set('wetland_bayou', () => new BayouSwampBiome());
+    this.biomeRegistry.set('wetland_great_lakes', () => new GreatLakesShoreBiome());
+    this.biomeRegistry.set('wetland_river_valley', () => new RiverValleyBiome());
+    this.biomeRegistry.set('wetland_coastal_marsh', () => new CoastalMarshBiome());
+    this.biomeRegistry.set('subtropical_humid', () => new SubtropicalHumidBiome());
   }
 
   /**
