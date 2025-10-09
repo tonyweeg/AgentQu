@@ -321,11 +321,11 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
     );
   };
 
-  // Sun position based on time
+  // Sun position based on time - positioned below header (header is ~80px tall)
   const getSunPosition = () => {
-    if (timeOfDay === 'dawn') return 'top-20 left-12';
-    if (timeOfDay === 'dusk') return 'top-16 right-16';
-    return 'top-8 right-12';
+    if (timeOfDay === 'dawn') return 'top-32 left-12'; // Below header on left
+    if (timeOfDay === 'dusk') return 'top-28 right-16'; // Below header on right
+    return 'top-24 right-12'; // Below header, high in sky
   };
 
   // Moon phase
@@ -344,18 +344,18 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
 
       {/* Moon */}
       {showMoon && (
-        <div className={`absolute top-12 right-20 w-16 h-16 rounded-full ${isFullMoon ? 'bg-gray-200' : 'bg-gray-300'} shadow-lg`}></div>
+        <div className={`absolute top-28 right-20 w-16 h-16 rounded-full ${isFullMoon ? 'bg-gray-200' : 'bg-gray-300'} shadow-lg`}></div>
       )}
 
       {/* Clouds */}
       {showNiceClouds && (
         <>
-          <svg className="absolute top-16 left-32 w-28 h-14 opacity-40 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 100 50">
+          <svg className="absolute top-28 left-32 w-28 h-14 opacity-40 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 100 50">
             <ellipse cx="25" cy="35" rx="22" ry="13" fill="white"/>
             <ellipse cx="45" cy="30" rx="28" ry="16" fill="white"/>
             <ellipse cx="68" cy="35" rx="22" ry="13" fill="white"/>
           </svg>
-          <svg className="absolute top-32 right-24 w-32 h-16 opacity-35 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} viewBox="0 0 100 50">
+          <svg className="absolute top-40 right-24 w-32 h-16 opacity-35 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} viewBox="0 0 100 50">
             <ellipse cx="30" cy="35" rx="25" ry="14" fill="white"/>
             <ellipse cx="55" cy="32" rx="30" ry="17" fill="white"/>
             <ellipse cx="75" cy="36" rx="20" ry="12" fill="white"/>
