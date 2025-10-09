@@ -229,7 +229,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
       <div className="max-w-5xl w-full relative z-10">
         {/* Hero Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border border-blue-900/20">
           <div className="flex flex-col md:flex-row items-start gap-8">
             {/* Left side - Logo (top aligned) */}
             <div className="flex-shrink-0">
@@ -302,7 +302,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         </div>
 
         {/* Sign In Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-blue-900/20">
           <h2 className="text-2xl font-bold text-navy-text mb-6 text-center">
             Get Started
           </h2>
@@ -359,18 +359,20 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         </div>
 
         {/* Corporate Links */}
-        <div className="mt-6 flex items-center justify-center gap-6 text-sm">
-          <a href="/privacy" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
-            Privacy Policy
-          </a>
-          <span className="text-gray-400">•</span>
-          <a href="/terms" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
-            Terms of Service
-          </a>
-          <span className="text-gray-400">•</span>
-          <a href="/contact" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
-            Contact Us
-          </a>
+        <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-blue-900/20">
+          <div className="flex items-center justify-center gap-6 text-sm">
+            <a href="/privacy" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
+              Privacy Policy
+            </a>
+            <span className="text-gray-400">•</span>
+            <a href="/terms" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
+              Terms of Service
+            </a>
+            <span className="text-gray-400">•</span>
+            <a href="/contact" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
+              Contact Us
+            </a>
+          </div>
         </div>
       </div>
     </div>
