@@ -1337,7 +1337,7 @@ function App() {
       )}
 
       {/* Footer */}
-      <footer className="bg-navy-text text-white mt-12 py-8">
+      <footer className="bg-navy-text/40 backdrop-blur-sm text-white mt-12 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
             {/* About */}
