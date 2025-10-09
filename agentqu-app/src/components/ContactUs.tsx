@@ -40,6 +40,11 @@ const ContactUs: React.FC = () => {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
+          <img
+            src="/agentqu-logo.png"
+            alt="AgentQu Logo"
+            className="h-16 mx-auto mb-6"
+          />
           <h1 className="text-5xl font-bold text-navy-text mb-4">Get in Touch</h1>
           <p className="text-xl text-gray-600">We'd love to hear from you! Reach out anytime.</p>
         </div>
