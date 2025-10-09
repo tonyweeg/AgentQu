@@ -1,19 +1,19 @@
 import React from 'react';
+import SharedHeader from './SharedHeader';
+import SharedFooter from './SharedFooter';
 
 const PrivacyPolicy: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <img
-            src="/agentqu-logo.png"
-            alt="AgentQu Logo"
-            className="h-16 mx-auto mb-6"
-          />
-          <h1 className="text-4xl font-bold text-navy-text mb-2">Privacy Policy</h1>
-          <p className="text-gray-600">Last Updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <SharedHeader />
+
+      <div className="py-12 px-4">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h1 className="text-4xl font-bold text-navy-text mb-2">Privacy Policy</h1>
+            <p className="text-gray-600">Last Updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+          </div>
 
         {/* Content */}
         <div className="prose prose-lg max-w-none">
@@ -187,16 +187,10 @@ const PrivacyPolicy: React.FC = () => {
           </section>
         </div>
 
-        {/* Back Button */}
-        <div className="mt-8 pt-6 border-t">
-          <button
-            onClick={() => window.history.back()}
-            className="bg-ocean-bright hover:bg-ocean-mid text-white font-bold py-3 px-6 rounded-lg transition-colors"
-          >
-            ← Back to AgentQu
-          </button>
         </div>
       </div>
+
+      <SharedFooter />
     </div>
   );
 };

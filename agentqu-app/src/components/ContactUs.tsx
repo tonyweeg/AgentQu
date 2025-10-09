@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import SharedHeader from './SharedHeader';
+import SharedFooter from './SharedFooter';
 
 const ContactUs: React.FC = () => {
   const { user } = useAuth();
@@ -36,18 +38,16 @@ const ContactUs: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ocean-bright/10 to-seafoam/30 py-12 px-4">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <img
-            src="/agentqu-logo.png"
-            alt="AgentQu Logo"
-            className="h-16 mx-auto mb-6"
-          />
-          <h1 className="text-5xl font-bold text-navy-text mb-4">Get in Touch</h1>
-          <p className="text-xl text-gray-600">We'd love to hear from you! Reach out anytime.</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-ocean-bright/10 to-seafoam/30">
+      <SharedHeader />
+
+      <div className="py-12 px-4">
+        <div className="max-w-5xl mx-auto">
+          {/* Page Title */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-navy-text mb-4">Get in Touch</h1>
+            <p className="text-xl text-gray-600">We'd love to hear from you! Reach out anytime.</p>
+          </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contact Form */}
@@ -221,16 +221,10 @@ const ContactUs: React.FC = () => {
           </div>
         </div>
 
-        {/* Back Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => window.history.back()}
-            className="bg-white hover:bg-gray-50 text-navy-text font-bold py-3 px-8 rounded-lg shadow-lg transition-colors border-2 border-gray-200"
-          >
-            ← Back to AgentQu
-          </button>
         </div>
       </div>
+
+      <SharedFooter />
     </div>
   );
 };
