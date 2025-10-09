@@ -14,10 +14,19 @@ export type BiomeType =
   | 'mountain_desert'
   | 'desert_sonoran'
   | 'desert_mojave'
+  | 'desert_great_basin'
+  | 'desert_chihuahuan'
   | 'plains_great'
   | 'plains_prairie'
+  | 'plains_palouse'
+  | 'plains_central_valley'
+  | 'plains_texas_hills'
   | 'forest_coniferous'
-  | 'forest_deciduous';
+  | 'forest_deciduous'
+  | 'forest_mixed'
+  | 'forest_temperate_rainforest'
+  | 'forest_boreal'
+  | 'forest_oak_woodland';
 
 interface BiomeDetectionResult {
   biomeType: BiomeType;
@@ -36,50 +45,57 @@ interface BiomeDetectionResult {
 const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   // Coastal States
   FL: ['coastal_tropical', 'coastal_sandy'],
-  CA: ['coastal_sandy', 'coastal_rocky', 'mountain_desert'],
+  CA: ['forest_oak_woodland', 'plains_central_valley', 'coastal_sandy', 'coastal_rocky', 'mountain_desert'],
   NC: ['coastal_sandy', 'mountain_appalachian'],
   SC: ['coastal_sandy'],
   GA: ['coastal_sandy'],
-  ME: ['coastal_rocky'],
-  OR: ['coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
-  WA: ['coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
+  ME: ['forest_boreal', 'forest_coniferous', 'coastal_rocky'],
+  OR: ['forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
+  WA: ['forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
 
   // Mountain States
-  CO: ['mountain_rockies', 'plains_great'],
-  WY: ['mountain_rockies', 'plains_great'],
-  MT: ['mountain_rockies', 'plains_great'],
-  ID: ['mountain_rockies', 'forest_coniferous'],
-  NV: ['mountain_desert', 'desert_mojave'],
-  UT: ['mountain_desert', 'desert_mojave'],
+  CO: ['mountain_rockies', 'forest_coniferous', 'plains_great'],
+  WY: ['mountain_rockies', 'forest_coniferous', 'plains_great'],
+  MT: ['mountain_rockies', 'forest_coniferous', 'plains_great'],
+  ID: ['plains_palouse', 'mountain_rockies', 'forest_coniferous', 'desert_great_basin'],
+  NV: ['desert_great_basin', 'desert_mojave', 'mountain_desert'],
+  UT: ['desert_great_basin', 'desert_mojave', 'mountain_desert'],
 
   // Appalachian States
-  VA: ['mountain_appalachian', 'forest_deciduous'],
-  WV: ['mountain_appalachian', 'forest_deciduous'],
-  TN: ['mountain_appalachian', 'forest_deciduous'],
-  KY: ['mountain_appalachian', 'forest_deciduous'],
+  VA: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  WV: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  TN: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  KY: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
 
   // Desert States
   AZ: ['desert_sonoran', 'mountain_desert'],
-  NM: ['desert_sonoran', 'mountain_desert'],
+  NM: ['desert_chihuahuan', 'desert_sonoran', 'mountain_desert'],
+  TX: ['plains_texas_hills', 'desert_chihuahuan', 'plains_great'],
 
   // Plains States
   KS: ['plains_great', 'plains_prairie'],
   NE: ['plains_great', 'plains_prairie'],
-  OK: ['plains_great', 'plains_prairie'],
+  OK: ['plains_prairie', 'plains_great'],
   SD: ['plains_great', 'mountain_rockies'],
   ND: ['plains_great'],
+  IA: ['plains_prairie', 'plains_great'],
+  IL: ['plains_prairie'],
+  MO: ['plains_prairie', 'plains_great'],
 
   // Forest States
-  MI: ['forest_deciduous'],
-  WI: ['forest_deciduous'],
-  MN: ['forest_deciduous', 'plains_prairie'],
+  MI: ['forest_deciduous', 'forest_mixed'],
+  WI: ['forest_deciduous', 'forest_mixed'],
+  MN: ['forest_boreal', 'forest_deciduous', 'plains_prairie'],
+  NH: ['forest_mixed', 'forest_deciduous'],
+  VT: ['forest_mixed', 'forest_deciduous'],
+  AK: ['forest_boreal', 'forest_coniferous'],
 
   // Mid-Atlantic
   DE: ['coastal_sandy'], // Delaware - coastal
-  MD: ['coastal_sandy', 'mountain_appalachian'],
-  NJ: ['coastal_sandy'],
-  NY: ['coastal_rocky', 'mountain_appalachian', 'forest_deciduous'],
-  PA: ['mountain_appalachian', 'forest_deciduous'],
+  MD: ['coastal_sandy', 'mountain_appalachian', 'forest_deciduous'],
+  NJ: ['coastal_sandy', 'forest_deciduous'],
+  NY: ['coastal_rocky', 'mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  PA: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
 };
 
 /**

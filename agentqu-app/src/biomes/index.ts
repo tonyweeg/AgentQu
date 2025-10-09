@@ -18,3 +18,6 @@ export type { BiomeType } from './core/BiomeDetector';
 // Biome classes (for advanced usage)
 export * from './types/CoastalBiome';
 export * from './types/MountainBiome';
+export * from './types/DesertBiome';
+export * from './types/PlainsBiome';
+export * from './types/ForestBiome';

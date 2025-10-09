@@ -14,6 +14,27 @@ import {
   AppalachianBiome,
   DesertMountainsBiome,
 } from '../types/MountainBiome';
+import {
+  SonoranDesertBiome,
+  MojaveDesertBiome,
+  GreatBasinDesertBiome,
+  ChihuahuanDesertBiome,
+} from '../types/DesertBiome';
+import {
+  GreatPlainsBiome,
+  TallgrassPrairieBiome,
+  PalouseBiome,
+  CentralValleyBiome,
+  TexasHillCountryBiome,
+} from '../types/PlainsBiome';
+import {
+  ConiferousForestBiome,
+  DeciduousForestBiome,
+  MixedForestBiome,
+  TemperateRainforestBiome,
+  BorealForestBiome,
+  OakWoodlandBiome,
+} from '../types/ForestBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -52,13 +73,26 @@ export class BiomeFactory {
     this.biomeRegistry.set('mountain_appalachian', () => new AppalachianBiome());
     this.biomeRegistry.set('mountain_desert', () => new DesertMountainsBiome());
 
-    // TODO: Add more biome types as they're implemented
-    // this.biomeRegistry.set('desert_sonoran', () => new SonoranDesertBiome());
-    // this.biomeRegistry.set('desert_mojave', () => new MojaveDesertBiome());
-    // this.biomeRegistry.set('plains_great', () => new GreatPlainsBiome());
-    // this.biomeRegistry.set('plains_prairie', () => new PrairieBiome());
-    // this.biomeRegistry.set('forest_coniferous', () => new ConiferousForestBiome());
-    // this.biomeRegistry.set('forest_deciduous', () => new DeciduousForestBiome());
+    // Desert biomes
+    this.biomeRegistry.set('desert_sonoran', () => new SonoranDesertBiome());
+    this.biomeRegistry.set('desert_mojave', () => new MojaveDesertBiome());
+    this.biomeRegistry.set('desert_great_basin', () => new GreatBasinDesertBiome());
+    this.biomeRegistry.set('desert_chihuahuan', () => new ChihuahuanDesertBiome());
+
+    // Plains biomes
+    this.biomeRegistry.set('plains_great', () => new GreatPlainsBiome());
+    this.biomeRegistry.set('plains_prairie', () => new TallgrassPrairieBiome());
+    this.biomeRegistry.set('plains_palouse', () => new PalouseBiome());
+    this.biomeRegistry.set('plains_central_valley', () => new CentralValleyBiome());
+    this.biomeRegistry.set('plains_texas_hills', () => new TexasHillCountryBiome());
+
+    // Forest biomes
+    this.biomeRegistry.set('forest_coniferous', () => new ConiferousForestBiome());
+    this.biomeRegistry.set('forest_deciduous', () => new DeciduousForestBiome());
+    this.biomeRegistry.set('forest_mixed', () => new MixedForestBiome());
+    this.biomeRegistry.set('forest_temperate_rainforest', () => new TemperateRainforestBiome());
+    this.biomeRegistry.set('forest_boreal', () => new BorealForestBiome());
+    this.biomeRegistry.set('forest_oak_woodland', () => new OakWoodlandBiome());
   }
 
   /**
