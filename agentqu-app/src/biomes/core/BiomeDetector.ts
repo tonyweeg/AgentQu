@@ -45,7 +45,10 @@ export type BiomeType =
   | 'agricultural_rangeland'
   | 'coastal_barrier_island'
   | 'coastal_sand_dunes'
-  | 'coastal_cliffside';
+  | 'coastal_cliffside'
+  | 'desert_painted'
+  | 'desert_salt_flats'
+  | 'desert_badlands';
 
 interface BiomeDetectionResult {
   biomeType: BiomeType;
@@ -81,8 +84,8 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   WY: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
   MT: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
   ID: ['plains_palouse', 'mountain_rockies', 'forest_coniferous', 'desert_great_basin'],
-  NV: ['desert_great_basin', 'desert_mojave', 'mountain_desert'],
-  UT: ['special_canyon', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
+  NV: ['desert_salt_flats', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
+  UT: ['desert_salt_flats', 'special_canyon', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
 
   // Appalachian States
   VA: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
@@ -91,7 +94,7 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   KY: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
 
   // Desert States
-  AZ: ['special_canyon', 'desert_sonoran', 'mountain_desert'],
+  AZ: ['desert_painted', 'special_canyon', 'desert_sonoran', 'mountain_desert'],
   NM: ['desert_chihuahuan', 'desert_sonoran', 'mountain_desert'],
   TX: ['coastal_barrier_island', 'plains_texas_hills', 'desert_chihuahuan', 'plains_great'],
 
@@ -99,7 +102,7 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   KS: ['agricultural_cropland', 'plains_great', 'plains_prairie'],
   NE: ['agricultural_rangeland', 'agricultural_cropland', 'plains_great', 'plains_prairie'],
   OK: ['plains_prairie', 'plains_great'],
-  SD: ['agricultural_rangeland', 'special_canyon', 'plains_great', 'mountain_rockies'],
+  SD: ['desert_badlands', 'agricultural_rangeland', 'special_canyon', 'plains_great', 'mountain_rockies'],
   ND: ['agricultural_rangeland', 'agricultural_cropland', 'plains_great'],
   IA: ['agricultural_cropland', 'wetland_river_valley', 'plains_prairie', 'plains_great'],
   IL: ['agricultural_cropland', 'special_urban', 'wetland_river_valley', 'plains_prairie'],

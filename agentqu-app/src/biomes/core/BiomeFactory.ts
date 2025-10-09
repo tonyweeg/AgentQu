@@ -62,6 +62,11 @@ import {
   SandDunesBiome,
   CliffsideCoastBiome,
 } from '../types/CoastalVariationsBiome';
+import {
+  PaintedDesertBiome,
+  SaltFlatsBiome,
+  BadlandsBiome,
+} from '../types/AridVariationsBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -147,6 +152,11 @@ export class BiomeFactory {
     this.biomeRegistry.set('coastal_barrier_island', () => new BarrierIslandBiome());
     this.biomeRegistry.set('coastal_sand_dunes', () => new SandDunesBiome());
     this.biomeRegistry.set('coastal_cliffside', () => new CliffsideCoastBiome());
+
+    // Arid/Desert Variations
+    this.biomeRegistry.set('desert_painted', () => new PaintedDesertBiome());
+    this.biomeRegistry.set('desert_salt_flats', () => new SaltFlatsBiome());
+    this.biomeRegistry.set('desert_badlands', () => new BadlandsBiome());
   }
 
   /**
