@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
@@ -9,6 +9,45 @@ interface AuthScreenProps {
 const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationCity, setLocationCity] = useState<string>('');
+
+  // Try to get user's location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const loc = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setLocation(loc);
+
+          // Reverse geocode to get city name
+          try {
+            const response = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${loc.lat},${loc.lng}&key=AIzaSyBCWC0ELKy7sxdLPc-BGE8-zzAQu76gwcU`
+            );
+            const data = await response.json();
+            if (data.results && data.results[0]) {
+              const addressComponents = data.results[0].address_components;
+              const cityComponent = addressComponents.find((c: any) =>
+                c.types.includes('locality') || c.types.includes('administrative_area_level_2')
+              );
+              if (cityComponent) {
+                setLocationCity(cityComponent.long_name);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to get city name:', err);
+          }
+        },
+        (error) => {
+          console.log('Location access denied:', error);
+        }
+      );
+    }
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
@@ -40,8 +79,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
       <div className="max-w-5xl w-full">
         {/* Hero Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            {/* Left side - Logo and branding */}
+          <div className="flex flex-col md:flex-row items-start gap-8">
+            {/* Left side - Logo (top aligned) */}
             <div className="flex-shrink-0">
               <img
                 src="/agentqu-logo.png"
@@ -50,7 +89,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
               />
             </div>
 
-            {/* Right side - Content */}
+            {/* Middle - Content */}
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold text-navy-text mb-3">AgentQu</h1>
               <p className="text-xl md:text-2xl text-ocean-bright font-semibold mb-4">
@@ -76,6 +115,29 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 </div>
               </div>
             </div>
+
+            {/* Right side - Map/Location Preview */}
+            {location ? (
+              <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl overflow-hidden shadow-lg relative">
+                <img
+                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lng}&zoom=13&size=400x300&markers=color:blue%7C${location.lat},${location.lng}&key=AIzaSyBCWC0ELKy7sxdLPc-BGE8-zzAQu76gwcU&style=feature:poi|element:labels|visibility:on&style=feature:road|element:geometry|color:0xffffff`}
+                  alt="Your Location"
+                  className="w-full h-full object-cover"
+                />
+                {locationCity && (
+                  <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-center">
+                    <p className="text-sm font-semibold text-navy-text">📍 {locationCity}</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl bg-gradient-to-br from-ocean-bright/20 to-seafoam/30 flex items-center justify-center">
+                <div className="text-center px-4">
+                  <div className="text-4xl mb-2">🗺️</div>
+                  <p className="text-sm text-gray-600">Allow location to see nearby activities</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
