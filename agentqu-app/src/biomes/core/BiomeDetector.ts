@@ -52,7 +52,10 @@ export type BiomeType =
   | 'mountain_blue_ridge'
   | 'mountain_cascade'
   | 'mountain_sierra_nevada'
-  | 'forest_redwood';
+  | 'forest_redwood'
+  | 'unique_karst'
+  | 'unique_glacial'
+  | 'unique_geothermal';
 
 interface BiomeDetectionResult {
   biomeType: BiomeType;
@@ -85,8 +88,8 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
 
   // Mountain States
   CO: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
-  WY: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
-  MT: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
+  WY: ['unique_geothermal', 'agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
+  MT: ['unique_glacial', 'agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
   ID: ['plains_palouse', 'mountain_rockies', 'forest_coniferous', 'desert_great_basin'],
   NV: ['mountain_sierra_nevada', 'desert_salt_flats', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
   UT: ['desert_salt_flats', 'special_canyon', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
@@ -95,7 +98,7 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   VA: ['mountain_blue_ridge', 'mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
   WV: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
   TN: ['mountain_blue_ridge', 'mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
-  KY: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  KY: ['unique_karst', 'mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
 
   // Desert States
   AZ: ['desert_painted', 'special_canyon', 'desert_sonoran', 'mountain_desert'],
@@ -110,8 +113,8 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   ND: ['agricultural_rangeland', 'agricultural_cropland', 'plains_great'],
   IA: ['agricultural_cropland', 'wetland_river_valley', 'plains_prairie', 'plains_great'],
   IL: ['agricultural_cropland', 'special_urban', 'wetland_river_valley', 'plains_prairie'],
-  MO: ['wetland_river_valley', 'plains_prairie', 'plains_great'],
-  AR: ['wetland_bayou', 'wetland_river_valley', 'plains_prairie'],
+  MO: ['unique_karst', 'wetland_river_valley', 'plains_prairie', 'plains_great'],
+  AR: ['unique_geothermal', 'wetland_bayou', 'wetland_river_valley', 'plains_prairie'],
 
   // Forest & Wetland States
   MI: ['coastal_sand_dunes', 'agricultural_orchard', 'wetland_great_lakes', 'forest_deciduous', 'forest_mixed'],
@@ -121,7 +124,7 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   IN: ['coastal_sand_dunes', 'agricultural_cropland', 'wetland_river_valley', 'forest_deciduous'],
   NH: ['forest_mixed', 'forest_deciduous'],
   VT: ['forest_mixed', 'forest_deciduous'],
-  AK: ['special_arctic_tundra', 'forest_boreal', 'forest_coniferous'],
+  AK: ['unique_glacial', 'special_arctic_tundra', 'forest_boreal', 'forest_coniferous'],
 
   // Mid-Atlantic
   DE: ['coastal_sandy'], // Delaware - coastal

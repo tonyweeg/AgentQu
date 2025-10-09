@@ -73,6 +73,11 @@ import {
   SierraNevadaBiome,
   RedwoodForestBiome,
 } from '../types/RegionalMountainBiome';
+import {
+  KarstLimestoneBiome,
+  GlacialValleyBiome,
+  GeothermalBiome,
+} from '../types/UniqueEcosystemBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -169,6 +174,11 @@ export class BiomeFactory {
     this.biomeRegistry.set('mountain_cascade', () => new CascadeRangeBiome());
     this.biomeRegistry.set('mountain_sierra_nevada', () => new SierraNevadaBiome());
     this.biomeRegistry.set('forest_redwood', () => new RedwoodForestBiome());
+
+    // Unique Ecosystems
+    this.biomeRegistry.set('unique_karst', () => new KarstLimestoneBiome());
+    this.biomeRegistry.set('unique_glacial', () => new GlacialValleyBiome());
+    this.biomeRegistry.set('unique_geothermal', () => new GeothermalBiome());
   }
 
   /**

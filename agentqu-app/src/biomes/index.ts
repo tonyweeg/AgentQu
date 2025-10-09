@@ -27,3 +27,4 @@ export * from './types/AgriculturalBiome';
 export * from './types/CoastalVariationsBiome';
 export * from './types/AridVariationsBiome';
 export * from './types/RegionalMountainBiome';
+export * from './types/UniqueEcosystemBiome';
