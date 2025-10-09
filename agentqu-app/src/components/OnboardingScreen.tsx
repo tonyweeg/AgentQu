@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AFFINITY_CATEGORIES, AffinityCategory } from '../lib/affinityCategories';
+import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
 
 interface OnboardingScreenProps {
   userName: string;

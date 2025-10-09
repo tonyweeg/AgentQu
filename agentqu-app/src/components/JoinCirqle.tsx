@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
@@ -13,13 +13,7 @@ const JoinCirqle: React.FC = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const inviteToken = urlParams.get('token');
 
-  useEffect(() => {
-    if (user && inviteToken && !success) {
-      handleJoin();
-    }
-  }, [user, inviteToken, success]);
-
-  const handleJoin = async () => {
+  const handleJoin = useCallback(async () => {
     if (!user || !inviteToken) return;
 
     setLoading(true);
@@ -49,7 +43,13 @@ const JoinCirqle: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, inviteToken]);
+
+  useEffect(() => {
+    if (user && inviteToken && !success) {
+      handleJoin();
+    }
+  }, [user, inviteToken, success, handleJoin]);
 
   if (!inviteToken) {
     return (

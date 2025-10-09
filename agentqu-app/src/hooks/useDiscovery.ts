@@ -31,8 +31,6 @@ export function useDiscovery({
     setLoading(true);
     setError(null);
 
-    const startTime = Date.now();
-
     try {
       // Call the Cloud Function with userId for affinity scoring
       const discoverActivities = httpsCallable(functions, 'discoverActivities');
@@ -82,7 +80,7 @@ export function useDiscovery({
     } finally {
       setLoading(false);
     }
-  }, [location, filters, enablePlaces, enableCustomSearch, key]);
+  }, [location, userId, filters, enablePlaces, enableCustomSearch, key]);
 
   useEffect(() => {
     fetchActivities();

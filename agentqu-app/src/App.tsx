@@ -49,7 +49,6 @@ function App() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [showAdventureMenu, setShowAdventureMenu] = useState(false);
-  const [locationInfo, setLocationInfo] = useState<string>('');
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -67,7 +66,7 @@ function App() {
   const { city, state } = useReverseGeocode(activeLocation);
 
   // Fetch activities (only when user is onboarded)
-  const { activities, loading: activitiesLoading, error: activitiesError, metadata, refetch } = useDiscovery({
+  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery({
     location: profile?.onboarded ? activeLocation : null,
     userId: user?.uid || null,
     filters,
@@ -108,7 +107,7 @@ function App() {
     };
 
     fetchNearbyTowns();
-  }, [activeLocation?.lat, activeLocation?.lng, city]);
+  }, [activeLocation, city]);
 
   // Filter geocaches from activities
   const geocaches = activities.filter((activity) => activity.type === 'cache');
@@ -127,20 +126,18 @@ function App() {
       console.log('🗺️ CLIENT DEBUG: Activity types:', activities.map(a => a.type));
       console.log('🗺️ CLIENT DEBUG: Geocaches found:', geocaches.length);
     }
-  }, [activities.length, geocaches.length]);
+  }, [activities, geocaches.length]);
 
   // Fetch Wikipedia info about the city with rich data
   const [wikiData, setWikiData] = useState<any>(null);
   useEffect(() => {
     const fetchLocationInfo = async () => {
       if (!city || !state) {
-        setLocationInfo('');
         setWikiData(null);
         return;
       }
 
       try {
-        setLocationInfo('Loading...');
         // Use Wikipedia API to get a summary
         const searchQuery = `${city}, ${state}`;
         const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchQuery)}`;
@@ -148,7 +145,6 @@ function App() {
         const response = await fetch(wikiUrl);
         if (response.ok) {
           const data = await response.json();
-          setLocationInfo(data.extract || 'No information available.');
           setWikiData(data);
         } else {
           // Fallback: try without state
@@ -156,16 +152,13 @@ function App() {
           const fallbackResponse = await fetch(fallbackUrl);
           if (fallbackResponse.ok) {
             const fallbackData = await fallbackResponse.json();
-            setLocationInfo(fallbackData.extract || 'No information available.');
             setWikiData(fallbackData);
           } else {
-            setLocationInfo('No information available for this location.');
             setWikiData(null);
           }
         }
       } catch (error) {
         console.error('Error fetching location info:', error);
-        setLocationInfo('Unable to load location information.');
         setWikiData(null);
       }
     };

@@ -14,7 +14,7 @@ const TripCreation: React.FC = () => {
   const [destination, setDestination] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [collaborators, setCollaborators] = useState<string[]>([]);
+  const [collaborators] = useState<string[]>([]);
 
   // Trip data after geocoding
   const [tripLocation, setTripLocation] = useState<{ lat: number; lng: number; address: string; city: string; state: string } | null>(null);

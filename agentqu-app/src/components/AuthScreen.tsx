@@ -81,7 +81,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationCity, setLocationCity] = useState<string>('');
-  const [locationRegion, setLocationRegion] = useState<string>('north-america'); // Default region
   const [mapError, setMapError] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'dusk' | 'night'>('day');
   const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy'>('clear');
@@ -252,7 +251,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 }
 
                 console.log('🗺️ LOCATION_DEBUG: Setting region to:', region);
-                setLocationRegion(region);
 
                 // Generate region-specific birds and trees
                 const birdLibrary = regionalBirds[region] || regionalBirds['north-america'];
@@ -448,7 +446,6 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
   // Sun position based on time
   const getSunPosition = () => {
-    const hour = new Date().getHours();
     if (timeOfDay === 'dawn') return 'top-20 left-12'; // Rising
     if (timeOfDay === 'dusk') return 'top-16 right-16'; // Setting
     return 'top-8 right-12'; // High noon

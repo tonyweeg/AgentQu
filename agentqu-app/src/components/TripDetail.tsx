@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { TripPlan, Activity, Cirqle, CirqleMember, TripParticipant } from '../lib/types';
-import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import EnvironmentalDashboard from './EnvironmentalDashboard';
 import ItineraryBuilder from './ItineraryBuilder';

@@ -67,7 +67,7 @@ export function useReverseGeocode(location: Location | null): ReverseGeocodeResu
     };
 
     fetchLocation();
-  }, [location?.lat, location?.lng]);
+  }, [location]);
 
   return { city, state, fullAddress, loading, error };
 }
