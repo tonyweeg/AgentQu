@@ -19,6 +19,7 @@ import TestHarness from './components/TestHarness';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import ContactUs from './components/ContactUs';
+import DynamicBackground from './components/DynamicBackground';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -321,8 +322,12 @@ function App() {
 
   // Main app - show discoveries
   return (
-    <div className="min-h-screen bg-transparent">
-      {/* Header */}
+    <>
+      {/* Dynamic Background - wavy mountains, weather, birds, trees */}
+      <DynamicBackground location={activeLocation} />
+
+      <div className="min-h-screen bg-transparent relative z-0">
+        {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
@@ -1376,7 +1381,8 @@ function App() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
 
