@@ -23,3 +23,4 @@ export * from './types/PlainsBiome';
 export * from './types/ForestBiome';
 export * from './types/WetlandBiome';
 export * from './types/SpecialBiome';
+export * from './types/AgriculturalBiome';

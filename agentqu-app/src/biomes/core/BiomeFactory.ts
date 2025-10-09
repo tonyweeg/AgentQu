@@ -51,6 +51,12 @@ import {
   CanyonBiome,
   TropicalIslandBiome,
 } from '../types/SpecialBiome';
+import {
+  CroplandBiome,
+  OrchardBiome,
+  VineyardBiome,
+  RangelandBiome,
+} from '../types/AgriculturalBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -125,6 +131,12 @@ export class BiomeFactory {
     this.biomeRegistry.set('special_volcanic', () => new VolcanicBiome());
     this.biomeRegistry.set('special_canyon', () => new CanyonBiome());
     this.biomeRegistry.set('special_tropical_island', () => new TropicalIslandBiome());
+
+    // Agricultural & Rural biomes
+    this.biomeRegistry.set('agricultural_cropland', () => new CroplandBiome());
+    this.biomeRegistry.set('agricultural_orchard', () => new OrchardBiome());
+    this.biomeRegistry.set('agricultural_vineyard', () => new VineyardBiome());
+    this.biomeRegistry.set('agricultural_rangeland', () => new RangelandBiome());
   }
 
   /**
