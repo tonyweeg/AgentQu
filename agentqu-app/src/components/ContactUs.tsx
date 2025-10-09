@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import SharedHeader from './SharedHeader';
-import SharedFooter from './SharedFooter';
 
 const ContactUs: React.FC = () => {
   const { user } = useAuth();
@@ -38,16 +36,13 @@ const ContactUs: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ocean-bright/10 to-seafoam/30">
-      <SharedHeader />
-
-      <div className="py-12 px-4">
-        <div className="max-w-5xl mx-auto">
-          {/* Page Title */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-navy-text mb-4">Get in Touch</h1>
-            <p className="text-xl text-gray-600">We'd love to hear from you! Reach out anytime.</p>
-          </div>
+    <div className="py-12 px-4 bg-gradient-to-br from-ocean-bright/10 to-seafoam/30 min-h-screen">
+      <div className="max-w-5xl mx-auto">
+        {/* Page Title */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-navy-text mb-4">Get in Touch</h1>
+          <p className="text-xl text-gray-600">We'd love to hear from you! Reach out anytime.</p>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contact Form */}
@@ -220,11 +215,7 @@ const ContactUs: React.FC = () => {
             </div>
           </div>
         </div>
-
-        </div>
       </div>
-
-      <SharedFooter />
     </div>
   );
 };

@@ -1,19 +1,14 @@
 import React from 'react';
-import SharedHeader from './SharedHeader';
-import SharedFooter from './SharedFooter';
 
 const TermsOfService: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <SharedHeader />
-
-      <div className="py-12 px-4">
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
-          {/* Header */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-navy-text mb-2">Terms of Service</h1>
-            <p className="text-gray-600">Last Updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-          </div>
+    <div className="py-12 px-4 bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8 md:p-12">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-navy-text mb-2">Terms of Service</h1>
+          <p className="text-gray-600">Last Updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+        </div>
 
         {/* Content */}
         <div className="prose prose-lg max-w-none">
@@ -225,10 +220,7 @@ const TermsOfService: React.FC = () => {
           </section>
         </div>
 
-        </div>
       </div>
-
-      <SharedFooter />
     </div>
   );
 };

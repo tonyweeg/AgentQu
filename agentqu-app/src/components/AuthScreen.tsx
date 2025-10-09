@@ -98,9 +98,27 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              By signing in, you agree to our Terms of Service and Privacy Policy
+              By signing in, you agree to our{' '}
+              <a href="/terms" className="text-ocean-bright hover:text-ocean-mid font-medium underline">Terms of Service</a>
+              {' '}and{' '}
+              <a href="/privacy" className="text-ocean-bright hover:text-ocean-mid font-medium underline">Privacy Policy</a>
             </p>
           </div>
+        </div>
+
+        {/* Corporate Links */}
+        <div className="mt-6 flex items-center justify-center gap-6 text-sm">
+          <a href="/privacy" className="text-gray-600 hover:text-ocean-bright transition-colors font-medium">
+            Privacy Policy
+          </a>
+          <span className="text-gray-400">•</span>
+          <a href="/terms" className="text-gray-600 hover:text-ocean-bright transition-colors font-medium">
+            Terms of Service
+          </a>
+          <span className="text-gray-400">•</span>
+          <a href="/contact" className="text-gray-600 hover:text-ocean-bright transition-colors font-medium">
+            Contact Us
+          </a>
         </div>
 
         {/* Features */}
