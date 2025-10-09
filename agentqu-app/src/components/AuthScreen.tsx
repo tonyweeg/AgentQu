@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
@@ -6,18 +6,8 @@ interface AuthScreenProps {
   onSuccess: () => void;
 }
 
-const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [locationCity, setLocationCity] = useState<string>('');
-  const [locationRegion, setLocationRegion] = useState<string>('north-america'); // Default region
-  const [mapError, setMapError] = useState(false);
-  const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'dusk' | 'night'>('day');
-  const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy'>('clear');
-
-  // Region-specific bird libraries
-  const regionalBirds: Record<string, Array<{ type: string; flies: boolean; perches: boolean; walks: boolean; size: 'small' | 'medium' | 'large' }>> = {
+// Move regional libraries OUTSIDE component to prevent recreation on every render
+const regionalBirds: Record<string, Array<{ type: string; flies: boolean; perches: boolean; walks: boolean; size: 'small' | 'medium' | 'large' }>> = {
     'north-america': [
       { type: 'cardinal', flies: true, perches: true, walks: true, size: 'small' },
       { type: 'blue-jay', flies: true, perches: true, walks: true, size: 'small' },
@@ -84,7 +74,20 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
       { type: 'brazil-nut', shape: 'tropical' },
       { type: 'kapok', shape: 'tropical' },
     ],
-  };
+};
+
+const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationCity, setLocationCity] = useState<string>('');
+  const [locationRegion, setLocationRegion] = useState<string>('north-america'); // Default region
+  const [mapError, setMapError] = useState(false);
+  const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'dusk' | 'night'>('day');
+  const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy'>('clear');
+
+  // Use ref to track last fetched location to prevent repeated API calls
+  const lastFetchedLocation = useRef<{ lat: number; lng: number } | null>(null);
 
   // Region-aware birds and trees (start with defaults, update based on location)
   const [activeBirds, setActiveBirds] = useState<Array<{
@@ -140,6 +143,22 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     else setTimeOfDay('night');
   }, []);
 
+  // Helper function to calculate distance between two coordinates in meters
+  const getDistanceInMeters = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) *
+      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  };
+
   // Try to get user's location and weather
   useEffect(() => {
     if (navigator.geolocation) {
@@ -149,6 +168,25 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             lat: position.coords.latitude,
             lng: position.coords.longitude
           };
+
+          // Check if location has changed significantly (more than 100 meters)
+          if (lastFetchedLocation.current) {
+            const distance = getDistanceInMeters(
+              lastFetchedLocation.current.lat,
+              lastFetchedLocation.current.lng,
+              loc.lat,
+              loc.lng
+            );
+
+            // If less than 100 meters, skip API calls
+            if (distance < 100) {
+              console.log('🗺️ LOCATION_DEBUG: Location change too small (<100m), skipping API calls');
+              return;
+            }
+          }
+
+          // Update last fetched location
+          lastFetchedLocation.current = loc;
           setLocation(loc);
 
           // Reverse geocode to get city name and weather
@@ -294,7 +332,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         }
       );
     }
-  }, [regionalBirds, regionalTrees]);
+  }, []); // Run once on mount - regionalBirds/regionalTrees are now outside component
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
