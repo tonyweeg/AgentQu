@@ -333,7 +333,7 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
   const isFullMoon = moonPhase >= 13 && moonPhase <= 16;
 
   return (
-    <div className="fixed inset-0 -z-10 pointer-events-none">
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -10 }}>
       {/* Dynamic Sky gradient */}
       <div className={`absolute inset-0 bg-gradient-to-b ${getSkyGradient()}`}></div>
 
