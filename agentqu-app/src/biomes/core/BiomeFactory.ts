@@ -57,6 +57,11 @@ import {
   VineyardBiome,
   RangelandBiome,
 } from '../types/AgriculturalBiome';
+import {
+  BarrierIslandBiome,
+  SandDunesBiome,
+  CliffsideCoastBiome,
+} from '../types/CoastalVariationsBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -137,6 +142,11 @@ export class BiomeFactory {
     this.biomeRegistry.set('agricultural_orchard', () => new OrchardBiome());
     this.biomeRegistry.set('agricultural_vineyard', () => new VineyardBiome());
     this.biomeRegistry.set('agricultural_rangeland', () => new RangelandBiome());
+
+    // Coastal Variations
+    this.biomeRegistry.set('coastal_barrier_island', () => new BarrierIslandBiome());
+    this.biomeRegistry.set('coastal_sand_dunes', () => new SandDunesBiome());
+    this.biomeRegistry.set('coastal_cliffside', () => new CliffsideCoastBiome());
   }
 
   /**
