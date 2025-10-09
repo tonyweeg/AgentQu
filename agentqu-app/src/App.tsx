@@ -15,6 +15,7 @@ import CirqleManager from './components/CirqleManager';
 import JoinCirqle from './components/JoinCirqle';
 import MyTrips from './components/MyTrips';
 import TripDetail from './components/TripDetail';
+import TestHarness from './components/TestHarness';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
   const urlPath = window.location.pathname;
   const urlParams = new URLSearchParams(window.location.search);
   const isJoinCirqle = urlPath === '/join-cirqle' || urlParams.has('token');
+  const isTestHarness = urlPath === '/test-harness';
   const urlView = urlParams.get('view');
   const tripId = urlParams.get('id');
 
@@ -179,6 +181,11 @@ function App() {
         </div>
       </div>
     );
+  }
+
+  // Test Harness (special route - accessible without full auth)
+  if (isTestHarness) {
+    return <TestHarness />;
   }
 
   // Join Cirqle flow (special route)
