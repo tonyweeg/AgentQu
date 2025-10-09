@@ -1,0 +1,287 @@
+/**
+ * BiomeDetector - Analyzes location and determines appropriate biome
+ * Uses state, elevation, distance to coast, and geographic features
+ */
+
+import { Location } from '../../lib/types';
+
+export type BiomeType =
+  | 'coastal_sandy'
+  | 'coastal_rocky'
+  | 'coastal_tropical'
+  | 'mountain_rockies'
+  | 'mountain_appalachian'
+  | 'mountain_desert'
+  | 'desert_sonoran'
+  | 'desert_mojave'
+  | 'plains_great'
+  | 'plains_prairie'
+  | 'forest_coniferous'
+  | 'forest_deciduous';
+
+interface BiomeDetectionResult {
+  biomeType: BiomeType;
+  confidence: number;
+  metadata: {
+    state?: string | null;
+    elevation?: number;
+    coastalDistance?: number;
+    landmarks?: string[];
+  };
+}
+
+/**
+ * State-to-Biome mapping (primary classification)
+ */
+const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
+  // Coastal States
+  FL: ['coastal_tropical', 'coastal_sandy'],
+  CA: ['coastal_sandy', 'coastal_rocky', 'mountain_desert'],
+  NC: ['coastal_sandy', 'mountain_appalachian'],
+  SC: ['coastal_sandy'],
+  GA: ['coastal_sandy'],
+  ME: ['coastal_rocky'],
+  OR: ['coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
+  WA: ['coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
+
+  // Mountain States
+  CO: ['mountain_rockies', 'plains_great'],
+  WY: ['mountain_rockies', 'plains_great'],
+  MT: ['mountain_rockies', 'plains_great'],
+  ID: ['mountain_rockies', 'forest_coniferous'],
+  NV: ['mountain_desert', 'desert_mojave'],
+  UT: ['mountain_desert', 'desert_mojave'],
+
+  // Appalachian States
+  VA: ['mountain_appalachian', 'forest_deciduous'],
+  WV: ['mountain_appalachian', 'forest_deciduous'],
+  TN: ['mountain_appalachian', 'forest_deciduous'],
+  KY: ['mountain_appalachian', 'forest_deciduous'],
+
+  // Desert States
+  AZ: ['desert_sonoran', 'mountain_desert'],
+  NM: ['desert_sonoran', 'mountain_desert'],
+
+  // Plains States
+  KS: ['plains_great', 'plains_prairie'],
+  NE: ['plains_great', 'plains_prairie'],
+  OK: ['plains_great', 'plains_prairie'],
+  SD: ['plains_great', 'mountain_rockies'],
+  ND: ['plains_great'],
+
+  // Forest States
+  MI: ['forest_deciduous'],
+  WI: ['forest_deciduous'],
+  MN: ['forest_deciduous', 'plains_prairie'],
+
+  // Mid-Atlantic
+  DE: ['coastal_sandy'], // Delaware - coastal
+  MD: ['coastal_sandy', 'mountain_appalachian'],
+  NJ: ['coastal_sandy'],
+  NY: ['coastal_rocky', 'mountain_appalachian', 'forest_deciduous'],
+  PA: ['mountain_appalachian', 'forest_deciduous'],
+};
+
+/**
+ * Elevation thresholds (in meters)
+ */
+const ELEVATION_THRESHOLDS = {
+  COASTAL: 50,
+  PLAINS: 500,
+  FOOTHILLS: 1000,
+  MOUNTAINS: 2000,
+  HIGH_MOUNTAINS: 3000,
+};
+
+export class BiomeDetector {
+  /**
+   * Detect biome from location data
+   */
+  public static async detectBiome(
+    location: Location,
+    state?: string | null,
+    elevation?: number
+  ): Promise<BiomeDetectionResult> {
+    // 1. Get state-based biome options
+    const stateBiomes = state ? STATE_BIOME_MAP[state] || [] : [];
+
+    // 2. If we have elevation data, refine selection
+    if (elevation !== undefined) {
+      return this.detectByElevation(stateBiomes, elevation, state);
+    }
+
+    // 3. If we have state but no elevation, use distance to coast heuristic
+    if (state) {
+      const coastalDistance = await this.estimateCoastalDistance(location);
+      return this.detectByCoastalDistance(stateBiomes, coastalDistance, state);
+    }
+
+    // 4. Fallback to generic biome based on lat/lng
+    return this.detectByLatLng(location);
+  }
+
+  /**
+   * Detect biome based on elevation
+   */
+  private static detectByElevation(
+    stateBiomes: BiomeType[],
+    elevation: number,
+    state?: string | null
+  ): BiomeDetectionResult {
+    // High mountains
+    if (elevation > ELEVATION_THRESHOLDS.HIGH_MOUNTAINS) {
+      const mountainBiome = stateBiomes.find(b => b.includes('mountain')) || 'mountain_rockies';
+      return {
+        biomeType: mountainBiome as BiomeType,
+        confidence: 0.95,
+        metadata: { state, elevation },
+      };
+    }
+
+    // Mountains
+    if (elevation > ELEVATION_THRESHOLDS.MOUNTAINS) {
+      const mountainBiome = stateBiomes.find(b => b.includes('mountain')) || 'mountain_appalachian';
+      return {
+        biomeType: mountainBiome as BiomeType,
+        confidence: 0.9,
+        metadata: { state, elevation },
+      };
+    }
+
+    // Foothills
+    if (elevation > ELEVATION_THRESHOLDS.FOOTHILLS) {
+      const hillBiome = stateBiomes.find(b => b.includes('mountain') || b.includes('forest')) || 'forest_deciduous';
+      return {
+        biomeType: hillBiome as BiomeType,
+        confidence: 0.8,
+        metadata: { state, elevation },
+      };
+    }
+
+    // Plains/Low elevation
+    if (elevation > ELEVATION_THRESHOLDS.PLAINS) {
+      const plainsBiome = stateBiomes.find(b => b.includes('plains') || b.includes('desert')) || 'plains_great';
+      return {
+        biomeType: plainsBiome as BiomeType,
+        confidence: 0.85,
+        metadata: { state, elevation },
+      };
+    }
+
+    // Coastal/Sea level
+    const coastalBiome = stateBiomes.find(b => b.includes('coastal')) || 'coastal_sandy';
+    return {
+      biomeType: coastalBiome as BiomeType,
+      confidence: 0.75,
+      metadata: { state, elevation },
+    };
+  }
+
+  /**
+   * Detect biome based on distance to coast
+   */
+  private static detectByCoastalDistance(
+    stateBiomes: BiomeType[],
+    coastalDistance: number,
+    state?: string | null
+  ): BiomeDetectionResult {
+    // Near coast (<50 miles)
+    if (coastalDistance < 80000) { // ~50 miles in meters
+      const coastalBiome = stateBiomes.find(b => b.includes('coastal')) || 'coastal_sandy';
+      return {
+        biomeType: coastalBiome as BiomeType,
+        confidence: 0.85,
+        metadata: { state, coastalDistance },
+      };
+    }
+
+    // Inland - use first non-coastal biome from state list
+    const inlandBiome = stateBiomes.find(b => !b.includes('coastal')) || 'plains_great';
+    return {
+      biomeType: inlandBiome as BiomeType,
+      confidence: 0.75,
+      metadata: { state, coastalDistance },
+    };
+  }
+
+  /**
+   * Detect biome based on lat/lng (fallback)
+   */
+  private static detectByLatLng(location: Location): BiomeDetectionResult {
+    const { lat, lng } = location;
+
+    // Tropical (Florida, Hawaii) - lat < 30
+    if (lat < 30 && lat > 20) {
+      return {
+        biomeType: 'coastal_tropical',
+        confidence: 0.6,
+        metadata: {},
+      };
+    }
+
+    // Northern states (lat > 45) - likely forest
+    if (lat > 45) {
+      return {
+        biomeType: 'forest_coniferous',
+        confidence: 0.6,
+        metadata: {},
+      };
+    }
+
+    // Western states (lng < -100) - likely mountains/desert
+    if (lng < -100) {
+      return {
+        biomeType: 'mountain_rockies',
+        confidence: 0.5,
+        metadata: {},
+      };
+    }
+
+    // Default to plains
+    return {
+      biomeType: 'plains_great',
+      confidence: 0.5,
+      metadata: {},
+    };
+  }
+
+  /**
+   * Estimate distance to nearest coast (approximate)
+   */
+  private static async estimateCoastalDistance(location: Location): Promise<number> {
+    // Simplified coastal distance estimation
+    // In production, this would use a coastal distance API or pre-computed dataset
+
+    const { lat, lng } = location;
+
+    // East Coast approximation
+    if (lng > -80) {
+      const distToAtlantic = Math.abs(lng + 75) * 111000; // Rough conversion to meters
+      return distToAtlantic;
+    }
+
+    // West Coast approximation
+    if (lng < -115) {
+      const distToPacific = Math.abs(lng + 120) * 111000;
+      return distToPacific;
+    }
+
+    // Gulf Coast approximation
+    if (lat < 35 && lng > -100 && lng < -80) {
+      const distToGulf = Math.abs(lat - 29) * 111000;
+      return distToGulf;
+    }
+
+    // Far inland
+    return 500000; // 500km default for inland locations
+  }
+
+  /**
+   * Get elevation from Google Elevation API (optional integration)
+   */
+  public static async getElevation(location: Location): Promise<number | undefined> {
+    // This would call Google Elevation API in production
+    // For now, return undefined and rely on other detection methods
+    return undefined;
+  }
+}

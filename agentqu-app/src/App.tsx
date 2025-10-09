@@ -19,7 +19,7 @@ import TestHarness from './components/TestHarness';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import ContactUs from './components/ContactUs';
-import DynamicBackground from './components/DynamicBackground';
+import BiomeRenderer from './biomes/core/BiomeRenderer';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -316,8 +316,18 @@ function App() {
   // Main app - show discoveries
   return (
     <>
-      {/* Dynamic Background - wavy mountains, weather, birds, trees */}
-      <DynamicBackground location={activeLocation} />
+      {/* Biome Background - Vector-based, location-aware backgrounds */}
+      <BiomeRenderer
+        location={activeLocation}
+        state={state}
+        timeOfDay={(() => {
+          const hour = new Date().getHours();
+          if (hour >= 5 && hour < 7) return 'dawn';
+          if (hour >= 7 && hour < 17) return 'day';
+          if (hour >= 17 && hour < 19) return 'dusk';
+          return 'night';
+        })()}
+      />
 
       <div className="min-h-screen bg-transparent relative z-0">
         {/* Header */}
