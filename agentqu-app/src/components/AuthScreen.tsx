@@ -444,11 +444,11 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     );
   };
 
-  // Sun position based on time
+  // Sun position based on time (below 160px navbar/tray)
   const getSunPosition = () => {
-    if (timeOfDay === 'dawn') return 'top-20 left-12'; // Rising
-    if (timeOfDay === 'dusk') return 'top-16 right-16'; // Setting
-    return 'top-8 right-12'; // High noon
+    if (timeOfDay === 'dawn') return 'top-44 left-12'; // 176px - rising
+    if (timeOfDay === 'dusk') return 'top-44 right-16'; // 176px - setting
+    return 'top-44 right-12'; // 176px - high noon
   };
 
   // Moon phase (simplified - shows current day of month)
