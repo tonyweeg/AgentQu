@@ -321,11 +321,11 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
     );
   };
 
-  // Sun position based on time - positioned below header (header is ~80px tall)
+  // Sun position based on time - positioned below header+tray (157px total)
   const getSunPosition = () => {
-    if (timeOfDay === 'dawn') return 'top-32 left-12'; // Below header on left
-    if (timeOfDay === 'dusk') return 'top-28 right-16'; // Below header on right
-    return 'top-24 right-12'; // Below header, high in sky
+    if (timeOfDay === 'dawn') return 'top-44 left-12'; // Below header+tray on left (176px)
+    if (timeOfDay === 'dusk') return 'top-40 right-16'; // Below header+tray on right (160px)
+    return 'top-40 right-12'; // Below header+tray, high in sky (160px)
   };
 
   // Moon phase
@@ -344,18 +344,18 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
 
       {/* Moon */}
       {showMoon && (
-        <div className={`absolute top-28 right-20 w-16 h-16 rounded-full ${isFullMoon ? 'bg-gray-200' : 'bg-gray-300'} shadow-lg`}></div>
+        <div className={`absolute top-40 right-20 w-16 h-16 rounded-full ${isFullMoon ? 'bg-gray-200' : 'bg-gray-300'} shadow-lg`}></div>
       )}
 
       {/* Clouds */}
       {showNiceClouds && (
         <>
-          <svg className="absolute top-28 left-32 w-28 h-14 opacity-40 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 100 50">
+          <svg className="absolute top-44 left-32 w-28 h-14 opacity-40 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 100 50">
             <ellipse cx="25" cy="35" rx="22" ry="13" fill="white"/>
             <ellipse cx="45" cy="30" rx="28" ry="16" fill="white"/>
             <ellipse cx="68" cy="35" rx="22" ry="13" fill="white"/>
           </svg>
-          <svg className="absolute top-40 right-24 w-32 h-16 opacity-35 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} viewBox="0 0 100 50">
+          <svg className="absolute top-48 right-24 w-32 h-16 opacity-35 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} viewBox="0 0 100 50">
             <ellipse cx="30" cy="35" rx="25" ry="14" fill="white"/>
             <ellipse cx="55" cy="32" rx="30" ry="17" fill="white"/>
             <ellipse cx="75" cy="36" rx="20" ry="12" fill="white"/>
@@ -363,12 +363,20 @@ const DynamicBackground: React.FC<DynamicBackgroundProps> = ({ location }) => {
         </>
       )}
 
-      {/* Wavy Mountains - 4 layers */}
-      <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 1200 400" preserveAspectRatio="none">
-        <path d="M0,250 Q200,150 400,200 T800,180 T1200,220 L1200,400 L0,400 Z" fill="#4a5568" opacity="0.2"/>
-        <path d="M0,280 Q300,180 600,240 T1200,260 L1200,400 L0,400 Z" fill="#2d3748" opacity="0.3"/>
-        <path d="M0,320 Q250,240 500,280 T1000,300 T1200,320 L1200,400 L0,400 Z" fill="#1a202c" opacity="0.5"/>
-        <path d="M0,350 Q200,300 400,330 T800,340 T1200,360 L1200,400 L0,400 Z" fill="#0f172a" opacity="0.7"/>
+      {/* Wavy Mountains - Beautiful colored waves matching login page */}
+      {/* Dark blue wave */}
+      <svg className="absolute bottom-0 w-full h-48" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#1e3a5f" fillOpacity="0.8" d="M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,170.7C672,160,768,160,864,170.7C960,181,1056,203,1152,202.7C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+      </svg>
+
+      {/* Orange wave */}
+      <svg className="absolute bottom-0 w-full h-40" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#f97316" fillOpacity="0.9" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+      </svg>
+
+      {/* Brown wave */}
+      <svg className="absolute bottom-0 w-full h-32" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path fill="#78350f" fillOpacity="0.95" d="M0,256L48,261.3C96,267,192,277,288,272C384,267,480,245,576,234.7C672,224,768,224,864,234.7C960,245,1056,267,1152,266.7C1248,267,1344,245,1392,234.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
 
       {/* Birds */}
