@@ -11,6 +11,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [error, setError] = useState<string | null>(null);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationCity, setLocationCity] = useState<string>('');
+  const [mapError, setMapError] = useState(false);
 
   // Try to get user's location
   useEffect(() => {
@@ -117,18 +118,27 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             </div>
 
             {/* Right side - Map/Location Preview */}
-            {location ? (
+            {location && !mapError ? (
               <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl overflow-hidden shadow-lg relative">
                 <img
-                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lng}&zoom=13&size=400x300&markers=color:blue%7C${location.lat},${location.lng}&key=AIzaSyBCWC0ELKy7sxdLPc-BGE8-zzAQu76gwcU&style=feature:poi|element:labels|visibility:on&style=feature:road|element:geometry|color:0xffffff`}
+                  src={`https://maps.googleapis.com/maps/api/staticmap?center=${location.lat},${location.lng}&zoom=13&size=400x300&markers=color:0x1e40af%7C${location.lat},${location.lng}&key=AIzaSyBCWC0ELKy7sxdLPc-BGE8-zzAQu76gwcU`}
                   alt="Your Location"
                   className="w-full h-full object-cover"
+                  onError={() => setMapError(true)}
                 />
                 {locationCity && (
                   <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-center">
                     <p className="text-sm font-semibold text-navy-text">📍 {locationCity}</p>
                   </div>
                 )}
+              </div>
+            ) : location && mapError ? (
+              <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl bg-gradient-to-br from-ocean-bright/30 to-seafoam/40 flex items-center justify-center border-2 border-ocean-bright/20">
+                <div className="text-center px-4">
+                  <div className="text-4xl mb-2">📍</div>
+                  {locationCity && <p className="text-lg font-bold text-navy-text mb-1">{locationCity}</p>}
+                  <p className="text-sm text-gray-600">Location detected</p>
+                </div>
               </div>
             ) : (
               <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl bg-gradient-to-br from-ocean-bright/20 to-seafoam/30 flex items-center justify-center">
