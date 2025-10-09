@@ -326,7 +326,7 @@ const WavyMountainBackground: React.FC<WavyMountainBackgroundProps> = ({ classNa
     return null;
   };
 
-  // Tree SVG component
+  // Tree SVG component - Fixed to viewport bottom
   const getTreeSVG = (tree: typeof activeTrees[0], index: number) => {
     const isBackground = tree.depth === 'back';
     const width = isBackground ? (tree.shape === 'palm' ? 'w-12' : 'w-16') : (tree.shape === 'palm' ? 'w-20' : 'w-24');
@@ -354,7 +354,7 @@ const WavyMountainBackground: React.FC<WavyMountainBackgroundProps> = ({ classNa
     return (
       <svg
         key={`tree-${index}`}
-        className={`absolute ${bottom} ${width} ${height} ${opacity}`}
+        className={`fixed ${bottom} ${width} ${height} ${opacity}`}
         style={{ left: `${tree.position}%` }}
         viewBox="0 0 100 200"
       >
@@ -454,24 +454,24 @@ const WavyMountainBackground: React.FC<WavyMountainBackgroundProps> = ({ classNa
         </>
       )}
 
-      {/* Wavy Mountain Layers */}
-      <svg className="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      {/* Wavy Mountain Layers - Fixed to bottom of viewport */}
+      <svg className="fixed bottom-0 w-full h-64 left-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
         <path fill="#7dd3c0" fillOpacity="0.6" d="M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
 
-      <svg className="absolute bottom-0 w-full h-56" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <svg className="fixed bottom-0 w-full h-56 left-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
         <path fill="#5b8ba3" fillOpacity="0.7" d="M0,96L48,112C96,128,192,160,288,154.7C384,149,480,107,576,90.7C672,75,768,85,864,106.7C960,128,1056,160,1152,154.7C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
 
-      <svg className="absolute bottom-0 w-full h-48" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <svg className="fixed bottom-0 w-full h-48 left-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
         <path fill="#1e3a5f" fillOpacity="0.8" d="M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,170.7C672,160,768,160,864,170.7C960,181,1056,203,1152,202.7C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
 
-      <svg className="absolute bottom-0 w-full h-40" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <svg className="fixed bottom-0 w-full h-40 left-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
         <path fill="#f97316" fillOpacity="0.9" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
 
-      <svg className="absolute bottom-0 w-full h-32" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <svg className="fixed bottom-0 w-full h-32 left-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
         <path fill="#78350f" fillOpacity="0.95" d="M0,256L48,261.3C96,267,192,277,288,272C384,267,480,245,576,234.7C672,224,768,224,864,234.7C960,245,1056,267,1152,266.7C1248,267,1344,245,1392,234.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
       </svg>
 
