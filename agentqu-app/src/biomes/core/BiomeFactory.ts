@@ -43,6 +43,14 @@ import {
   CoastalMarshBiome,
   SubtropicalHumidBiome,
 } from '../types/WetlandBiome';
+import {
+  AlpineBiome,
+  ArcticTundraBiome,
+  UrbanSkylineBiome,
+  VolcanicBiome,
+  CanyonBiome,
+  TropicalIslandBiome,
+} from '../types/SpecialBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -109,6 +117,14 @@ export class BiomeFactory {
     this.biomeRegistry.set('wetland_river_valley', () => new RiverValleyBiome());
     this.biomeRegistry.set('wetland_coastal_marsh', () => new CoastalMarshBiome());
     this.biomeRegistry.set('subtropical_humid', () => new SubtropicalHumidBiome());
+
+    // Special & Unique biomes
+    this.biomeRegistry.set('special_alpine', () => new AlpineBiome());
+    this.biomeRegistry.set('special_arctic_tundra', () => new ArcticTundraBiome());
+    this.biomeRegistry.set('special_urban', () => new UrbanSkylineBiome());
+    this.biomeRegistry.set('special_volcanic', () => new VolcanicBiome());
+    this.biomeRegistry.set('special_canyon', () => new CanyonBiome());
+    this.biomeRegistry.set('special_tropical_island', () => new TropicalIslandBiome());
   }
 
   /**
