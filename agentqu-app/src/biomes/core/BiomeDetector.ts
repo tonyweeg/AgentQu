@@ -48,7 +48,11 @@ export type BiomeType =
   | 'coastal_cliffside'
   | 'desert_painted'
   | 'desert_salt_flats'
-  | 'desert_badlands';
+  | 'desert_badlands'
+  | 'mountain_blue_ridge'
+  | 'mountain_cascade'
+  | 'mountain_sierra_nevada'
+  | 'forest_redwood';
 
 interface BiomeDetectionResult {
   biomeType: BiomeType;
@@ -67,16 +71,16 @@ interface BiomeDetectionResult {
 const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   // Coastal States
   FL: ['subtropical_humid', 'wetland_everglades', 'coastal_tropical', 'coastal_sandy'],
-  CA: ['coastal_cliffside', 'agricultural_vineyard', 'agricultural_orchard', 'special_alpine', 'special_urban', 'forest_oak_woodland', 'plains_central_valley', 'coastal_sandy', 'coastal_rocky', 'mountain_desert'],
-  NC: ['coastal_barrier_island', 'wetland_coastal_marsh', 'coastal_sandy', 'mountain_appalachian'],
+  CA: ['forest_redwood', 'mountain_sierra_nevada', 'mountain_cascade', 'coastal_cliffside', 'agricultural_vineyard', 'agricultural_orchard', 'special_alpine', 'special_urban', 'forest_oak_woodland', 'plains_central_valley', 'coastal_sandy', 'coastal_rocky', 'mountain_desert'],
+  NC: ['mountain_blue_ridge', 'coastal_barrier_island', 'wetland_coastal_marsh', 'coastal_sandy', 'mountain_appalachian'],
   SC: ['coastal_barrier_island', 'wetland_coastal_marsh', 'coastal_sandy'],
-  GA: ['coastal_barrier_island', 'wetland_coastal_marsh', 'coastal_sandy', 'subtropical_humid'],
+  GA: ['mountain_blue_ridge', 'coastal_barrier_island', 'wetland_coastal_marsh', 'coastal_sandy', 'subtropical_humid'],
   LA: ['wetland_bayou', 'wetland_coastal_marsh', 'coastal_sandy'],
   MS: ['wetland_bayou', 'coastal_sandy'],
   AL: ['wetland_bayou', 'coastal_sandy'],
   ME: ['coastal_cliffside', 'forest_boreal', 'forest_coniferous', 'coastal_rocky'],
-  OR: ['agricultural_vineyard', 'agricultural_orchard', 'forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
-  WA: ['agricultural_vineyard', 'agricultural_orchard', 'forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
+  OR: ['mountain_cascade', 'agricultural_vineyard', 'agricultural_orchard', 'forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
+  WA: ['mountain_cascade', 'agricultural_vineyard', 'agricultural_orchard', 'forest_temperate_rainforest', 'plains_palouse', 'coastal_rocky', 'mountain_rockies', 'forest_coniferous'],
   HI: ['special_tropical_island', 'special_volcanic', 'coastal_tropical'],
 
   // Mountain States
@@ -84,13 +88,13 @@ const STATE_BIOME_MAP: Record<string, BiomeType[]> = {
   WY: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
   MT: ['agricultural_rangeland', 'special_alpine', 'mountain_rockies', 'forest_coniferous', 'plains_great'],
   ID: ['plains_palouse', 'mountain_rockies', 'forest_coniferous', 'desert_great_basin'],
-  NV: ['desert_salt_flats', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
+  NV: ['mountain_sierra_nevada', 'desert_salt_flats', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
   UT: ['desert_salt_flats', 'special_canyon', 'desert_great_basin', 'desert_mojave', 'mountain_desert'],
 
   // Appalachian States
-  VA: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  VA: ['mountain_blue_ridge', 'mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
   WV: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
-  TN: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
+  TN: ['mountain_blue_ridge', 'mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
   KY: ['mountain_appalachian', 'forest_deciduous', 'forest_mixed'],
 
   // Desert States

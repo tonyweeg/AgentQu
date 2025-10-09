@@ -67,6 +67,12 @@ import {
   SaltFlatsBiome,
   BadlandsBiome,
 } from '../types/AridVariationsBiome';
+import {
+  BlueRidgeBiome,
+  CascadeRangeBiome,
+  SierraNevadaBiome,
+  RedwoodForestBiome,
+} from '../types/RegionalMountainBiome';
 import { BiomeType } from './BiomeDetector';
 
 /**
@@ -157,6 +163,12 @@ export class BiomeFactory {
     this.biomeRegistry.set('desert_painted', () => new PaintedDesertBiome());
     this.biomeRegistry.set('desert_salt_flats', () => new SaltFlatsBiome());
     this.biomeRegistry.set('desert_badlands', () => new BadlandsBiome());
+
+    // Regional Forest & Mountain
+    this.biomeRegistry.set('mountain_blue_ridge', () => new BlueRidgeBiome());
+    this.biomeRegistry.set('mountain_cascade', () => new CascadeRangeBiome());
+    this.biomeRegistry.set('mountain_sierra_nevada', () => new SierraNevadaBiome());
+    this.biomeRegistry.set('forest_redwood', () => new RedwoodForestBiome());
   }
 
   /**
