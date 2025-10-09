@@ -377,7 +377,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const showClouds = weather === 'cloudy' || weather === 'rainy';
   const showNiceClouds = true; // Always show a few nice clouds
 
-  // Bird SVG component
+  // Bird SVG component (below 160px navbar)
   const getBirdSVG = (bird: typeof activeBirds[0], index: number) => {
     const sizeMap = { small: 12, medium: 20, large: 28 };
     const size = sizeMap[bird.size as keyof typeof sizeMap];
@@ -391,7 +391,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           className="absolute animate-pulse"
           style={{
             left: `${bird.position}%`,
-            top: bird.depth === 'back' ? '20%' : '30%',
+            top: bird.depth === 'back' ? '180px' : '220px', // Below 160px navbar
             animationDuration: '3s',
             animationDelay: `${index * 1.5}s`
           }}
@@ -467,34 +467,34 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           <div className={`absolute ${getSunPosition()} w-16 h-16 rounded-full ${timeOfDay === 'dusk' ? 'bg-orange-500' : 'bg-yellow-400'} shadow-lg`}></div>
         )}
 
-        {/* Nice Clouds (always visible, subtle) */}
+        {/* Nice Clouds (below 160px navbar) */}
         {showNiceClouds && (
           <>
-            <svg className="absolute top-16 left-32 w-28 h-14 opacity-40 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 100 50">
+            <svg className="absolute top-44 left-32 w-28 h-14 opacity-40 animate-pulse" style={{ animationDuration: '8s' }} viewBox="0 0 100 50">
               <ellipse cx="25" cy="35" rx="22" ry="13" fill="white"/>
               <ellipse cx="45" cy="30" rx="28" ry="16" fill="white"/>
               <ellipse cx="68" cy="35" rx="22" ry="13" fill="white"/>
             </svg>
-            <svg className="absolute top-24 right-24 w-32 h-16 opacity-35 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} viewBox="0 0 100 50">
+            <svg className="absolute top-52 right-24 w-32 h-16 opacity-35 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} viewBox="0 0 100 50">
               <ellipse cx="30" cy="35" rx="25" ry="14" fill="white"/>
               <ellipse cx="55" cy="32" rx="30" ry="17" fill="white"/>
             </svg>
-            <svg className="absolute top-36 left-56 w-24 h-12 opacity-30 animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} viewBox="0 0 100 50">
+            <svg className="absolute top-60 left-56 w-24 h-12 opacity-30 animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} viewBox="0 0 100 50">
               <ellipse cx="35" cy="35" rx="28" ry="14" fill="white"/>
               <ellipse cx="62" cy="33" rx="26" ry="15" fill="white"/>
             </svg>
           </>
         )}
 
-        {/* More Clouds (cloudy/rainy weather - darker, more prominent) */}
+        {/* More Clouds (below 160px navbar) */}
         {showClouds && (
           <>
-            <svg className="absolute top-12 left-24 w-36 h-18 opacity-70" viewBox="0 0 100 50">
+            <svg className="absolute top-44 left-24 w-36 h-18 opacity-70" viewBox="0 0 100 50">
               <ellipse cx="25" cy="35" rx="25" ry="15" fill="#9ca3af"/>
               <ellipse cx="45" cy="30" rx="30" ry="18" fill="#9ca3af"/>
               <ellipse cx="70" cy="35" rx="25" ry="15" fill="#9ca3af"/>
             </svg>
-            <svg className="absolute top-20 right-32 w-40 h-20 opacity-65" viewBox="0 0 100 50">
+            <svg className="absolute top-52 right-32 w-40 h-20 opacity-65" viewBox="0 0 100 50">
               <ellipse cx="25" cy="35" rx="25" ry="15" fill="#9ca3af"/>
               <ellipse cx="50" cy="30" rx="35" ry="18" fill="#9ca3af"/>
               <ellipse cx="75" cy="35" rx="25" ry="15" fill="#9ca3af"/>
@@ -505,9 +505,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         {/* Flying Birds */}
         {activeBirds.map((bird, index) => getBirdSVG(bird, index))}
 
-        {/* Moon (nighttime) - with phase */}
+        {/* Moon (nighttime, below 160px navbar) - with phase */}
         {showMoon && (
-          <div className="absolute top-8 right-12">
+          <div className="absolute top-44 right-12">
             {isFullMoon ? (
               <div className="w-14 h-14 rounded-full bg-gray-100 shadow-lg shadow-gray-300"></div>
             ) : (
@@ -519,22 +519,22 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           </div>
         )}
 
-        {/* Stars (nighttime) - more stars! */}
+        {/* Stars (nighttime, below 160px navbar) - more stars! */}
         {showStars && (
           <>
             {/* Regular stars */}
-            <div className="absolute top-12 left-24 w-1 h-1 rounded-full bg-white animate-pulse"></div>
-            <div className="absolute top-20 left-48 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <div className="absolute top-16 right-32 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-24 right-48 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-            <div className="absolute top-32 left-64 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '2s' }}></div>
-            <div className="absolute top-16 left-32 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.3s' }}></div>
-            <div className="absolute top-28 right-24 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.2s' }}></div>
-            <div className="absolute top-14 right-56 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.8s' }}></div>
+            <div className="absolute top-44 left-24 w-1 h-1 rounded-full bg-white animate-pulse"></div>
+            <div className="absolute top-52 left-48 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="absolute top-48 right-32 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-56 right-48 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+            <div className="absolute top-64 left-64 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-48 left-32 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+            <div className="absolute top-60 right-24 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.2s' }}></div>
+            <div className="absolute top-46 right-56 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.8s' }}></div>
 
             {/* Shooting star (occasional) */}
             {Math.random() > 0.5 && (
-              <div className="absolute top-10 right-20 w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent animate-ping" style={{ animationDuration: '3s', transform: 'rotate(-45deg)' }}></div>
+              <div className="absolute top-42 right-20 w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent animate-ping" style={{ animationDuration: '3s', transform: 'rotate(-45deg)' }}></div>
             )}
           </>
         )}
