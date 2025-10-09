@@ -12,8 +12,19 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationCity, setLocationCity] = useState<string>('');
   const [mapError, setMapError] = useState(false);
+  const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'dusk' | 'night'>('day');
+  const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy'>('clear');
 
-  // Try to get user's location
+  // Determine time of day
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 8) setTimeOfDay('dawn');
+    else if (hour >= 8 && hour < 17) setTimeOfDay('day');
+    else if (hour >= 17 && hour < 20) setTimeOfDay('dusk');
+    else setTimeOfDay('night');
+  }, []);
+
+  // Try to get user's location and weather
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -24,14 +35,15 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           };
           setLocation(loc);
 
-          // Reverse geocode to get city name
+          // Reverse geocode to get city name and weather
           try {
-            const response = await fetch(
+            // Get city name
+            const geoResponse = await fetch(
               `https://maps.googleapis.com/maps/api/geocode/json?latlng=${loc.lat},${loc.lng}&key=AIzaSyBCWC0ELKy7sxdLPc-BGE8-zzAQu76gwcU`
             );
-            const data = await response.json();
-            if (data.results && data.results[0]) {
-              const addressComponents = data.results[0].address_components;
+            const geoData = await geoResponse.json();
+            if (geoData.results && geoData.results[0]) {
+              const addressComponents = geoData.results[0].address_components;
               const cityComponent = addressComponents.find((c: any) =>
                 c.types.includes('locality') || c.types.includes('administrative_area_level_2')
               );
@@ -39,8 +51,23 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 setLocationCity(cityComponent.long_name);
               }
             }
+
+            // Get weather (simple approximation based on time/season)
+            // In production, you'd use a weather API
+            const month = new Date().getMonth();
+            const random = Math.random();
+            if (month >= 5 && month <= 8) {
+              // Summer - mostly clear
+              setWeather(random > 0.3 ? 'clear' : 'cloudy');
+            } else if (month >= 11 || month <= 2) {
+              // Winter - more cloudy/rainy
+              setWeather(random > 0.6 ? 'clear' : random > 0.3 ? 'cloudy' : 'rainy');
+            } else {
+              // Spring/Fall - mixed
+              setWeather(random > 0.5 ? 'clear' : 'cloudy');
+            }
           } catch (err) {
-            console.error('Failed to get city name:', err);
+            console.error('Failed to get location data:', err);
           }
         },
         (error) => {
@@ -75,9 +102,132 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     }
   };
 
+  // Sky colors based on time of day
+  const getSkyGradient = () => {
+    switch (timeOfDay) {
+      case 'dawn':
+        return 'from-orange-300 via-pink-200 to-sky-200';
+      case 'day':
+        return weather === 'clear' ? 'from-sky-400 via-sky-300 to-sky-200' : 'from-gray-400 via-gray-300 to-gray-200';
+      case 'dusk':
+        return 'from-orange-400 via-purple-300 to-blue-300';
+      case 'night':
+        return 'from-indigo-900 via-indigo-800 to-indigo-700';
+    }
+  };
+
+  const showSun = timeOfDay !== 'night' && weather === 'clear';
+  const showMoon = timeOfDay === 'night';
+  const showStars = timeOfDay === 'night';
+  const showClouds = weather === 'cloudy' || weather === 'rainy';
+
+  // Sun position based on time
+  const getSunPosition = () => {
+    const hour = new Date().getHours();
+    if (timeOfDay === 'dawn') return 'top-20 left-12'; // Rising
+    if (timeOfDay === 'dusk') return 'top-16 right-16'; // Setting
+    return 'top-8 right-12'; // High noon
+  };
+
+  // Moon phase (simplified - shows current day of month)
+  const moonPhase = new Date().getDate() % 30; // 0-29
+  const isFullMoon = moonPhase >= 13 && moonPhase <= 16;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-ocean-bright/10 to-seafoam/30 flex items-center justify-center p-4">
-      <div className="max-w-5xl w-full">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+      {/* Wavy Mountain Background Layers */}
+      <div className="absolute inset-0 -z-10">
+        {/* Dynamic Sky gradient based on time */}
+        <div className={`absolute inset-0 bg-gradient-to-b ${getSkyGradient()}`}></div>
+
+        {/* Sun (daytime, clear weather) - positioned by time */}
+        {showSun && (
+          <div className={`absolute ${getSunPosition()} w-16 h-16 rounded-full ${timeOfDay === 'dusk' ? 'bg-orange-500' : 'bg-yellow-400'} shadow-lg`}></div>
+        )}
+
+        {/* Clouds (cloudy/rainy weather) */}
+        {showClouds && (
+          <>
+            {/* Simple SVG clouds */}
+            <svg className="absolute top-12 left-24 w-32 h-16 opacity-80" viewBox="0 0 100 50">
+              <ellipse cx="25" cy="35" rx="25" ry="15" fill="white"/>
+              <ellipse cx="45" cy="30" rx="30" ry="18" fill="white"/>
+              <ellipse cx="70" cy="35" rx="25" ry="15" fill="white"/>
+            </svg>
+            <svg className="absolute top-20 right-32 w-40 h-20 opacity-70" viewBox="0 0 100 50">
+              <ellipse cx="25" cy="35" rx="25" ry="15" fill="white"/>
+              <ellipse cx="50" cy="30" rx="35" ry="18" fill="white"/>
+              <ellipse cx="75" cy="35" rx="25" ry="15" fill="white"/>
+            </svg>
+            <svg className="absolute top-32 left-48 w-36 h-18 opacity-75" viewBox="0 0 100 50">
+              <ellipse cx="30" cy="35" rx="30" ry="15" fill="white"/>
+              <ellipse cx="60" cy="32" rx="30" ry="16" fill="white"/>
+            </svg>
+          </>
+        )}
+
+        {/* Moon (nighttime) - with phase */}
+        {showMoon && (
+          <div className="absolute top-8 right-12">
+            {isFullMoon ? (
+              <div className="w-14 h-14 rounded-full bg-gray-100 shadow-lg shadow-gray-300"></div>
+            ) : (
+              <div className="relative w-14 h-14">
+                <div className="absolute w-14 h-14 rounded-full bg-gray-100 shadow-lg"></div>
+                <div className="absolute w-14 h-14 rounded-full bg-indigo-900 opacity-40" style={{ clipPath: `inset(0 ${moonPhase * 3}% 0 0)` }}></div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stars (nighttime) - more stars! */}
+        {showStars && (
+          <>
+            {/* Regular stars */}
+            <div className="absolute top-12 left-24 w-1 h-1 rounded-full bg-white animate-pulse"></div>
+            <div className="absolute top-20 left-48 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+            <div className="absolute top-16 right-32 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-24 right-48 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+            <div className="absolute top-32 left-64 w-1 h-1 rounded-full bg-white animate-pulse" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-16 left-32 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.3s' }}></div>
+            <div className="absolute top-28 right-24 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '1.2s' }}></div>
+            <div className="absolute top-14 right-56 w-0.5 h-0.5 rounded-full bg-white animate-pulse" style={{ animationDelay: '0.8s' }}></div>
+
+            {/* Shooting star (occasional) */}
+            {Math.random() > 0.5 && (
+              <div className="absolute top-10 right-20 w-12 h-0.5 bg-gradient-to-r from-transparent via-white to-transparent animate-ping" style={{ animationDuration: '3s', transform: 'rotate(-45deg)' }}></div>
+            )}
+          </>
+        )}
+
+        {/* Wave layers - from back to front */}
+        {/* Light blue wave */}
+        <svg className="absolute bottom-0 w-full h-64" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#7dd3c0" fillOpacity="0.6" d="M0,128L48,138.7C96,149,192,171,288,165.3C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,165.3C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+
+        {/* Gray-blue wave */}
+        <svg className="absolute bottom-0 w-full h-56" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#5b8ba3" fillOpacity="0.7" d="M0,96L48,112C96,128,192,160,288,154.7C384,149,480,107,576,90.7C672,75,768,85,864,106.7C960,128,1056,160,1152,154.7C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+
+        {/* Dark blue wave */}
+        <svg className="absolute bottom-0 w-full h-48" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#1e3a5f" fillOpacity="0.8" d="M0,192L48,197.3C96,203,192,213,288,208C384,203,480,181,576,170.7C672,160,768,160,864,170.7C960,181,1056,203,1152,202.7C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+
+        {/* Orange wave */}
+        <svg className="absolute bottom-0 w-full h-40" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#f97316" fillOpacity="0.9" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,149.3C1248,139,1344,149,1392,154.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+
+        {/* Brown wave */}
+        <svg className="absolute bottom-0 w-full h-32" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="#78350f" fillOpacity="0.95" d="M0,256L48,261.3C96,267,192,277,288,272C384,267,480,245,576,234.7C672,224,768,224,864,234.7C960,245,1056,267,1152,266.7C1248,267,1344,245,1392,234.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+      </div>
+
+      <div className="max-w-5xl w-full relative z-10">
         {/* Hero Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
           <div className="flex flex-col md:flex-row items-start gap-8">
