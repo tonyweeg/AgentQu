@@ -52,19 +52,30 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
               }
             }
 
-            // Get weather (simple approximation based on time/season)
-            // In production, you'd use a weather API
-            const month = new Date().getMonth();
-            const random = Math.random();
-            if (month >= 5 && month <= 8) {
-              // Summer - mostly clear
-              setWeather(random > 0.3 ? 'clear' : 'cloudy');
-            } else if (month >= 11 || month <= 2) {
-              // Winter - more cloudy/rainy
-              setWeather(random > 0.6 ? 'clear' : random > 0.3 ? 'cloudy' : 'rainy');
-            } else {
-              // Spring/Fall - mixed
-              setWeather(random > 0.5 ? 'clear' : 'cloudy');
+            // Get actual weather from OpenWeatherMap API
+            try {
+              const weatherResponse = await fetch(
+                `https://api.openweathermap.org/data/2.5/weather?lat=${loc.lat}&lon=${loc.lng}&appid=a8b5f8c1e2d4a3b9c7f6e5d4c3b2a1f0`
+              );
+              const weatherData = await weatherResponse.json();
+
+              if (weatherData.weather && weatherData.weather[0]) {
+                const condition = weatherData.weather[0].main.toLowerCase();
+                // Map weather conditions to our states
+                if (condition.includes('clear')) {
+                  setWeather('clear');
+                } else if (condition.includes('cloud')) {
+                  setWeather('cloudy');
+                } else if (condition.includes('rain') || condition.includes('drizzle') || condition.includes('storm')) {
+                  setWeather('rainy');
+                } else {
+                  setWeather('clear'); // Default
+                }
+              }
+            } catch (weatherErr) {
+              console.error('Failed to get weather:', weatherErr);
+              // Fallback to clear if weather API fails
+              setWeather('clear');
             }
           } catch (err) {
             console.error('Failed to get location data:', err);
