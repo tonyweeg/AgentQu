@@ -36,17 +36,39 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-transparent flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-ocean-bright/10 to-seafoam/30 flex items-center justify-center p-4">
+      <div className="max-w-2xl w-full">
         {/* Logo/Branding */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-ocean-bright mb-3">AgentQu</h1>
-          <p className="text-xl text-navy-text mb-2">
-            Discover what's happening near you
+          <img
+            src="/agentqu-logo.png"
+            alt="AgentQu"
+            className="h-24 mx-auto mb-6"
+          />
+          <h1 className="text-5xl font-bold text-navy-text mb-4">AgentQu</h1>
+          <p className="text-2xl text-ocean-bright font-semibold mb-4">
+            Discover Amazing Activities Near You
           </p>
-          <p className="text-gray-600">
-            Find activities, events, and adventures based on your location and interests
+          <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+            AgentQu is your personal AI-powered activity discovery assistant. We help you find the perfect things to do based on your location, interests, and preferences - from restaurants and events to outdoor adventures and hidden gems.
           </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md">
+              <div className="text-3xl mb-2">📍</div>
+              <h3 className="font-bold text-navy-text mb-1">Location-Based</h3>
+              <p className="text-sm text-gray-600">Real-time discoveries near you</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md">
+              <div className="text-3xl mb-2">🎯</div>
+              <h3 className="font-bold text-navy-text mb-1">Personalized</h3>
+              <p className="text-sm text-gray-600">Tailored to your interests</p>
+            </div>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md">
+              <div className="text-3xl mb-2">✨</div>
+              <h3 className="font-bold text-navy-text mb-1">AI-Powered</h3>
+              <p className="text-sm text-gray-600">Smart recommendations</p>
+            </div>
+          </div>
         </div>
 
         {/* Sign In Card */}
@@ -108,33 +130,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
         {/* Corporate Links */}
         <div className="mt-6 flex items-center justify-center gap-6 text-sm">
-          <a href="/privacy" className="text-gray-600 hover:text-ocean-bright transition-colors font-medium">
+          <a href="/privacy" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
             Privacy Policy
           </a>
           <span className="text-gray-400">•</span>
-          <a href="/terms" className="text-gray-600 hover:text-ocean-bright transition-colors font-medium">
+          <a href="/terms" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
             Terms of Service
           </a>
           <span className="text-gray-400">•</span>
-          <a href="/contact" className="text-gray-600 hover:text-ocean-bright transition-colors font-medium">
+          <a href="/contact" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
             Contact Us
           </a>
-        </div>
-
-        {/* Features */}
-        <div className="mt-8 space-y-3">
-          <div className="flex items-center gap-3 text-gray-700">
-            <span className="text-2xl">📍</span>
-            <span>Real-time activity discovery</span>
-          </div>
-          <div className="flex items-center gap-3 text-gray-700">
-            <span className="text-2xl">🎯</span>
-            <span>Personalized recommendations</span>
-          </div>
-          <div className="flex items-center gap-3 text-gray-700">
-            <span className="text-2xl">✨</span>
-            <span>Save your favorite spots</span>
-          </div>
         </div>
       </div>
     </div>
