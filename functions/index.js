@@ -433,6 +433,13 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
       const placeLng = place.location.longitude;
       const categories = mapPlaceTypeToCategories(place.types || []);
 
+      // Build image URLs from photos array
+      const images = place.photos && place.photos.length > 0
+        ? place.photos.slice(0, 3).map(photo =>
+            `https://places.googleapis.com/v1/${photo.name}/media?key=${GOOGLE_PLACES_API_KEY}&maxHeightPx=800&maxWidthPx=800`
+          )
+        : [];
+
       return {
         activityId: `place_${place.id}`,
         name: place.displayName?.text || place.displayName || 'Unknown Place',
@@ -445,14 +452,20 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
           address: place.formattedAddress,
           placeId: place.id,
         },
+        address: place.formattedAddress, // Top-level for easy access
         categories,
         primaryCategory: categories[0] || place.types?.[0] || "venue",
+        images, // Add images array for frontend
+        rating: place.rating || null, // Top-level rating
+        reviewCount: place.userRatingCount || 0, // Top-level review count
+        cost: {
+          free: false,
+          priceLevel: null,
+        },
         details: {
           description: place.formattedAddress,
           shortDescription: place.formattedAddress,
-          imageUrl: place.photos?.[0]?.name
-            ? `https://places.googleapis.com/v1/${place.photos[0].name}/media?key=${GOOGLE_PLACES_API_KEY}&maxHeightPx=400&maxWidthPx=400`
-            : null,
+          imageUrl: images[0] || null, // Keep for backward compatibility
           priceLevel: null,
         },
         schedule: {

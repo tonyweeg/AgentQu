@@ -628,46 +628,50 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {/* Drawer Toggle Button with View Mode Toggle */}
           <div className="flex items-center justify-between px-4 py-3">
-            <button
-              onClick={() => setShowControlsDrawer(!showControlsDrawer)}
-              className="flex items-center gap-3 hover:opacity-70 transition-opacity"
-            >
-              <span className="text-sm font-medium text-gray-700">
-                {activities.length} activities
-              </span>
-              <span className="text-xs text-gray-500">
-                {radius} mi
-              </span>
-              <span className={`text-gray-400 transition-transform ${showControlsDrawer ? 'rotate-180' : ''}`}>
-                ▼
-              </span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowControlsDrawer(!showControlsDrawer)}
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+              >
+                <span className="text-sm font-medium text-gray-700">
+                  {activities.length} activities
+                </span>
+                <span className="text-xs text-gray-500">
+                  {radius} mi
+                </span>
+                <span className={`text-gray-400 transition-transform ${showControlsDrawer ? 'rotate-180' : ''}`}>
+                  ▼
+                </span>
+              </button>
 
-            {/* View Mode Toggle - Standalone */}
-            {viewMode !== 'offgrid' && (
-              <div className="flex bg-gray-100 rounded-lg p-0.5">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    viewMode === 'list'
-                      ? 'bg-white text-ocean-bright shadow-sm'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  📋
-                </button>
-                <button
-                  onClick={() => setViewMode('map')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    viewMode === 'map'
-                      ? 'bg-white text-ocean-bright shadow-sm'
-                      : 'text-gray-600'
-                  }`}
-                >
-                  🗺️
-                </button>
-              </div>
-            )}
+              {/* View Mode Toggle - Next to drawer button */}
+              {viewMode !== 'offgrid' && viewMode !== 'cirqle' && viewMode !== 'trip-creation' && viewMode !== 'trips' && viewMode !== 'trip-detail' && (
+                <div className="flex bg-gray-100 rounded-lg p-0.5">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`px-2.5 py-1 rounded-md text-base transition-all ${
+                      viewMode === 'list'
+                        ? 'bg-white text-ocean-bright shadow-sm'
+                        : 'text-gray-600'
+                    }`}
+                    title="List View"
+                  >
+                    📋
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`px-2.5 py-1 rounded-md text-base transition-all ${
+                      viewMode === 'map'
+                        ? 'bg-white text-ocean-bright shadow-sm'
+                        : 'text-gray-600'
+                    }`}
+                    title="Map View"
+                  >
+                    🗺️
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Drawer Content - Small square map + location info + controls */}
@@ -967,9 +971,9 @@ function App() {
               </div>
             ) : (
               <>
-                {/* Map View with Condensed List */}
+                {/* Map View with Compact List */}
                 {viewMode === 'map' && (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {/* Map */}
                     <ActivityMap
                       activities={activities}
@@ -977,167 +981,126 @@ function App() {
                       onLocationChange={handleMapLocationChange}
                     />
 
-                    {/* Rich Activity List with Details */}
-                    <div className="bg-white rounded-2xl shadow-sm p-6">
-                      <h3 className="text-xl font-bold text-navy-text mb-4">Activities on Map</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {activities.slice(0, 12).map((activity) => {
-                          // Check for images in multiple possible locations
-                          const imageUrl = activity.images?.[0] || (activity as any).details?.imageUrl || activity.website;
-                          const hasImage = !!imageUrl;
+                    {/* Compact Activity List - Tufte Style */}
+                    <div className="space-y-2">
+                      {/* Sort by score and show top 20 */}
+                      {activities
+                        .sort((a, b) => (b.score || 0) - (a.score || 0))
+                        .slice(0, 20)
+                        .map((activity) => {
+                          // Category-based gradient
+                          const getCategoryGradient = (cat: string) => {
+                            switch (cat) {
+                              case 'hiking': return 'from-green-50 to-emerald-50 border-green-200';
+                              case 'events': return 'from-purple-50 to-pink-50 border-purple-200';
+                              case 'food_and_dining': return 'from-orange-50 to-amber-50 border-orange-200';
+                              case 'arts_and_culture': return 'from-pink-50 to-rose-50 border-pink-200';
+                              case 'sports_and_recreation': return 'from-blue-50 to-cyan-50 border-blue-200';
+                              case 'nature_and_outdoors': return 'from-teal-50 to-green-50 border-teal-200';
+                              case 'entertainment': return 'from-indigo-50 to-purple-50 border-indigo-200';
+                              case 'shopping': return 'from-yellow-50 to-amber-50 border-yellow-200';
+                              case 'museums': return 'from-amber-50 to-orange-50 border-amber-200';
+                              default: return 'from-gray-50 to-slate-50 border-gray-200';
+                            }
+                          };
+
+                          const getCategoryEmoji = (cat: string) => {
+                            switch (cat) {
+                              case 'hiking': return '🥾';
+                              case 'events': return '🎉';
+                              case 'food_and_dining': return '🍽️';
+                              case 'arts_and_culture': return '🎨';
+                              case 'sports_and_recreation': return '⚽';
+                              case 'nature_and_outdoors': return '🌲';
+                              case 'entertainment': return '🎭';
+                              case 'shopping': return '🛍️';
+                              case 'museums': return '🏛️';
+                              default: return '📍';
+                            }
+                          };
+
+                          // Calculate STOKED badge
+                          const score = activity.score || 0;
+                          let stokedText = "";
+                          let stokedColor = "";
+                          if (score >= 280) {
+                            stokedText = "You'll love it";
+                            stokedColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+                          } else if (score >= 220) {
+                            stokedText = "You'll like it";
+                            stokedColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+                          } else if (score >= 180) {
+                            stokedText = "You should like it";
+                            stokedColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+                          } else if (score >= 140) {
+                            stokedText = "Give it a shot!";
+                            stokedColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+                          }
+
+                          const category = activity.primaryCategory || 'other';
 
                           return (
                             <div
                               key={activity.id || activity.activityId}
-                              className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer"
+                              className={`bg-gradient-to-r ${getCategoryGradient(category)} border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer`}
                             >
-                              {/* Image */}
-                              {hasImage ? (
-                                <div className="h-48 overflow-hidden bg-gray-100">
-                                  <img
-                                    src={imageUrl}
-                                    alt={activity.name}
-                                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                    onError={(e) => {
-                                      // Fallback if image fails to load
-                                      e.currentTarget.style.display = 'none';
-                                      const parent = e.currentTarget.parentElement;
-                                      if (parent) {
-                                        parent.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-ocean-bright/20 to-orange-100/50"><span class="text-6xl">${
-                                          activity.primaryCategory === 'hiking' ? '🥾' :
-                                          activity.primaryCategory === 'events' ? '🎉' :
-                                          activity.primaryCategory === 'food_and_dining' ? '🍽️' :
-                                          activity.primaryCategory === 'arts_and_culture' ? '🎨' :
-                                          activity.primaryCategory === 'sports_and_recreation' ? '⚽' :
-                                          activity.primaryCategory === 'nature_and_outdoors' ? '🌲' :
-                                          activity.primaryCategory === 'entertainment' ? '🎭' :
-                                          activity.primaryCategory === 'shopping' ? '🛍️' : '📍'
-                                        }</span></div>`;
-                                      }
-                                    }}
-                                  />
-                                </div>
-                              ) : (
-                                <div className="h-48 bg-gradient-to-br from-ocean-bright/20 to-orange-100/50 flex items-center justify-center">
-                                  <span className="text-6xl">
-                                    {activity.primaryCategory === 'hiking' ? '🥾' :
-                                     activity.primaryCategory === 'events' ? '🎉' :
-                                     activity.primaryCategory === 'food_and_dining' ? '🍽️' :
-                                     activity.primaryCategory === 'arts_and_culture' ? '🎨' :
-                                     activity.primaryCategory === 'sports_and_recreation' ? '⚽' :
-                                     activity.primaryCategory === 'nature_and_outdoors' ? '🌲' :
-                                     activity.primaryCategory === 'entertainment' ? '🎭' :
-                                     activity.primaryCategory === 'shopping' ? '🛍️' : '📍'}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Content */}
-                              <div className="p-4">
-                                <h4 className="font-bold text-base text-navy-text mb-2 line-clamp-2">
-                                  {activity.name}
-                                </h4>
-
-                                {/* Category & Distance */}
-                                <div className="flex items-center gap-2 mb-3">
-                                  <span className="text-xs bg-ocean-bright/10 text-ocean-bright px-2 py-1 rounded-full font-medium capitalize">
-                                    {activity.primaryCategory?.replace(/_/g, ' ')}
-                                  </span>
-                                  <span className="text-xs text-gray-600">
-                                    📍 {activity.distance?.toFixed(1)} mi
-                                  </span>
+                              <div className="flex items-start gap-3">
+                                {/* Category Emoji */}
+                                <div className="text-3xl flex-shrink-0">
+                                  {getCategoryEmoji(category)}
                                 </div>
 
-                                {/* Dynamic Details */}
-                                <div className="space-y-2 mb-3 text-sm">
-                                  {/* Trail/Hike Info */}
-                                  {(activity.primaryCategory === 'hiking' || activity.primaryCategory === 'nature_and_outdoors') && (
-                                    <>
-                                      {activity.accessibility?.mobilityLevel && (
-                                        <div className="flex items-center gap-2 text-gray-700">
-                                          <span className="font-medium">Difficulty:</span>
-                                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                            activity.accessibility.mobilityLevel === 'easy' ? 'bg-green-100 text-green-700' :
-                                            activity.accessibility.mobilityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                            'bg-red-100 text-red-700'
-                                          }`}>
-                                            {activity.accessibility.mobilityLevel}
-                                          </span>
-                                        </div>
-                                      )}
-                                      {activity.duration && (
-                                        <div className="flex items-center gap-2 text-gray-700">
-                                          <span>⏱️</span>
-                                          <span>{Math.round(activity.duration / 60)} hours</span>
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
-
-                                  {/* Event Info */}
-                                  {activity.primaryCategory === 'events' && activity.hoursToday && (
-                                    <div className="flex items-center gap-2 text-gray-700">
-                                      <span>🕐</span>
-                                      <span>{activity.hoursToday.open} - {activity.hoursToday.close}</span>
-                                    </div>
-                                  )}
-
-                                  {/* Rating */}
-                                  {activity.rating && (
-                                    <div className="flex items-center gap-2 text-gray-700">
-                                      <span>⭐</span>
-                                      <span>{activity.rating.toFixed(1)}</span>
-                                      {activity.reviewCount && (
-                                        <span className="text-xs text-gray-500">({activity.reviewCount} reviews)</span>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Cost */}
-                                  {activity.cost && activity.cost.free ? (
-                                    <div className="flex items-center gap-2 text-green-600 font-medium">
-                                      <span>💰</span>
-                                      <span>Free</span>
-                                    </div>
-                                  ) : activity.cost && activity.cost.priceLevel ? (
-                                    <div className="flex items-center gap-2 text-gray-700">
-                                      <span>💰</span>
-                                      <span>{'$'.repeat(activity.cost.priceLevel)}</span>
-                                    </div>
-                                  ) : null}
-
-                                  {/* Accessibility */}
-                                  {activity.accessibility?.wheelchairAccessible && (
-                                    <div className="flex items-center gap-2 text-blue-600">
-                                      <span>♿</span>
-                                      <span className="text-xs">Wheelchair Accessible</span>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Match Score */}
-                                {activity.score !== undefined && (
-                                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                                    <span className="text-xs text-gray-600">Match Score</span>
-                                    <span className="text-sm font-bold text-ocean-bright">
-                                      {activity.score >= 300 ? '⭐⭐⭐⭐⭐' :
-                                       activity.score >= 250 ? '⭐⭐⭐⭐' :
-                                       activity.score >= 200 ? '⭐⭐⭐' :
-                                       activity.score >= 150 ? '⭐⭐' : '⭐'}
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  {/* Name + Distance */}
+                                  <div className="flex items-start justify-between gap-3 mb-1.5">
+                                    <h4 className="font-bold text-base text-navy-text line-clamp-2 flex-1 leading-snug">
+                                      {activity.name}
+                                    </h4>
+                                    <span className="text-sm text-gray-600 whitespace-nowrap font-medium">
+                                      {activity.distance?.toFixed(1)} mi
                                     </span>
                                   </div>
-                                )}
+
+                                  {/* Info Grid - Dense but readable */}
+                                  <div className="flex items-center gap-3 text-sm text-gray-700 mb-2 flex-wrap">
+                                    <span className="capitalize text-gray-600 font-medium">
+                                      {category.replace(/_/g, ' ')}
+                                    </span>
+                                    {activity.rating && (
+                                      <span className="flex items-center gap-1 font-medium">
+                                        ⭐ {activity.rating.toFixed(1)}
+                                      </span>
+                                    )}
+                                    {activity.cost?.free && (
+                                      <span className="text-green-600 font-bold">Free</span>
+                                    )}
+                                    {activity.cost?.priceLevel && !activity.cost.free && (
+                                      <span className="font-medium">{'$'.repeat(activity.cost.priceLevel)}</span>
+                                    )}
+                                    {activity.accessibility?.wheelchairAccessible && (
+                                      <span title="Wheelchair Accessible">♿</span>
+                                    )}
+                                  </div>
+
+                                  {/* STOKED Badge */}
+                                  {stokedText && (
+                                    <div className={`${stokedColor} text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide inline-block shadow-sm`}>
+                                      {stokedText}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );
                         })}
-                      </div>
-                      {activities.length > 12 && (
-                        <p className="text-center text-sm text-gray-500 mt-4">
-                          +{activities.length - 12} more activities (switch to List view to see all)
-                        </p>
-                      )}
                     </div>
+
+                    {activities.length > 20 && (
+                      <p className="text-center text-xs text-gray-500 mt-2">
+                        Showing top 20 of {activities.length} activities • Switch to List view for full details
+                      </p>
+                    )}
                   </div>
                 )}
 

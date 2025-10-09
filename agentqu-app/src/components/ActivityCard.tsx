@@ -9,145 +9,167 @@ interface ActivityCardProps {
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   const [showDetails, setShowDetails] = useState(false);
 
-  // Adventure ocean palette - solid camel/tan/sand backgrounds
-  let cardBg = 'bg-[#E8D5C4]'; // Warm sand/camel
-  let accentColor = '#C89F7B'; // Darker camel for borders
+  // Category-based colorful gradients
+  const category = activity.primaryCategory || 'other';
+  const getCategoryGradient = () => {
+    switch (category) {
+      case 'hiking': return 'from-green-50 to-emerald-100';
+      case 'events': return 'from-purple-50 to-pink-100';
+      case 'food_and_dining': return 'from-orange-50 to-amber-100';
+      case 'arts_and_culture': return 'from-pink-50 to-rose-100';
+      case 'sports_and_recreation': return 'from-blue-50 to-cyan-100';
+      case 'nature_and_outdoors': return 'from-teal-50 to-green-100';
+      case 'entertainment': return 'from-indigo-50 to-purple-100';
+      case 'shopping': return 'from-yellow-50 to-amber-100';
+      case 'museums': return 'from-amber-50 to-orange-100';
+      default: return 'from-gray-50 to-slate-100';
+    }
+  };
 
-  // Calculate stoked percentage and label
-  const stokedPercentage = activity.score ? Math.min(100, (activity.score / 350) * 100) : 0;
-  let stokedLabel = "Give it a shot!";
-  let stokedBadgeColor = 'bg-[#8B7355]'; // Muted brown
+  const getCategoryBorder = () => {
+    switch (category) {
+      case 'hiking': return 'border-green-300';
+      case 'events': return 'border-purple-300';
+      case 'food_and_dining': return 'border-orange-300';
+      case 'arts_and_culture': return 'border-pink-300';
+      case 'sports_and_recreation': return 'border-blue-300';
+      case 'nature_and_outdoors': return 'border-teal-300';
+      case 'entertainment': return 'border-indigo-300';
+      case 'shopping': return 'border-yellow-300';
+      case 'museums': return 'border-amber-300';
+      default: return 'border-gray-300';
+    }
+  };
 
-  if (activity.score && activity.score >= 280) {
+  const getCategoryEmoji = () => {
+    switch (category) {
+      case 'hiking': return '🥾';
+      case 'events': return '🎉';
+      case 'food_and_dining': return '🍽️';
+      case 'arts_and_culture': return '🎨';
+      case 'sports_and_recreation': return '⚽';
+      case 'nature_and_outdoors': return '🌲';
+      case 'entertainment': return '🎭';
+      case 'shopping': return '🛍️';
+      case 'museums': return '🏛️';
+      default: return '📍';
+    }
+  };
+
+  // STOKED badge with vibrant gradients
+  let stokedLabel = "";
+  let stokedGradient = "";
+  const score = activity.score || 0;
+
+  if (score >= 280) {
     stokedLabel = "You'll love it";
-    cardBg = 'bg-[#F5E6D3]'; // Light warm sand
-    accentColor = '#D4A574';
-    stokedBadgeColor = 'bg-[#C89F7B]';
-  } else if (activity.score && activity.score >= 220) {
+    stokedGradient = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+  } else if (score >= 220) {
     stokedLabel = "You'll like it";
-    cardBg = 'bg-[#EDD9C0]'; // Medium sand
-    accentColor = '#C89F7B';
-    stokedBadgeColor = 'bg-[#A67C52]';
-  } else if (activity.score && activity.score >= 180) {
+    stokedGradient = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+  } else if (score >= 180) {
     stokedLabel = "You should like it";
-    cardBg = 'bg-[#E8D5C4]'; // Camel
-    accentColor = '#C89F7B';
-    stokedBadgeColor = 'bg-[#8B7355]';
+    stokedGradient = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+  } else if (score >= 140) {
+    stokedLabel = "Give it a shot!";
+    stokedGradient = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
   }
 
   return (
     <>
-      <div className={`${cardBg} rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border-2`} style={{ borderColor: accentColor }}>
-      {/* Image with Stoked Badge Overlay */}
-      {activity.images && activity.images[0] && (
-        <div
-          className="relative h-40 bg-gray-100 cursor-pointer group"
-          onClick={() => setShowDetails(true)}
-        >
-          <img
-            src={activity.images[0]}
-            alt={activity.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-            <span className="text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              View Details
+      <div
+        className={`bg-gradient-to-br ${getCategoryGradient()} rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 ${getCategoryBorder()} cursor-pointer`}
+        onClick={() => setShowDetails(true)}
+      >
+        {/* Always try to show image first */}
+        <div className="relative h-48 bg-gray-100">
+          {activity.images && activity.images[0] ? (
+            <>
+              <img
+                src={activity.images[0]}
+                alt={activity.name}
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = `absolute inset-0 bg-gradient-to-br ${getCategoryGradient()} flex items-center justify-center`;
+                    placeholder.innerHTML = `<span class="text-6xl">${getCategoryEmoji()}</span>`;
+                    parent.appendChild(placeholder);
+                  }
+                }}
+              />
+              {/* Subtle gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+
+              {/* Small category emoji badge - top left */}
+              <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xl shadow-md">
+                {getCategoryEmoji()}
+              </div>
+
+              {/* STOKED Badge - bottom overlay */}
+              {stokedLabel && (
+                <div className={`absolute bottom-0 left-0 right-0 ${stokedGradient} text-white px-3 py-2 text-xs font-bold`}>
+                  {stokedLabel}
+                </div>
+              )}
+            </>
+          ) : (
+            /* Fallback: No image available */
+            <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient()} flex flex-col items-center justify-center`}>
+              <div className="text-6xl mb-2">
+                {getCategoryEmoji()}
+              </div>
+              {stokedLabel && (
+                <div className={`${stokedGradient} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
+                  {stokedLabel}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="p-4">
+          {/* Title + Distance */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h3 className="font-bold text-base text-navy-text line-clamp-2 flex-1 leading-snug">
+              {activity.name}
+            </h3>
+            <span className="text-sm text-gray-700 font-bold whitespace-nowrap">
+              {activity.distance?.toFixed(1)} mi
             </span>
           </div>
-          {/* Stoked Badge - Top Right */}
-          <div className={`absolute top-2 right-2 ${stokedBadgeColor} text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg`}>
-            {stokedLabel}
-          </div>
-          {/* Type Badge - Top Left */}
-          <div className="absolute top-2 left-2 bg-white/95 backdrop-blur px-2 py-1 rounded-md text-xs font-medium text-navy-text">
-            {activity.type}
-          </div>
-        </div>
-      )}
 
-      <div className="p-4">
-        {/* Header - More Compact */}
-        <h3 className="font-bold text-lg mb-2 text-navy-text line-clamp-2">{activity.name}</h3>
-
-        {/* Quick Info Row */}
-        <div className="flex items-center gap-2 text-xs text-gray-700 mb-3 flex-wrap">
-          <span className="font-bold">{activity.distance?.toFixed(1)} mi</span>
-          <span>•</span>
-          <span>{activity.primaryCategory}</span>
-          {activity.rating && (
-            <>
-              <span>•</span>
-              <span>⭐ {activity.rating.toFixed(1)}</span>
-            </>
-          )}
-          {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
-            <>
-              <span>•</span>
-              <span className="text-green-700 font-bold">Free</span>
-            </>
-          )}
-          {activity.openNow && (
-            <>
-              <span>•</span>
-              <span className="text-green-700 font-bold">Open</span>
-            </>
-          )}
-        </div>
-
-        {/* Description */}
-        {activity.description && (
-          <p className="text-gray-700 text-xs mb-3 line-clamp-2">{activity.description}</p>
-        )}
-
-        {/* Compact Details Grid */}
-        <div className="space-y-1.5 text-xs">
-          {/* Hours */}
-          {activity.hoursToday && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-gray-600">🕐</span>
-              <span className="text-gray-800 font-medium">
-                {activity.hoursToday.open} - {activity.hoursToday.close}
+          {/* Dense Info Row - Tufte style */}
+          <div className="flex items-center gap-3 text-sm text-gray-700 mb-2 flex-wrap">
+            <span className="capitalize text-gray-600 font-medium">
+              {category.replace(/_/g, ' ')}
+            </span>
+            {activity.rating && (
+              <span className="flex items-center gap-1 font-medium">
+                ⭐ {activity.rating.toFixed(1)}
               </span>
-            </div>
-          )}
+            )}
+            {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
+              <span className="text-green-600 font-bold">Free</span>
+            )}
+            {activity.cost?.priceLevel && activity.cost.priceLevel > 0 && (
+              <span className="font-medium">{'$'.repeat(activity.cost.priceLevel)}</span>
+            )}
+            {activity.openNow && (
+              <span className="text-green-600 font-bold">Open Now</span>
+            )}
+          </div>
 
-          {/* Duration */}
-          {activity.duration && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-gray-600">⏱️</span>
-              <span className="text-gray-800 font-medium">{activity.duration} min</span>
-            </div>
-          )}
-
-          {/* Address */}
-          {(activity.address || activity.location?.address) && (
-            <div className="flex items-start gap-1.5">
-              <span className="text-gray-600 mt-0.5">📍</span>
-              <span className="text-gray-800 flex-1 line-clamp-1">
-                {activity.address || activity.location?.address}
-              </span>
-            </div>
-          )}
-
-          {/* Accessibility */}
-          {activity.accessibility?.wheelchairAccessible && (
-            <div className="flex items-center gap-1.5">
-              <span>♿</span>
-              <span className="text-gray-800 font-medium">Accessible</span>
-            </div>
+          {/* Description */}
+          {activity.description && (
+            <p className="text-gray-700 text-sm line-clamp-2 leading-snug">{activity.description}</p>
           )}
         </div>
-
-        {/* View Details Button */}
-        <button
-          onClick={() => setShowDetails(true)}
-          className="w-full mt-3 px-3 py-2 bg-navy-text hover:bg-ocean-mid text-white rounded-lg text-xs font-bold transition-colors"
-        >
-          View Full Details
-        </button>
       </div>
-    </div>
 
     {/* Activity Details Modal */}
     {showDetails && (
