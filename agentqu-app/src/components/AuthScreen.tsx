@@ -37,36 +37,44 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ocean-bright/10 to-seafoam/30 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full">
-        {/* Logo/Branding */}
-        <div className="text-center mb-8">
-          <img
-            src="/agentqu-logo.png"
-            alt="AgentQu"
-            className="h-24 mx-auto mb-6"
-          />
-          <h1 className="text-5xl font-bold text-navy-text mb-4">AgentQu</h1>
-          <p className="text-2xl text-ocean-bright font-semibold mb-4">
-            Discover Amazing Activities Near You
-          </p>
-          <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-            AgentQu is your personal AI-powered activity discovery assistant. We help you find the perfect things to do based on your location, interests, and preferences - from restaurants and events to outdoor adventures and hidden gems.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md">
-              <div className="text-3xl mb-2">📍</div>
-              <h3 className="font-bold text-navy-text mb-1">Location-Based</h3>
-              <p className="text-sm text-gray-600">Real-time discoveries near you</p>
+      <div className="max-w-5xl w-full">
+        {/* Hero Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            {/* Left side - Logo and branding */}
+            <div className="flex-shrink-0">
+              <img
+                src="/agentqu-logo.png"
+                alt="AgentQu"
+                className="h-32 md:h-40 w-auto"
+              />
             </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md">
-              <div className="text-3xl mb-2">🎯</div>
-              <h3 className="font-bold text-navy-text mb-1">Personalized</h3>
-              <p className="text-sm text-gray-600">Tailored to your interests</p>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md">
-              <div className="text-3xl mb-2">✨</div>
-              <h3 className="font-bold text-navy-text mb-1">AI-Powered</h3>
-              <p className="text-sm text-gray-600">Smart recommendations</p>
+
+            {/* Right side - Content */}
+            <div className="flex-1 text-center md:text-left">
+              <h1 className="text-4xl md:text-5xl font-bold text-navy-text mb-3">AgentQu</h1>
+              <p className="text-xl md:text-2xl text-ocean-bright font-semibold mb-4">
+                Discover Amazing Activities Near You
+              </p>
+              <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
+                Your personal AI-powered activity discovery assistant. Find the perfect things to do based on your location, interests, and preferences - from restaurants and events to outdoor adventures and hidden gems.
+              </p>
+
+              {/* Feature pills - horizontal */}
+              <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10 px-4 py-2 rounded-full">
+                  <span className="text-xl">📍</span>
+                  <span className="text-sm font-semibold text-navy-text">Location-Based</span>
+                </div>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10 px-4 py-2 rounded-full">
+                  <span className="text-xl">🎯</span>
+                  <span className="text-sm font-semibold text-navy-text">Personalized</span>
+                </div>
+                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10 px-4 py-2 rounded-full">
+                  <span className="text-xl">✨</span>
+                  <span className="text-sm font-semibold text-navy-text">AI-Powered</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
