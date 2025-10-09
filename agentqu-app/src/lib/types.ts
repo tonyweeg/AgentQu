@@ -172,6 +172,7 @@ export interface TripParticipant {
   invitedAt: number;
   joinedAt?: number;
   affinities?: Record<string, number>; // Category -> rating
+  age?: number; // Age for activity filtering (kid-friendly, adult-only, etc.)
 }
 
 export interface DayItinerary {
@@ -268,8 +269,11 @@ export interface CirqleMember {
   nickname: string; // Display name (e.g., "Emma", "Dad", "Sarah")
 
   // Contact info (for invites if they haven't registered)
-  email?: string;
+  email?: string; // Optional - not needed for young kids
   phone?: string;
+
+  // Member type
+  memberType: 'invited' | 'family'; // 'invited' = sent email invite, 'family' = added directly (no OAuth)
 
   // Their preferences (for trip planning)
   affinities?: Record<string, number>;

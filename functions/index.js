@@ -1627,6 +1627,25 @@ exports.inviteToCirqle = onCall(
 
       console.log("👥 CIRQLE INVITE:", { userId, email, nickname, relationship });
 
+      // Check if user exists in the system by email
+      const normalizedEmail = email.toLowerCase();
+      const usersSnapshot = await db.collection("users")
+        .where("email", "==", normalizedEmail)
+        .limit(1)
+        .get();
+
+      let existingUser = null;
+      if (!usersSnapshot.empty) {
+        const userDoc = usersSnapshot.docs[0];
+        existingUser = {
+          uid: userDoc.id,
+          displayName: userDoc.data().displayName,
+          email: userDoc.data().email,
+          photoURL: userDoc.data().photoURL,
+        };
+        console.log("👥 CIRQLE INVITE: Found existing user:", existingUser.uid);
+      }
+
       // Generate unique invite token
       const inviteToken = `${userId}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
@@ -1634,9 +1653,10 @@ exports.inviteToCirqle = onCall(
       const member = {
         memberId: inviteToken,
         ownerUserId: userId,
-        email: email.toLowerCase(),
+        email: normalizedEmail,
         nickname,
         relationship,
+        memberType: "invited",
         status: "pending",
         inviteToken,
         invitedAt: Date.now(),
@@ -1646,7 +1666,7 @@ exports.inviteToCirqle = onCall(
       const cirqleRef = db.collection("cirqles").doc(userId);
       const cirqleDoc = await cirqleRef.get();
 
-      if (cirqleDoc.exists()) {
+      if (cirqleDoc.exists) {
         await cirqleRef.update({
           members: admin.firestore.FieldValue.arrayUnion(member),
           updatedAt: Date.now(),
@@ -1678,10 +1698,94 @@ exports.inviteToCirqle = onCall(
         success: true,
         member,
         inviteLink,
+        existingUser, // If user exists in system, return their info
       };
     } catch (error) {
       console.error("Error inviting to Cirqle:", error);
       throw new Error(`Failed to invite to Cirqle: ${error.message}`);
+    }
+  }
+);
+
+/**
+ * Add existing user directly to Cirqle (no invite needed)
+ */
+exports.addExistingUserToCirqle = onCall(
+  {
+    cors: true,
+    maxInstances: 10,
+  },
+  async (request) => {
+    try {
+      const { targetUserId, nickname, relationship } = request.data;
+      const userId = request.auth?.uid;
+
+      if (!userId) {
+        throw new Error("Authentication required");
+      }
+
+      if (!targetUserId || !nickname || !relationship) {
+        throw new Error("Target user ID, nickname, and relationship are required");
+      }
+
+      console.log("👥 ADD EXISTING USER:", { userId, targetUserId, nickname, relationship });
+
+      // Get target user's info
+      const targetUserDoc = await db.collection("users").doc(targetUserId).get();
+      if (!targetUserDoc.exists) {
+        throw new Error("Target user not found");
+      }
+
+      const targetUserData = targetUserDoc.data();
+
+      // Create member object (active status since they're already registered)
+      const member = {
+        memberId: targetUserId,
+        ownerUserId: userId,
+        email: targetUserData.email,
+        nickname,
+        relationship,
+        memberType: "invited",
+        status: "active",
+        userId: targetUserId,
+        displayName: targetUserData.displayName,
+        photoURL: targetUserData.photoURL || null,
+        addedAt: Date.now(),
+      };
+
+      // Add to Cirqle
+      const cirqleRef = db.collection("cirqles").doc(userId);
+      const cirqleDoc = await cirqleRef.get();
+
+      if (cirqleDoc.exists) {
+        await cirqleRef.update({
+          members: admin.firestore.FieldValue.arrayUnion(member),
+          updatedAt: Date.now(),
+        });
+      } else {
+        // Create new Cirqle
+        const userDoc = await db.collection("users").doc(userId).get();
+        const userName = userDoc.exists ? userDoc.data().displayName : "My Cirqle";
+
+        await cirqleRef.set({
+          cirqleId: userId,
+          ownerId: userId,
+          ownerName: userName,
+          members: [member],
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+      }
+
+      console.log("✅ Added existing user to Cirqle:", targetUserId);
+
+      return {
+        success: true,
+        member,
+      };
+    } catch (error) {
+      console.error("Error adding existing user to Cirqle:", error);
+      throw new Error(`Failed to add user to Cirqle: ${error.message}`);
     }
   }
 );
@@ -1956,14 +2060,14 @@ exports.getSolarData = onCall(async (request) => {
 
       solarData.push({
         date: dateStr,
-        sunrise: sunrise.toTimeString().slice(0, 5),
-        sunset: sunset.toTimeString().slice(0, 5),
+        sunrise: data.sunrise, // Return full ISO timestamp for timezone conversion
+        sunset: data.sunset, // Return full ISO timestamp for timezone conversion
         goldenHour: {
-          morning: goldenHourMorning.toTimeString().slice(0, 5),
-          evening: goldenHourEvening.toTimeString().slice(0, 5),
+          morning: goldenHourMorning.toISOString(), // Full ISO timestamp
+          evening: goldenHourEvening.toISOString(), // Full ISO timestamp
         },
         dayLength: Math.round(data.day_length / 3600), // Convert to hours
-        solarNoon: new Date(data.solar_noon).toTimeString().slice(0, 5),
+        solarNoon: data.solar_noon, // Full ISO timestamp
       });
 
       // Move to next day
@@ -1980,5 +2084,317 @@ exports.getSolarData = onCall(async (request) => {
   } catch (error) {
     console.error("Error fetching solar data:", error);
     throw new Error(`Failed to fetch solar data: ${error.message}`);
+  }
+});
+
+// ============================================
+// THERE-THEN: Trip Planning Scoring Algorithm
+// ============================================
+
+/**
+ * Smart activity scoring for There-Then trip planning.
+ * Weights activities by environmental conditions and user affinities.
+ *
+ * Scoring breakdown:
+ * - 40% Weather Suitability
+ * - 20% Air Quality
+ * - 20% Time Optimization (solar data)
+ * - 20% User Affinity
+ *
+ * Age-based filtering:
+ * - Penalizes adult-only activities when children are present
+ * - Boosts kid-friendly activities based on youngest age
+ */
+exports.scoreThereThenActivities = onCall(async (request) => {
+  try {
+    const {
+      activities,
+      weather,
+      airQuality,
+      solarData,
+      userAffinities,
+      tripDates,
+      participants = [], // Array of TripParticipant objects with age field
+    } = request.data;
+
+    if (!activities || !Array.isArray(activities)) {
+      throw new Error("Missing or invalid activities array");
+    }
+
+    console.log(`🎯 Scoring ${activities.length} activities for There-Then`);
+
+    // Calculate youngest age in group
+    const youngestAge = participants.length > 0
+      ? Math.min(...participants.map(p => p.age || 999).filter(age => age !== 999))
+      : null;
+
+    if (youngestAge && youngestAge < 21) {
+      console.log(`👶 Age filtering active: youngest participant is ${youngestAge} years old`);
+    }
+
+    // Helper: Check if activity is outdoors
+    const isOutdoorActivity = (activity) => {
+      const outdoorCategories = [
+        "hiking",
+        "parks",
+        "beaches",
+        "camping",
+        "fishing",
+        "kayaking",
+        "biking",
+        "rock_climbing",
+        "geocaching",
+        "outdoor_adventures",
+        "nature",
+        "photography",
+        "stargazing",
+        "surfing",
+        "skiing",
+        "outdoor_sports",
+      ];
+
+      return (
+        activity.categories?.some((cat) =>
+          outdoorCategories.includes(cat.toLowerCase()),
+        ) || false
+      );
+    };
+
+    // Helper: Weather score (0-100)
+    const calculateWeatherScore = (activity, weatherData) => {
+      if (!weatherData || !weatherData.forecasts || weatherData.forecasts.length === 0) {
+        return 50; // Neutral if no weather data
+      }
+
+      const isOutdoor = isOutdoorActivity(activity);
+      let totalScore = 0;
+      let dayCount = 0;
+
+      weatherData.forecasts.forEach((day) => {
+        if (!day.hourly || day.hourly.length === 0) return;
+
+        // Average conditions for the day
+        const avgTemp = day.hourly.reduce((sum, h) => sum + h.temp, 0) / day.hourly.length;
+        const maxPrecipitation = Math.max(...day.hourly.map((h) => h.precipitation || 0));
+        const avgCondition = day.hourly[0].condition; // Simplified: use first condition
+
+        let dayScore = 100;
+
+        if (isOutdoor) {
+          // Outdoor activities
+          // Penalize rain
+          if (maxPrecipitation > 70) {
+            dayScore -= 50;
+          } else if (maxPrecipitation > 30) {
+            dayScore -= 25;
+          }
+
+          // Penalize extreme temps
+          if (avgTemp < 30 || avgTemp > 95) {
+            dayScore -= 30;
+          } else if (avgTemp < 40 || avgTemp > 85) {
+            dayScore -= 15;
+          }
+
+          // Bonus for sunny
+          if (avgCondition === "clear" || avgCondition === "sunny") {
+            dayScore += 10;
+          }
+        } else {
+          // Indoor activities - bonus for bad weather
+          if (maxPrecipitation > 50) {
+            dayScore += 20;
+          }
+          if (avgTemp < 30 || avgTemp > 95) {
+            dayScore += 15;
+          }
+        }
+
+        totalScore += Math.max(0, Math.min(100, dayScore));
+        dayCount++;
+      });
+
+      return dayCount > 0 ? totalScore / dayCount : 50;
+    };
+
+    // Helper: Air Quality score (0-100)
+    const calculateAirQualityScore = (activity, aqData) => {
+      if (!aqData || !aqData.current) {
+        return 50; // Neutral if no AQ data
+      }
+
+      const aqi = aqData.current.aqi;
+      const isOutdoor = isOutdoorActivity(activity);
+
+      if (!isOutdoor) {
+        return 100; // Indoor activities unaffected by AQ
+      }
+
+      // AQI scale: 1=Good, 2=Fair, 3=Moderate, 4=Poor, 5=Very Poor
+      const aqiScores = {
+        1: 100, // Good
+        2: 80, // Fair
+        3: 50, // Moderate - caution for outdoor
+        4: 20, // Poor - avoid outdoor
+        5: 0, // Very Poor - strongly avoid outdoor
+      };
+
+      return aqiScores[aqi] || 50;
+    };
+
+    // Helper: Time Optimization score (0-100)
+    const calculateTimeScore = (activity, solarDataArray) => {
+      if (!solarDataArray || solarDataArray.length === 0) {
+        return 50; // Neutral if no solar data
+      }
+
+      // Photography activities get bonus during golden hour
+      const isPhotography = activity.categories?.some((cat) =>
+        ["photography", "scenic_views", "nature"].includes(cat.toLowerCase()),
+      );
+
+      // Stargazing needs nighttime
+      const isStargazing = activity.categories?.includes("stargazing");
+
+      if (isPhotography) {
+        return 85; // Bonus for golden hour opportunities
+      }
+
+      if (isStargazing) {
+        return 90; // Perfect for nighttime
+      }
+
+      // General outdoor activities - slightly prefer daytime
+      if (isOutdoorActivity(activity)) {
+        return 70;
+      }
+
+      return 50; // Neutral for other activities
+    };
+
+    // Helper: User Affinity score (0-100)
+    const calculateAffinityScore = (activity, affinities) => {
+      if (!affinities || !activity.categories || activity.categories.length === 0) {
+        return 50; // Neutral if no affinity data
+      }
+
+      // Find highest matching affinity
+      let maxAffinity = 0.3; // Default minimum
+
+      activity.categories.forEach((category) => {
+        const affinity = affinities[category] || 0.3;
+        maxAffinity = Math.max(maxAffinity, affinity);
+      });
+
+      // Convert 0-1 scale to 0-100
+      return maxAffinity * 100;
+    };
+
+    // Helper: Age appropriateness check
+    const isAdultOnly = (activity) => {
+      const adultCategories = [
+        "nightlife",
+        "bars",
+        "clubs",
+        "wine_tasting",
+        "breweries",
+        "casinos",
+        "adult_entertainment",
+      ];
+
+      return activity.categories?.some((cat) =>
+        adultCategories.includes(cat.toLowerCase()),
+      ) || false;
+    };
+
+    // Helper: Kid-friendly check
+    const isKidFriendly = (activity) => {
+      const kidCategories = [
+        "playgrounds",
+        "children_museums",
+        "amusement_parks",
+        "zoos",
+        "aquariums",
+        "family_entertainment",
+        "parks",
+        "ice_cream",
+        "arcades",
+      ];
+
+      return activity.categories?.some((cat) =>
+        kidCategories.includes(cat.toLowerCase()),
+      ) || false;
+    };
+
+    // Helper: Age-based score adjustment
+    const calculateAgeAdjustment = (activity, youngestAge) => {
+      if (!youngestAge) return 1.0; // No adjustment if no age data
+
+      // Adult-only activities when kids present: zero out the score
+      if (isAdultOnly(activity) && youngestAge < 21) {
+        console.log(`🚫 AGE_FILTER: Zeroing adult activity "${activity.name}" (youngest: ${youngestAge})`);
+        return 0;
+      }
+
+      // Boost kid-friendly activities for young children
+      if (isKidFriendly(activity) && youngestAge < 13) {
+        const boostFactor = youngestAge < 6 ? 1.3 : 1.2;
+        console.log(`✨ AGE_FILTER: Boosting kid activity "${activity.name}" by ${boostFactor}x (youngest: ${youngestAge})`);
+        return boostFactor;
+      }
+
+      return 1.0; // No adjustment
+    };
+
+    // Score each activity
+    const scoredActivities = activities.map((activity) => {
+      const weatherScore = calculateWeatherScore(activity, weather);
+      const aqScore = calculateAirQualityScore(activity, airQuality);
+      const timeScore = calculateTimeScore(activity, solarData?.solarData);
+      const affinityScore = calculateAffinityScore(activity, userAffinities);
+
+      // Base weighted score (40% weather, 20% AQ, 20% time, 20% affinity)
+      let baseScore = (
+        weatherScore * 0.4 +
+        aqScore * 0.2 +
+        timeScore * 0.2 +
+        affinityScore * 0.2
+      );
+
+      // Apply age-based adjustment
+      const ageAdjustment = calculateAgeAdjustment(activity, youngestAge);
+      const finalScore = ageAdjustment === 0 ? 0 : Math.min(100, baseScore * ageAdjustment);
+
+      return {
+        ...activity,
+        thereThenScore: Math.round(finalScore),
+        thereThenBreakdown: {
+          weather: Math.round(weatherScore),
+          airQuality: Math.round(aqScore),
+          timeOptimization: Math.round(timeScore),
+          userAffinity: Math.round(affinityScore),
+          ageAdjustment: ageAdjustment !== 1.0 ? ageAdjustment : undefined, // Only include if adjusted
+        },
+      };
+    });
+
+    // Sort by score (highest first)
+    scoredActivities.sort((a, b) => b.thereThenScore - a.thereThenScore);
+
+    console.log(`✅ Scored ${scoredActivities.length} activities. Top score: ${scoredActivities[0]?.thereThenScore || 0}`);
+
+    return {
+      success: true,
+      activities: scoredActivities,
+      scoringWeights: {
+        weather: "40%",
+        airQuality: "20%",
+        timeOptimization: "20%",
+        userAffinity: "20%",
+      },
+    };
+  } catch (error) {
+    console.error("Error scoring There-Then activities:", error);
+    throw new Error(`Failed to score activities: ${error.message}`);
   }
 });

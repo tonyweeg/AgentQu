@@ -242,19 +242,43 @@ const EnvironmentalDashboard: React.FC<EnvironmentalDashboardProps> = ({ tripId,
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-600">🌅 Sunrise</p>
-                    <p className="font-bold text-orange-600">{day.sunrise}</p>
+                    <p className="font-bold text-orange-600">
+                      {new Date(day.sunrise).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">🌇 Sunset</p>
-                    <p className="font-bold text-purple-600">{day.sunset}</p>
+                    <p className="font-bold text-purple-600">
+                      {new Date(day.sunset).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">✨ Golden Hour AM</p>
-                    <p className="font-bold text-yellow-600">{day.goldenHour.morning}</p>
+                    <p className="font-bold text-yellow-600">
+                      {new Date(day.goldenHour.morning).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-600">✨ Golden Hour PM</p>
-                    <p className="font-bold text-yellow-600">{day.goldenHour.evening}</p>
+                    <p className="font-bold text-yellow-600">
+                      {new Date(day.goldenHour.evening).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </p>
                   </div>
                 </div>
                 <p className="text-xs text-gray-600 mt-3">Day length: {day.dayLength} hours</p>

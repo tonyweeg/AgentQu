@@ -39,6 +39,7 @@ function App() {
   const [manualLocation, setManualLocation] = useState<{lat: number; lng: number} | null>(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
+  const [showAdventureMenu, setShowAdventureMenu] = useState(false);
   const [locationInfo, setLocationInfo] = useState<string>('');
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
@@ -333,66 +334,74 @@ function App() {
                   </div>
                 )}
 
-                {/* Cirqle Button */}
-                <button
-                  onClick={() => {
-                    setViewMode('cirqle');
-                    window.history.pushState({}, '', '/?view=cirqle');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
-                    viewMode === 'cirqle'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md'
-                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <span>👥</span>
-                  <span>Cirqle</span>
-                </button>
+                {/* Adventure Menu Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowAdventureMenu(!showAdventureMenu)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] bg-white text-navy-text hover:bg-gray-50 border border-gray-200"
+                  >
+                    <span>🎒</span>
+                    <span>Adventure</span>
+                    <span className={`text-xs transition-transform ${showAdventureMenu ? 'rotate-180' : ''}`}>▼</span>
+                  </button>
 
-                {/* There-Then Trip Planning Button */}
-                <button
-                  onClick={() => {
-                    setViewMode('trip-creation');
-                    window.history.pushState({}, '', '/?view=trip-creation');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
-                    viewMode === 'trip-creation'
-                      ? 'bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E] text-white shadow-md'
-                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <span>🌍</span>
-                  <span>There-Then</span>
-                </button>
-
-                {/* My Trips Button */}
-                <button
-                  onClick={() => {
-                    setViewMode('trips');
-                    window.history.pushState({}, '', '/?view=trips');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
-                    viewMode === 'trips'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md'
-                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <span>✈️</span>
-                  <span>My Trips</span>
-                </button>
-
-                {/* Off Grid Button */}
-                <button
-                  onClick={() => setViewMode('offgrid')}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] ${
-                    viewMode === 'offgrid'
-                      ? 'bg-ocean-deep text-white shadow-md'
-                      : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
-                  }`}
-                >
-                  <span className="text-lg">🏕️</span>
-                  <span>Off Grid</span>
-                </button>
+                  {/* Dropdown Menu */}
+                  {showAdventureMenu && (
+                    <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 z-50 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setViewMode('cirqle');
+                          window.history.pushState({}, '', '/?view=cirqle');
+                          setShowAdventureMenu(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-purple-50 transition-colors ${
+                          viewMode === 'cirqle' ? 'bg-purple-100 text-purple-700' : 'text-gray-700'
+                        }`}
+                      >
+                        <span className="text-xl">👥</span>
+                        <span className="font-medium">Cirqle</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setViewMode('trip-creation');
+                          window.history.pushState({}, '', '/?view=trip-creation');
+                          setShowAdventureMenu(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-orange-50 transition-colors border-t border-gray-100 ${
+                          viewMode === 'trip-creation' ? 'bg-orange-100 text-orange-700' : 'text-gray-700'
+                        }`}
+                      >
+                        <span className="text-xl">🌍</span>
+                        <span className="font-medium">There-Then</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setViewMode('trips');
+                          window.history.pushState({}, '', '/?view=trips');
+                          setShowAdventureMenu(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-blue-50 transition-colors border-t border-gray-100 ${
+                          viewMode === 'trips' ? 'bg-blue-100 text-blue-700' : 'text-gray-700'
+                        }`}
+                      >
+                        <span className="text-xl">✈️</span>
+                        <span className="font-medium">My Trips</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setViewMode('offgrid');
+                          setShowAdventureMenu(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-green-50 transition-colors border-t border-gray-100 ${
+                          viewMode === 'offgrid' ? 'bg-green-100 text-green-700' : 'text-gray-700'
+                        }`}
+                      >
+                        <span className="text-xl">🏕️</span>
+                        <span className="font-medium">Off Grid</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
 
                 {geocaches.length > 0 && (
                   <button
@@ -462,21 +471,74 @@ function App() {
                 </div>
               )}
 
-              {/* Off Grid */}
-              <button
-                onClick={() => {
-                  setViewMode('offgrid');
-                  setShowMobileMenu(false);
-                }}
-                className={`w-full flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all ${
-                  viewMode === 'offgrid'
-                    ? 'bg-ocean-deep text-white shadow-md'
-                    : 'bg-white text-navy-text hover:bg-gray-50 border border-gray-200'
-                }`}
-              >
-                <span className="text-lg">🏕️</span>
-                <span>Off Grid</span>
-              </button>
+              {/* Adventure Menu */}
+              <div>
+                <div className="text-xs text-gray-500 font-bold uppercase px-3 mb-2">🎒 Adventure</div>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setViewMode('cirqle');
+                      window.history.pushState({}, '', '/?view=cirqle');
+                      setShowMobileMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all ${
+                      viewMode === 'cirqle'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-white text-gray-700 hover:bg-purple-50 border border-gray-200'
+                    }`}
+                  >
+                    <span className="text-xl">👥</span>
+                    <span className="font-medium">Cirqle</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setViewMode('trip-creation');
+                      window.history.pushState({}, '', '/?view=trip-creation');
+                      setShowMobileMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all ${
+                      viewMode === 'trip-creation'
+                        ? 'bg-orange-100 text-orange-700'
+                        : 'bg-white text-gray-700 hover:bg-orange-50 border border-gray-200'
+                    }`}
+                  >
+                    <span className="text-xl">🌍</span>
+                    <span className="font-medium">There-Then</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setViewMode('trips');
+                      window.history.pushState({}, '', '/?view=trips');
+                      setShowMobileMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all ${
+                      viewMode === 'trips'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-200'
+                    }`}
+                  >
+                    <span className="text-xl">✈️</span>
+                    <span className="font-medium">My Trips</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setViewMode('offgrid');
+                      setShowMobileMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left rounded-lg transition-all ${
+                      viewMode === 'offgrid'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-white text-gray-700 hover:bg-green-50 border border-gray-200'
+                    }`}
+                  >
+                    <span className="text-xl">🏕️</span>
+                    <span className="font-medium">Off Grid</span>
+                  </button>
+                </div>
+              </div>
 
               {/* Nearby Towns */}
               {city && nearbyTowns.length > 0 && (
