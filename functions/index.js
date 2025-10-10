@@ -2740,3 +2740,290 @@ exports.searchTwitter = onCall(async (request) => {
     throw new Error(`Twitter search failed: ${error.message}`);
   }
 });
+
+// ============================================================================
+// VIBEINDEX CALCULATION
+// ============================================================================
+
+/**
+ * VibeIndex Categories and Keywords
+ */
+const VIBE_CATEGORIES = {
+  artsy: {
+    name: "🎨 Artsy",
+    keywords: ["art", "gallery", "exhibit", "mural", "artist", "creative", "painting", "sculpture"],
+    hashtags: ["art", "artsy", "gallery", "streetart", "artistsontwitter", "creative"],
+  },
+  musicScene: {
+    name: "🎵 Music Scene",
+    keywords: ["concert", "band", "music", "live music", "show", "festival", "gig", "venue"],
+    hashtags: ["livemusic", "concert", "musicfestival", "localmusic", "band"],
+  },
+  businessHub: {
+    name: "🏢 Business Hub",
+    keywords: ["startup", "business", "entrepreneur", "corporate", "tech", "innovation", "company"],
+    hashtags: ["startup", "entrepreneur", "business", "innovation", "tech"],
+  },
+  sportsCulture: {
+    name: "⚽ Sports Culture",
+    keywords: ["game", "team", "sports", "athletic", "fitness", "championship", "tournament"],
+    hashtags: ["sports", "fitness", "athletics", "gameon", "championship"],
+  },
+  cultureEvents: {
+    name: "🎭 Culture & Events",
+    keywords: ["festival", "event", "cultural", "community", "celebration", "tradition"],
+    hashtags: ["festival", "culturalevent", "community", "celebration"],
+  },
+  quirkyFunky: {
+    name: "🌈 Quirky/Funky",
+    keywords: ["weird", "quirky", "unique", "funky", "alternative", "odd", "eccentric"],
+    hashtags: ["weird", "quirky", "keepitweird", "unique", "funky"],
+  },
+  foodieScene: {
+    name: "🍽️ Foodie Scene",
+    keywords: ["foodie", "restaurant", "chef", "culinary", "food festival", "dining"],
+    hashtags: ["foodie", "restaurant", "foodporn", "chef", "dining"],
+  },
+  nightlife: {
+    name: "🌃 Nightlife",
+    keywords: ["nightlife", "bar", "club", "party", "drinks", "happy hour"],
+    hashtags: ["nightlife", "bars", "club", "drinks", "party"],
+  },
+};
+
+/**
+ * Calculate VibeIndex score for a category
+ * @param {Array} tweets - Tweets to analyze
+ * @param {Object} category - Category definition with keywords/hashtags
+ * @param {number} population - City population for normalization
+ * @returns {Object} Score breakdown
+ */
+function calculateCategoryScore(tweets, category, population) {
+  if (tweets.length === 0) {
+    return {
+      score: 0,
+      tweetCount: 0,
+      uniqueUsers: 0,
+      avgEngagement: 0,
+    };
+  }
+
+  // Volume Score (0-30): Normalized by population
+  const volumeScore = Math.min(30, (tweets.length / (population / 1000)) * 10);
+
+  // Engagement Score (0-30): Average engagement per tweet
+  const totalEngagement = tweets.reduce((sum, tweet) => {
+    const likes = tweet.public_metrics?.like_count || 0;
+    const retweets = tweet.public_metrics?.retweet_count || 0;
+    const replies = tweet.public_metrics?.reply_count || 0;
+    return sum + likes + retweets + replies;
+  }, 0);
+  const avgEngagement = tweets.length > 0 ? totalEngagement / tweets.length : 0;
+  const engagementScore = Math.min(30, (avgEngagement / 5) * 5);
+
+  // Diversity Score (0-20): Unique users
+  const uniqueUsers = new Set(tweets.map(t => t.author_id)).size;
+  const diversityScore = Math.min(20, uniqueUsers / 10);
+
+  // Recency Score (0-10): Time decay
+  const now = new Date();
+  let recencyScore = 0;
+  tweets.forEach(tweet => {
+    const tweetDate = new Date(tweet.created_at);
+    const daysAgo = (now - tweetDate) / (1000 * 60 * 60 * 24);
+    if (daysAgo <= 7) recencyScore += 10 / tweets.length;
+    else if (daysAgo <= 14) recencyScore += 7 / tweets.length;
+    else if (daysAgo <= 21) recencyScore += 4 / tweets.length;
+    else if (daysAgo <= 30) recencyScore += 2 / tweets.length;
+  });
+  recencyScore = Math.min(10, recencyScore);
+
+  // Event Density Score (0-10): Tweets with date/time patterns
+  const eventRegex = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}\/\d{1,2}|\d{1,2}:\d{2}|at \d|pm|am)\b/i;
+  const eventTweets = tweets.filter(t => eventRegex.test(t.text)).length;
+  const eventScore = Math.min(10, eventTweets / 2);
+
+  const finalScore = Math.round(volumeScore + engagementScore + diversityScore + recencyScore + eventScore);
+
+  return {
+    score: finalScore,
+    tweetCount: tweets.length,
+    uniqueUsers,
+    avgEngagement: Math.round(avgEngagement * 10) / 10,
+  };
+}
+
+/**
+ * Filter tweets by category keywords and hashtags
+ */
+function filterTweetsByCategory(tweets, category) {
+  return tweets.filter(tweet => {
+    const text = tweet.text.toLowerCase();
+    const tweetHashtags = tweet.entities?.hashtags?.map(h => h.tag.toLowerCase()) || [];
+
+    // Check if tweet contains any category keywords
+    const hasKeyword = category.keywords.some(keyword => text.includes(keyword.toLowerCase()));
+
+    // Check if tweet has any category hashtags
+    const hasHashtag = category.hashtags.some(hashtag =>
+      tweetHashtags.includes(hashtag.toLowerCase())
+    );
+
+    return hasKeyword || hasHashtag;
+  });
+}
+
+/**
+ * Calculate VibeIndex for a city
+ * Cloud Function (Callable)
+ */
+exports.calculateVibeIndex = onCall(async (request) => {
+  const { cityName, state, lat, lng, radius = 15, population = 10000 } = request.data;
+
+  console.log(`🎨 VIBEINDEX: Calculating for ${cityName}, ${state}`);
+
+  try {
+    // Fetch tweets from last 30 days near the city
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const startTime = thirtyDaysAgo.toISOString();
+
+    // Search for tweets near location (broader search for all content)
+    const searchUrl = "https://api.twitter.com/2/tweets/search/recent";
+    const params = new URLSearchParams({
+      query: `point_radius:[${lng} ${lat} ${radius}mi]`,
+      max_results: 100,
+      start_time: startTime,
+      "tweet.fields": "created_at,public_metrics,entities,author_id",
+      "expansions": "author_id,geo.place_id",
+      "user.fields": "username,name,profile_image_url",
+      "place.fields": "full_name,geo",
+    });
+
+    console.log(`🎨 VIBEINDEX: Fetching tweets with query: point_radius:[${lng} ${lat} ${radius}mi]`);
+
+    const response = await fetch(`${searchUrl}?${params}`, {
+      headers: {
+        "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`🎨 VIBEINDEX: Twitter API error ${response.status}: ${errorText}`);
+      throw new Error(`Twitter API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log(`🎨 VIBEINDEX: API Response:`, JSON.stringify(data).substring(0, 500));
+
+    const tweets = data.data || [];
+
+    console.log(`🎨 VIBEINDEX: Found ${tweets.length} total tweets`);
+
+    // Calculate scores for each category
+    const scores = {};
+    let totalScore = 0;
+    const trendingCategories = [];
+
+    for (const [categoryKey, categoryDef] of Object.entries(VIBE_CATEGORIES)) {
+      const categoryTweets = filterTweetsByCategory(tweets, categoryDef);
+      const categoryScore = calculateCategoryScore(categoryTweets, categoryDef, population);
+
+      scores[categoryKey] = {
+        ...categoryScore,
+        name: categoryDef.name,
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      totalScore += categoryScore.score;
+      if (categoryScore.score >= 60) {
+        trendingCategories.push({ key: categoryKey, name: categoryDef.name, score: categoryScore.score });
+      }
+
+      console.log(`🎨 ${categoryDef.name}: ${categoryScore.score} pts (${categoryScore.tweetCount} tweets)`);
+    }
+
+    // Sort trending categories by score
+    trendingCategories.sort((a, b) => b.score - a.score);
+    const topTrending = trendingCategories.slice(0, 2).map(c => c.key);
+
+    const overallVibeScore = Math.round(totalScore / Object.keys(VIBE_CATEGORIES).length);
+
+    // Store in Firestore
+    const cityId = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+    const vibeDoc = {
+      cityId,
+      cityName,
+      state,
+      country: "US",
+      location: {
+        lat,
+        lng,
+        geohash: geohash.encode(lat, lng, 6),
+      },
+      population,
+      scores,
+      overallVibeScore,
+      trendingCategories: topTrending,
+      calculatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      nextUpdate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)),
+    };
+
+    await admin.firestore().collection("vibeScores").doc(cityId).set(vibeDoc);
+
+    console.log(`🎨 VIBEINDEX: Overall score ${overallVibeScore}, trending: ${topTrending.join(", ")}`);
+
+    return {
+      success: true,
+      cityId,
+      cityName,
+      state,
+      overallVibeScore,
+      scores,
+      trendingCategories: topTrending,
+      totalTweets: tweets.length,
+    };
+
+  } catch (error) {
+    console.error("🎨 VibeIndex calculation error:", error);
+    throw new Error(`VibeIndex calculation failed: ${error.message}`);
+  }
+});
+
+/**
+ * Get VibeIndex scores for a city
+ * Cloud Function (Callable)
+ */
+exports.getVibeIndex = onCall(async (request) => {
+  const { cityId, cityName, state } = request.data;
+
+  try {
+    let docId = cityId;
+    if (!docId && cityName && state) {
+      docId = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+    }
+
+    if (!docId) {
+      throw new Error("Either cityId or (cityName + state) required");
+    }
+
+    const doc = await admin.firestore().collection("vibeScores").doc(docId).get();
+
+    if (!doc.exists) {
+      return {
+        success: false,
+        error: "City not found in VibeIndex database",
+      };
+    }
+
+    return {
+      success: true,
+      ...doc.data(),
+    };
+
+  } catch (error) {
+    console.error("🎨 Get VibeIndex error:", error);
+    throw new Error(`Get VibeIndex failed: ${error.message}`);
+  }
+});
