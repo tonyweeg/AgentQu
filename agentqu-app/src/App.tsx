@@ -201,7 +201,7 @@ function App() {
       return (
         <div className="min-h-screen bg-transparent">
           {/* Simple Header for non-logged-in users */}
-          <header className="bg-white shadow-sm sticky top-0 z-10">
+          <header className="bg-white/60 backdrop-blur-sm shadow-sm sticky top-0 z-10">
             <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 {/* Logo */}
@@ -331,7 +331,7 @@ function App() {
 
       <div className="min-h-screen bg-transparent relative z-0">
         {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
+      <header className="bg-white/60 backdrop-blur-sm shadow-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -547,7 +547,7 @@ function App() {
 
         {/* Mobile Menu */}
         {showMobileMenu && (
-          <div className="lg:hidden border-t border-gray-200 bg-white">
+          <div className="lg:hidden border-t border-gray-200 bg-white/60 backdrop-blur-sm">
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-3">
               {/* Location Display */}
               {location && city && state && (
@@ -717,7 +717,7 @@ function App() {
       </header>
 
       {/* Collapsible Controls Drawer */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="bg-white/60 backdrop-blur-sm border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto">
           {/* Drawer Toggle Button with View Mode Toggle */}
           <div className="flex items-center justify-between px-4 py-3">
