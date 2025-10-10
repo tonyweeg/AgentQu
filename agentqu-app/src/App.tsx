@@ -363,19 +363,19 @@ function App() {
             {location && (
               <div className="hidden lg:flex items-center gap-3">
                 {/* Location Display */}
-                <div className="flex items-center gap-2 bg-ocean-bright/15 px-4 py-2.5 rounded-full border border-ocean-bright/30">
-                  <span className="text-lg">📍</span>
+                <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
+                  <span className="text-base">📍</span>
                   {city && state ? (
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-navy-text leading-tight">
+                      <span className="text-xs font-bold text-gray-800 leading-tight">
                         {city}, {state}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-[10px] text-gray-600">
                         {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm text-gray-600">
+                    <span className="text-xs text-gray-700">
                       {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                     </span>
                   )}
@@ -559,13 +559,13 @@ function App() {
             <div className="max-w-7xl mx-auto px-4 py-4 space-y-3">
               {/* Location Display */}
               {location && city && state && (
-                <div className="flex items-center gap-2 bg-ocean-bright/15 px-4 py-2.5 rounded-full border border-ocean-bright/30">
-                  <span className="text-lg">📍</span>
+                <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
+                  <span className="text-base">📍</span>
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold text-navy-text leading-tight">
+                    <span className="text-xs font-bold text-gray-800 leading-tight">
                       {city}, {state}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-[10px] text-gray-600">
                       {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                     </span>
                   </div>
