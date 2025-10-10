@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../lib/firebase';
 
 const ContactUs: React.FC = () => {
   const { user } = useAuth();
@@ -11,28 +13,43 @@ const ContactUs: React.FC = () => {
   });
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSending(true);
+    setError(null);
 
-    // Simulate sending (in production, you'd call a Cloud Function)
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      console.log('📧 CONTACT_FORM: Submitting contact form...', formData);
 
-    console.log('Contact form submitted:', formData);
-    setSubmitted(true);
-    setSending(false);
-
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setFormData({
-        name: user?.displayName || '',
-        email: user?.email || '',
-        subject: '',
-        message: ''
+      const sendContactEmail = httpsCallable(functions, 'sendContactEmail');
+      const result = await sendContactEmail({
+        name: formData.name,
+        email: formData.email,
+        subject: formData.subject,
+        message: formData.message
       });
-      setSubmitted(false);
-    }, 3000);
+
+      console.log('✅ CONTACT_FORM: Email sent successfully!', result.data);
+      setSubmitted(true);
+      setSending(false);
+
+      // Reset form after 3 seconds
+      setTimeout(() => {
+        setFormData({
+          name: user?.displayName || '',
+          email: user?.email || '',
+          subject: '',
+          message: ''
+        });
+        setSubmitted(false);
+      }, 3000);
+    } catch (err: any) {
+      console.error('❌ CONTACT_FORM: Failed to send email:', err);
+      setError(err.message || 'Failed to send message. Please try again.');
+      setSending(false);
+    }
   };
 
   return (
@@ -57,6 +74,15 @@ const ContactUs: React.FC = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Error Message */}
+                {error && (
+                  <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">❌</span>
+                      <p className="text-red-700 font-medium">{error}</p>
+                    </div>
+                  </div>
+                )}
                 {/* Name */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">

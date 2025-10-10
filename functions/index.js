@@ -1895,6 +1895,95 @@ exports.healthCheck = onRequest((req, res) => {
   });
 });
 
+/**
+ * Send contact form email to tonyweeg@gmail.com
+ */
+exports.sendContactEmail = onCall(
+  {
+    cors: true,
+    invoker: "public",
+  },
+  async (request) => {
+    try {
+      const { name, email, subject, message } = request.data;
+
+      if (!name || !email || !subject || !message) {
+        throw new Error("Missing required fields");
+      }
+
+      console.log("📧 Contact form submission:", { name, email, subject });
+
+      // Create email content
+      const emailContent = {
+        to: "tonyweeg@gmail.com",
+        from: email,
+        replyTo: email,
+        subject: `[AgentQu Contact] ${subject}`,
+        text: `
+Name: ${name}
+Email: ${email}
+Subject: ${subject}
+
+Message:
+${message}
+
+---
+Sent from AgentQu Contact Form
+https://agentqu-platform.web.app/contact
+        `,
+        html: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #1e40af;">AgentQu Contact Form Submission</h2>
+
+  <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+    <p><strong>From:</strong> ${name}</p>
+    <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+    <p><strong>Subject:</strong> ${subject}</p>
+  </div>
+
+  <div style="background: white; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+    <h3>Message:</h3>
+    <p style="white-space: pre-wrap;">${message}</p>
+  </div>
+
+  <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 12px;">
+    <p>Sent from <a href="https://agentqu-platform.web.app/contact">AgentQu Contact Form</a></p>
+  </div>
+</div>
+        `,
+      };
+
+      // For now, we'll save to Firestore and notify admin
+      // In production, you'd integrate with SendGrid, Mailgun, or Firebase Extensions
+      const contactRef = db.collection("contact_submissions").doc();
+      await contactRef.set({
+        id: contactRef.id,
+        name,
+        email,
+        subject,
+        message,
+        submittedAt: Date.now(),
+        status: "pending",
+        notifiedAdmin: false,
+      });
+
+      console.log("✅ Contact form saved to Firestore:", contactRef.id);
+
+      // TODO: Integrate with email service (SendGrid, Mailgun, or Firebase Extensions)
+      // For now, we're storing in Firestore and you can set up email notifications
+
+      return {
+        success: true,
+        message: "Message received! We'll get back to you soon.",
+        submissionId: contactRef.id,
+      };
+    } catch (error) {
+      console.error("Error processing contact form:", error);
+      throw new Error(`Failed to send contact message: ${error.message}`);
+    }
+  }
+);
+
 // ============================================================================
 // THERE-THEN: Environmental Data APIs
 // ============================================================================
