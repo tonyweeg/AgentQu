@@ -78,11 +78,11 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   return (
     <>
       <div
-        className={`bg-gradient-to-br ${getCategoryGradient()} rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 ${getCategoryBorder()} cursor-pointer`}
+        className={`bg-gradient-to-br ${getCategoryGradient()} rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden border ${getCategoryBorder()} cursor-pointer`}
         onClick={() => setShowDetails(true)}
       >
         {/* Always try to show image first */}
-        <div className="relative h-48 bg-gray-100">
+        <div className="relative h-32 bg-gray-100">
           {activity.images && activity.images[0] ? (
             <>
               <img
@@ -106,13 +106,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
 
               {/* Small category emoji badge - top left */}
-              <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xl shadow-md">
+              <div className="absolute top-1.5 left-1.5 bg-white/90 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-lg shadow-md">
                 {getCategoryEmoji()}
               </div>
 
               {/* STOKED Badge - bottom overlay */}
               {stokedLabel && (
-                <div className={`absolute bottom-0 left-0 right-0 ${stokedGradient} text-white px-3 py-2 text-xs font-bold`}>
+                <div className={`absolute bottom-0 left-0 right-0 ${stokedGradient} text-white px-2 py-1 text-[10px] font-bold`}>
                   {stokedLabel}
                 </div>
               )}
@@ -132,24 +132,24 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
           )}
         </div>
 
-        <div className="p-4">
+        <div className="p-2.5">
           {/* Title + Distance */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-bold text-base text-navy-text line-clamp-2 flex-1 leading-snug">
+          <div className="flex items-start justify-between gap-1.5 mb-1.5">
+            <h3 className="font-bold text-sm text-navy-text line-clamp-2 flex-1 leading-tight">
               {activity.name}
             </h3>
-            <span className="text-sm text-gray-700 font-bold whitespace-nowrap">
+            <span className="text-xs text-gray-700 font-bold whitespace-nowrap">
               {activity.distance?.toFixed(1)} mi
             </span>
           </div>
 
           {/* Dense Info Row - Tufte style */}
-          <div className="flex items-center gap-3 text-sm text-gray-700 mb-2 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-gray-700 mb-1.5 flex-wrap">
             <span className="capitalize text-gray-600 font-medium">
               {category.replace(/_/g, ' ')}
             </span>
             {activity.rating && (
-              <span className="flex items-center gap-1 font-medium">
+              <span className="flex items-center gap-0.5 font-medium">
                 ⭐ {activity.rating.toFixed(1)}
               </span>
             )}
@@ -160,13 +160,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
               <span className="font-medium">{'$'.repeat(activity.cost.priceLevel)}</span>
             )}
             {activity.openNow && (
-              <span className="text-green-600 font-bold">Open Now</span>
+              <span className="text-green-600 font-bold">Open</span>
             )}
           </div>
 
           {/* Description */}
           {activity.description && (
-            <p className="text-gray-700 text-sm line-clamp-2 leading-snug">{activity.description}</p>
+            <p className="text-gray-700 text-xs line-clamp-2 leading-tight">{activity.description}</p>
           )}
         </div>
       </div>

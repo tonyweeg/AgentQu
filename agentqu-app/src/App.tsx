@@ -1028,6 +1028,20 @@ function App() {
         </div>
       </div>
 
+      {/* Location Info Bar */}
+      {activeLocation && city && state && (
+        <div className="bg-gray-50/80 backdrop-blur-sm border-b border-gray-200 py-2">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <span className="text-gray-600">Searching in:</span>
+              <span className="font-bold text-navy-text">{city}, {state}</span>
+              <span className="text-gray-400">•</span>
+              <span className="text-gray-600">{activeLocation.lat.toFixed(4)}, {activeLocation.lng.toFixed(4)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
 
@@ -1284,7 +1298,7 @@ function App() {
                               </div>
 
                               {/* Activities Grid */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 {grouped[category].map((activity) => (
                                   <ActivityCard key={activity.id || activity.activityId} activity={activity} />
                                 ))}

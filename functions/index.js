@@ -281,7 +281,69 @@ async function fetchGoogleSearch(lat, lng, city = null) {
 
     console.log(`🔍 SEARCH API: Unique results after deduplication: ${uniqueResults.length}`);
 
-    return uniqueResults
+    // Filter out fake Facebook "events" (posts, pages, groups, etc.)
+    const isFakeFacebookEvent = (item) => {
+      const url = item.link.toLowerCase();
+      const title = item.title.toLowerCase();
+      const snippet = item.snippet?.toLowerCase() || '';
+
+      // Not a Facebook URL - keep it
+      if (!url.includes('facebook.com') && !url.includes('fb.me')) {
+        return false;
+      }
+
+      // Real Facebook event URL patterns - keep these
+      const realEventPatterns = [
+        '/events/',        // facebook.com/events/123456789
+        'fb.me/e/',        // fb.me/e/shortcode
+        'facebook.com/event', // Alternative pattern
+      ];
+
+      if (realEventPatterns.some(pattern => url.includes(pattern))) {
+        console.log(`✅ Real FB event: ${title}`);
+        return false; // Keep it
+      }
+
+      // Fake Facebook content patterns - filter these out
+      const fakePatterns = [
+        '/posts/',         // Facebook posts
+        '/groups/',        // Facebook groups
+        '/pages/',         // Facebook pages
+        '/photos/',        // Photo posts
+        '/videos/',        // Video posts
+        '/permalink/',     // Permalink to posts
+        '/story.php',      // Stories
+        '/watch/',         // Watch videos
+        'shared a post',   // Shared posts in snippet
+        'commented on',    // Comments
+        'posted in',       // Group posts
+      ];
+
+      if (fakePatterns.some(pattern => url.includes(pattern) || snippet.includes(pattern))) {
+        console.log(`🚫 Fake FB event filtered: ${title} (${url})`);
+        return true; // Filter it out
+      }
+
+      // If it's a Facebook URL but doesn't match real event or fake patterns,
+      // check title/snippet for event keywords
+      const eventKeywords = ['event', 'happening', 'tickets', 'register', 'rsvp'];
+      const hasEventKeywords = eventKeywords.some(keyword =>
+        title.includes(keyword) || snippet.includes(keyword)
+      );
+
+      if (!hasEventKeywords) {
+        console.log(`🚫 FB content missing event keywords: ${title}`);
+        return true; // Filter it out
+      }
+
+      return false; // Keep it if it passes all checks
+    };
+
+    const filteredResults = uniqueResults.filter(item => !isFakeFacebookEvent(item));
+
+    console.log(`🔍 SEARCH API: After FB filtering: ${filteredResults.length} (removed ${uniqueResults.length - filteredResults.length} fake FB posts)`);
+
+    return filteredResults
       .map((item, index) => ({
         activityId: `search_${Buffer.from(item.link).toString("base64").substring(0, 16)}`,
         name: item.title,

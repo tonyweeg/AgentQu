@@ -57,48 +57,83 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
         className="bg-white rounded-2xl max-w-4xl w-full max-h-[95vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Hero Image Section */}
+        {/* Hero Image Section with Gallery */}
         {activity.images && activity.images[0] ? (
-          <div className="relative h-80 bg-gray-900">
-            <img
-              src={activity.images[0]}
-              alt={activity.name}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30"></div>
+          <div className="relative">
+            {/* Main Hero Image */}
+            <div className="relative h-96 bg-gray-900">
+              <img
+                src={activity.images[0]}
+                alt={activity.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/40"></div>
 
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full p-3 shadow-lg transition-all text-white"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+              {/* Close Button */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full p-3 shadow-lg transition-all text-white z-10"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
 
-            {/* STOKED Badge Overlay */}
-            {stokedLabel && (
-              <div className={`absolute bottom-6 left-6 right-6 ${stokedGradient} text-white px-6 py-4 rounded-xl text-lg font-bold shadow-2xl backdrop-blur-sm`}>
-                <div className="flex items-center justify-between">
-                  <span>{stokedLabel}</span>
-                  <span className="text-2xl">{score}</span>
+              {/* Image Count Badge */}
+              {activity.images.length > 1 && (
+                <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-medium">
+                  📷 {activity.images.length} photos
                 </div>
+              )}
+
+              {/* STOKED Badge Overlay - Larger & More Prominent */}
+              {stokedLabel && (
+                <div className={`absolute bottom-0 left-0 right-0 ${stokedGradient} text-white px-8 py-6`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-2xl font-bold mb-1">{stokedLabel}</div>
+                      <div className="text-white/80 text-sm">Based on your preferences</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-4xl font-bold">{score}</div>
+                      <div className="text-white/80 text-xs">Q Score</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Image Gallery Thumbnails */}
+            {activity.images.length > 1 && (
+              <div className="flex gap-2 p-3 bg-gray-900 overflow-x-auto">
+                {activity.images.slice(1, 5).map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`${activity.name} ${idx + 2}`}
+                    className="h-20 w-28 object-cover rounded-lg flex-shrink-0 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                  />
+                ))}
+                {activity.images.length > 5 && (
+                  <div className="h-20 w-28 bg-gray-800 rounded-lg flex items-center justify-center flex-shrink-0 text-white font-bold">
+                    +{activity.images.length - 5}
+                  </div>
+                )}
               </div>
             )}
           </div>
         ) : (
-          <div className={`relative h-80 bg-gradient-to-br ${colors.bg} flex items-center justify-center`}>
+          <div className={`relative h-96 bg-gradient-to-br ${colors.bg} flex items-center justify-center`}>
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg transition-all"
+              className="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-3 shadow-lg transition-all z-10"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             <div className="text-center">
-              <div className="text-8xl mb-4">
+              <div className="text-9xl mb-6">
                 {category === 'hiking' ? '🥾' :
                  category === 'events' ? '🎉' :
                  category === 'food_and_dining' ? '🍽️' :
@@ -110,47 +145,83 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
                  category === 'museums' ? '🏛️' : '📍'}
               </div>
               {stokedLabel && (
-                <div className={`${stokedGradient} text-white px-8 py-3 rounded-full text-lg font-bold shadow-xl inline-block`}>
-                  {stokedLabel} • {score}
+                <div className={`${stokedGradient} text-white px-10 py-4 rounded-2xl text-xl font-bold shadow-2xl inline-block`}>
+                  <div className="mb-1">{stokedLabel}</div>
+                  <div className="text-3xl">{score}</div>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Content Grid - Tufte Style */}
+        {/* Content Grid - Enhanced Stats */}
         <div className="p-8">
-          {/* Title & Quick Stats */}
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-navy-text mb-3 leading-tight">{activity.name}</h1>
+          {/* Title & Enhanced Quick Stats */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-navy-text mb-6 leading-tight">{activity.name}</h1>
 
-            {/* Dense Info Grid - Tufte approved */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="flex flex-col">
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Distance</span>
-                <span className="text-lg font-bold text-navy-text">{activity.distance?.toFixed(1)} mi</span>
+            {/* Enhanced Stats Grid with Visual Indicators */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {/* Distance Card */}
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">📍</span>
+                  <span className="text-gray-600 text-xs uppercase tracking-wide font-semibold">Distance</span>
+                </div>
+                <div className="text-2xl font-bold text-blue-700">{activity.distance?.toFixed(1)} mi</div>
+                <div className="text-xs text-gray-600 mt-1">From your location</div>
               </div>
+
+              {/* Rating Card */}
               {activity.rating && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Rating</span>
-                  <span className="text-lg font-bold text-navy-text flex items-center gap-1">
-                    ⭐ {activity.rating.toFixed(1)}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">⭐</span>
+                    <span className="text-gray-600 text-xs uppercase tracking-wide font-semibold">Rating</span>
+                  </div>
+                  <div className="text-2xl font-bold text-amber-700 flex items-baseline gap-2">
+                    {activity.rating.toFixed(1)}
                     {activity.reviewCount && (
-                      <span className="text-xs text-gray-500 font-normal">({activity.reviewCount})</span>
+                      <span className="text-sm text-gray-500 font-normal">({activity.reviewCount})</span>
                     )}
-                  </span>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">Google Reviews</div>
                 </div>
               )}
-              <div className="flex flex-col">
-                <span className="text-gray-500 text-xs uppercase tracking-wide">Category</span>
-                <span className="text-sm font-bold text-navy-text capitalize">{category.replace(/_/g, ' ')}</span>
-              </div>
-              {(activity.cost?.free || activity.cost?.priceLevel !== undefined) && (
-                <div className="flex flex-col">
-                  <span className="text-gray-500 text-xs uppercase tracking-wide">Cost</span>
-                  <span className="text-lg font-bold text-green-600">
-                    {activity.cost?.free ? 'Free' : activity.cost?.priceLevel ? '$'.repeat(activity.cost.priceLevel) : '—'}
+
+              {/* Category Card */}
+              <div className={`bg-gradient-to-br ${colors.bg} rounded-xl p-4 border-2 ${colors.border}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">
+                    {category === 'hiking' ? '🥾' :
+                     category === 'events' ? '🎉' :
+                     category === 'food_and_dining' ? '🍽️' :
+                     category === 'arts_and_culture' ? '🎨' :
+                     category === 'sports_and_recreation' ? '⚽' :
+                     category === 'nature_and_outdoors' ? '🌲' :
+                     category === 'entertainment' ? '🎭' :
+                     category === 'shopping' ? '🛍️' :
+                     category === 'museums' ? '🏛️' : '📍'}
                   </span>
+                  <span className="text-gray-600 text-xs uppercase tracking-wide font-semibold">Category</span>
+                </div>
+                <div className={`text-base font-bold ${colors.text} capitalize`}>{category.replace(/_/g, ' ')}</div>
+                <div className="text-xs text-gray-600 mt-1">Primary type</div>
+              </div>
+
+              {/* Cost Card */}
+              {(activity.cost?.free || activity.cost?.priceLevel !== undefined) && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-2xl">💰</span>
+                    <span className="text-gray-600 text-xs uppercase tracking-wide font-semibold">Cost</span>
+                  </div>
+                  <div className="text-2xl font-bold text-green-700">
+                    {activity.cost?.free ? 'Free' : activity.cost?.priceLevel ? '$'.repeat(activity.cost.priceLevel) : '—'}
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {activity.cost?.free ? 'No charge' : 'Estimated'}
+                  </div>
                 </div>
               )}
             </div>
@@ -175,33 +246,126 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
             )}
           </div>
 
+          {/* Score Breakdown - Show why this activity scored well */}
+          {score > 0 && (
+            <div className="mb-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border-2 border-purple-200">
+              <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">🎯</span>
+                Why This Scored {score} Points
+              </h3>
+              <div className="space-y-3">
+                {/* Distance Score */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">📍</span>
+                    <span className="text-gray-700">
+                      {activity.distance && activity.distance <= 1 ? 'Very close by' :
+                       activity.distance && activity.distance <= 3 ? 'Nearby' :
+                       activity.distance && activity.distance <= 5 ? 'Short drive' :
+                       'Within reach'}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600">
+                    {activity.distance && activity.distance <= 1 ? '+30' :
+                     activity.distance && activity.distance <= 3 ? '+20' :
+                     activity.distance && activity.distance <= 5 ? '+10' : '+5'} pts
+                  </span>
+                </div>
+
+                {/* Rating Score */}
+                {activity.rating && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">⭐</span>
+                      <span className="text-gray-700">Highly rated ({activity.rating.toFixed(1)}/5)</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-600">
+                      +{Math.round((activity.rating / 5) * 20)} pts
+                    </span>
+                  </div>
+                )}
+
+                {/* Category Match */}
+                {stokedLabel && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">❤️</span>
+                      <span className="text-gray-700">Matches your interests</span>
+                    </div>
+                    <span className="text-sm font-medium text-purple-700 font-bold">
+                      Up to +40 pts
+                    </span>
+                  </div>
+                )}
+
+                {/* Free/Open bonuses */}
+                {activity.cost?.free && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🎁</span>
+                      <span className="text-gray-700">Free activity</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-600">+5 pts</span>
+                  </div>
+                )}
+                {activity.openNow && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🟢</span>
+                      <span className="text-gray-700">Open right now</span>
+                    </div>
+                    <span className="text-sm font-medium text-green-600">+10 pts</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           {activity.description && (
             <div className="mb-6">
-              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-2">About</h3>
-              <p className="text-base text-gray-800 leading-relaxed">{activity.description}</p>
+              <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <span className="text-xl">ℹ️</span>
+                About This Place
+              </h3>
+              <p className="text-base text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-200">
+                {activity.description}
+              </p>
             </div>
           )}
 
           {/* Location & Directions */}
           {activity.address && (
-            <div className={`mb-6 bg-gradient-to-br ${colors.bg} rounded-xl p-5 border-2 ${colors.border}`}>
-              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3">📍 Location</h3>
-              <p className="text-base text-gray-900 font-medium mb-1">{activity.address}</p>
-              {activity.city && activity.state && (
-                <p className="text-sm text-gray-600 mb-4">{activity.city}, {activity.state}</p>
-              )}
+            <div className="mb-6 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-300 shadow-lg">
+              <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">📍</span>
+                Location & Directions
+              </h3>
+              <div className="space-y-3 mb-4">
+                <p className="text-lg text-gray-900 font-semibold">{activity.address}</p>
+                {activity.city && activity.state && (
+                  <p className="text-base text-gray-700">{activity.city}, {activity.state}</p>
+                )}
+                {activity.distance && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium">{activity.distance.toFixed(1)} miles from your location</span>
+                  </div>
+                )}
+              </div>
               {googleMapsUrl && (
                 <a
                   href={googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-md"
+                  className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl text-base font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   </svg>
-                  Get Directions
+                  Get Directions in Google Maps
                 </a>
               )}
             </div>
@@ -224,33 +388,47 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose }) 
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t-2 border-gray-100">
+          {/* Enhanced Action Buttons */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-8 border-t-2 border-gray-200">
+            {/* Website Button */}
             {activity.website && (
               <a
                 href={activity.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-ocean-bright text-white px-6 py-3 rounded-xl hover:bg-ocean-mid transition-colors font-bold text-center shadow-md"
+                className="flex items-center justify-center gap-3 bg-gradient-to-r from-ocean-bright to-ocean-mid hover:from-ocean-mid hover:to-ocean-bright text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
               >
-                🌐 Visit Website
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                Visit Website
               </a>
             )}
+
+            {/* Directions Button */}
             {googleMapsUrl && (
               <a
                 href={googleMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-colors font-bold text-center shadow-md"
+                className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
               >
-                🗺️ Directions
+                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                Get Directions
               </a>
             )}
+
+            {/* Close Button - Full Width */}
             <button
               onClick={onClose}
-              className="px-6 py-3 rounded-xl border-2 border-gray-300 hover:bg-gray-50 transition-colors font-medium"
+              className="sm:col-span-2 flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-2 border-gray-300 hover:bg-gray-100 hover:border-gray-400 transition-all font-semibold text-gray-700"
             >
-              Close
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Close Details
             </button>
           </div>
         </div>
