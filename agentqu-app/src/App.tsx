@@ -313,6 +313,20 @@ function App() {
     );
   }
 
+  // Calculate time of day for theme
+  const timeOfDay = (() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 7) return 'dawn';
+    if (hour >= 7 && hour < 17) return 'day';
+    if (hour >= 17 && hour < 19) return 'dusk';
+    return 'night';
+  })();
+
+  // Time-aware text colors
+  const isDarkBackground = timeOfDay === 'night' || timeOfDay === 'dusk';
+  const headerTextColor = isDarkBackground ? 'text-white' : 'text-navy-text';
+  const subTextColor = isDarkBackground ? 'text-gray-200' : 'text-gray-600';
+
   // Main app - show discoveries
   return (
     <>
@@ -320,13 +334,7 @@ function App() {
       <BiomeRenderer
         location={activeLocation}
         state={state}
-        timeOfDay={(() => {
-          const hour = new Date().getHours();
-          if (hour >= 5 && hour < 7) return 'dawn';
-          if (hour >= 7 && hour < 17) return 'day';
-          if (hour >= 17 && hour < 19) return 'dusk';
-          return 'night';
-        })()}
+        timeOfDay={timeOfDay}
       />
 
       <div className="min-h-screen bg-transparent relative z-0">
@@ -1277,10 +1285,10 @@ function App() {
                             <div key={category}>
                               {/* Category Header */}
                               <div className="mb-4">
-                                <h3 className="text-xl font-bold text-navy-text capitalize">
+                                <h3 className={`text-xl font-bold ${headerTextColor} capitalize`}>
                                   {category.replace(/_/g, ' ')}
                                 </h3>
-                                <p className="text-sm text-gray-600">
+                                <p className={`text-sm ${subTextColor}`}>
                                   {grouped[category].length} {grouped[category].length === 1 ? 'activity' : 'activities'}
                                 </p>
                               </div>
