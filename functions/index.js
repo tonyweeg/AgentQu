@@ -2562,3 +2562,181 @@ exports.scoreThereThenActivities = onCall(async (request) => {
     throw new Error(`Failed to score activities: ${error.message}`);
   }
 });
+
+// ============================================================================
+// TWITTER/X INTEGRATION
+// ============================================================================
+
+
+/**
+ * Search Twitter/X for local content based on location and user affinities
+ * 
+ * Returns both event tweets and general local buzz
+ */
+exports.searchTwitter = onCall(async (request) => {
+  try {
+    const { lat, lng, radius = 10, affinities = {}, userId } = request.data;
+
+    console.log(`🐦 TWITTER SEARCH: lat=${lat}, lng=${lng}, radius=${radius}mi`);
+
+    if (!lat || !lng) {
+      throw new Error("Location (lat, lng) is required");
+    }
+
+    // Get top affinity categories (rating >= 50)
+    const topCategories = Object.entries(affinities)
+      .filter(([_, rating]) => rating >= 50)
+      .sort(([_, a], [__, b]) => b - a)
+      .slice(0, 5)
+      .map(([category, _]) => category);
+
+    console.log(`🐦 Top affinity categories:`, topCategories);
+
+    // Build search query with affinity hashtags
+    const hashtags = topCategories.map(cat => `#${cat.replace(/_/g, '')}`).join(" OR ");
+    const eventKeywords = "(event OR festival OR concert OR exhibit OR fair OR market OR show)";
+    
+    // Twitter API v2 Recent Search endpoint
+    const searchUrl = "https://api.twitter.com/2/tweets/search/recent";
+    
+    const allTweets = [];
+    
+    // Search 1: Events with affinity tags
+    if (hashtags) {
+      try {
+        console.log(`🐦 Searching for events with hashtags: ${hashtags}`);
+        const eventResponse = await axios.get(searchUrl, {
+          headers: {
+            "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          },
+          params: {
+            query: `${eventKeywords} (${hashtags}) -is:retweet -is:reply`,
+            max_results: 20,
+            "tweet.fields": "created_at,public_metrics,entities,geo",
+            "expansions": "author_id,geo.place_id",
+            "user.fields": "username,name,profile_image_url",
+            "place.fields": "full_name,geo,place_type",
+          },
+        });
+
+        if (eventResponse.data?.data) {
+          allTweets.push(...eventResponse.data.data.map(tweet => ({
+            ...tweet,
+            searchType: 'event',
+            includes: eventResponse.data.includes,
+          })));
+          console.log(`🐦 Found ${eventResponse.data.data.length} event tweets`);
+        }
+      } catch (error) {
+        console.error(`🐦 Event search failed:`, error.message);
+      }
+    }
+
+    // Search 2: General local content near location
+    try {
+      const radiusKm = radius * 1.60934; // miles to km
+      console.log(`🐦 Searching near ${lat},${lng} within ${radiusKm}km`);
+      
+      const localResponse = await axios.get(searchUrl, {
+        headers: {
+          "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+        },
+        params: {
+          query: `point_radius:[${lng} ${lat} ${radiusKm}km] -is:retweet -is:reply`,
+          max_results: 30,
+          "tweet.fields": "created_at,public_metrics,entities,geo",
+          "expansions": "author_id,geo.place_id",
+          "user.fields": "username,name,profile_image_url",
+          "place.fields": "full_name,geo,place_type",
+        },
+      });
+
+      if (localResponse.data?.data) {
+        allTweets.push(...localResponse.data.data.map(tweet => ({
+          ...tweet,
+          searchType: 'local',
+          includes: localResponse.data.includes,
+        })));
+        console.log(`🐦 Found ${localResponse.data.data.length} local tweets`);
+      }
+    } catch (error) {
+      console.error(`🐦 Local search failed:`, error.message);
+    }
+
+    // Deduplicate by tweet ID
+    const uniqueTweets = Array.from(
+      new Map(allTweets.map(tweet => [tweet.id, tweet])).values()
+    );
+
+    console.log(`🐦 Total unique tweets: ${uniqueTweets.length}`);
+
+    // Helper: Check if tweet contains date/time info (likely an event)
+    const hasDateInfo = (text) => {
+      if (!text) return false;
+      const lower = text.toLowerCase();
+      
+      const datePatterns = [
+        /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}/i,
+        /\b\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?/,
+        /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+        /\b(today|tomorrow|tonight|this\s+(week|weekend|month))/i,
+        /\b\d{1,2}(st|nd|rd|th)\s+(of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i,
+      ];
+      
+      const timePatterns = [
+        /\b\d{1,2}:\d{2}\s*(am|pm|AM|PM)?/,
+        /\b(at|from|starting|begins)\s+\d{1,2}/i,
+      ];
+      
+      return datePatterns.some(p => p.test(text)) || timePatterns.some(p => p.test(text));
+    };
+
+    // Structure tweets
+    const structuredTweets = uniqueTweets.map(tweet => {
+      const author = tweet.includes?.users?.find(u => u.id === tweet.author_id) || {};
+      const place = tweet.includes?.places?.find(p => p.id === tweet.geo?.place_id) || {};
+      
+      const isEvent = tweet.searchType === 'event' || hasDateInfo(tweet.text);
+      
+      return {
+        id: tweet.id,
+        text: tweet.text,
+        createdAt: tweet.created_at,
+        url: `https://twitter.com/${author.username}/status/${tweet.id}`,
+        author: {
+          username: author.username,
+          name: author.name,
+          avatar: author.profile_image_url,
+        },
+        engagement: {
+          likes: tweet.public_metrics?.like_count || 0,
+          retweets: tweet.public_metrics?.retweet_count || 0,
+          replies: tweet.public_metrics?.reply_count || 0,
+        },
+        location: place.full_name || null,
+        isEvent,
+        hashtags: tweet.entities?.hashtags?.map(h => h.tag) || [],
+        searchType: tweet.searchType,
+      };
+    });
+
+    // Separate events from general content
+    const events = structuredTweets.filter(t => t.isEvent);
+    const buzz = structuredTweets.filter(t => !t.isEvent);
+
+    console.log(`🐦 Structured: ${events.length} events, ${buzz.length} buzz tweets`);
+
+    return {
+      success: true,
+      events,
+      buzz,
+      total: structuredTweets.length,
+      location: { lat, lng, radius },
+      affinityCategories: topCategories,
+    };
+
+  } catch (error) {
+    console.error("🐦 Twitter search error:", error);
+    throw new Error(`Twitter search failed: ${error.message}`);
+  }
+});
