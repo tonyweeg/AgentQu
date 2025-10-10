@@ -366,14 +366,9 @@ function App() {
                 <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
                   <span className="text-base">📍</span>
                   {city && state ? (
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-gray-800 leading-tight">
-                        {city}, {state}
-                      </span>
-                      <span className="text-[10px] text-gray-600">
-                        {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-                      </span>
-                    </div>
+                    <span className="text-xs font-bold text-gray-800">
+                      {city}, {state} · {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                    </span>
                   ) : (
                     <span className="text-xs text-gray-700">
                       {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
@@ -384,9 +379,9 @@ function App() {
                 {/* Nearby Towns */}
                 {city && nearbyTowns.length > 0 && (
                   <div className="relative group">
-                    <button className="flex items-center gap-1 bg-white hover:bg-gray-50 px-4 py-2.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 transition-colors h-[42px]">
+                    <button className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-full border border-amber-200 text-xs font-bold text-gray-800 transition-colors">
                       <span>Nearby</span>
-                      <span className="text-xs">▼</span>
+                      <span className="text-[10px]">▼</span>
                     </button>
 
                     {/* Dropdown */}
@@ -433,11 +428,11 @@ function App() {
                 <div className="relative">
                   <button
                     onClick={() => setShowAdventureMenu(!showAdventureMenu)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all h-[42px] bg-white text-navy-text hover:bg-gray-50 border border-gray-200"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all bg-amber-50 text-gray-800 hover:bg-amber-100 border border-amber-200"
                   >
                     <span>🎒</span>
                     <span>Adventure</span>
-                    <span className={`text-xs transition-transform ${showAdventureMenu ? 'rotate-180' : ''}`}>▼</span>
+                    <span className={`text-[10px] transition-transform ${showAdventureMenu ? 'rotate-180' : ''}`}>▼</span>
                   </button>
 
                   {/* Dropdown Menu */}
@@ -561,14 +556,9 @@ function App() {
               {location && city && state && (
                 <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
                   <span className="text-base">📍</span>
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-gray-800 leading-tight">
-                      {city}, {state}
-                    </span>
-                    <span className="text-[10px] text-gray-600">
-                      {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-                    </span>
-                  </div>
+                  <span className="text-xs font-bold text-gray-800">
+                    {city}, {state} · {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                  </span>
                 </div>
               )}
 
