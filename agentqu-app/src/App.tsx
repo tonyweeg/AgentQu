@@ -84,7 +84,9 @@ function App() {
     userId: user?.uid || null,
     affinities: profile?.affinities || {},
     radius: radius,
-    enabled: true
+    enabled: true,
+    cityName: city || undefined,
+    stateName: state || undefined
   });
 
   // Request location when user completes onboarding

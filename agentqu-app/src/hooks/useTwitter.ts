@@ -38,6 +38,8 @@ interface UseTwitterParams {
   affinities?: Record<string, number>;
   radius?: number;
   enabled?: boolean;
+  cityName?: string;
+  stateName?: string;
 }
 
 export function useTwitter({
@@ -45,7 +47,9 @@ export function useTwitter({
   userId,
   affinities = {},
   radius = 10,
-  enabled = true
+  enabled = true,
+  cityName,
+  stateName
 }: UseTwitterParams) {
   const [tweets, setTweets] = useState<TwitterSearchResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,7 +67,7 @@ export function useTwitter({
       const functions = getFunctions();
       const searchTwitterFn = httpsCallable<any, TwitterSearchResult>(functions, 'searchTwitter');
 
-      console.log('🐦 CLIENT: Searching Twitter...', { location, affinities, radius });
+      console.log('🐦 CLIENT: Searching Twitter...', { location, affinities, radius, cityName, stateName });
 
       const result = await searchTwitterFn({
         lat: location.lat,
@@ -71,6 +75,8 @@ export function useTwitter({
         radius,
         affinities,
         userId,
+        cityName,
+        stateName,
       });
 
       console.log('🐦 CLIENT: Twitter search result:', result.data);
@@ -82,7 +88,7 @@ export function useTwitter({
     } finally {
       setLoading(false);
     }
-  }, [location, userId, affinities, radius, enabled]);
+  }, [location, userId, affinities, radius, enabled, cityName, stateName]);
 
   useEffect(() => {
     searchTwitter();

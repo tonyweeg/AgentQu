@@ -2575,9 +2575,9 @@ exports.scoreThereThenActivities = onCall(async (request) => {
  */
 exports.searchTwitter = onCall(async (request) => {
   try {
-    const { lat, lng, radius = 10, affinities = {}, userId } = request.data;
+    const { lat, lng, radius = 10, affinities = {}, userId, cityName, stateName } = request.data;
 
-    console.log(`🐦 TWITTER SEARCH: lat=${lat}, lng=${lng}, radius=${radius}mi`);
+    console.log(`🐦 TWITTER SEARCH: lat=${lat}, lng=${lng}, radius=${radius}mi, city=${cityName}, state=${stateName}`);
 
     if (!lat || !lng) {
       throw new Error("Location (lat, lng) is required");
@@ -2675,37 +2675,52 @@ exports.searchTwitter = onCall(async (request) => {
       console.error(`🐦 Local search failed:`, error.message);
     }
 
-    // Search 3: City/Town name mentions (catch tweets without location data)
-    try {
-      // Try to get city name from reverse geocoding or user-provided data
-      // For now, use a broader Maryland search as fallback
-      const stateQuery = "(Maryland OR #Maryland OR MD) -is:retweet -is:reply";
-      console.log(`🐦 Searching for state/region mentions: ${stateQuery}`);
+    // Search 3: City/State name mentions (catch tweets without location data)
+    // Only run if we have city or state information
+    if (cityName || stateName) {
+      try {
+        let locationQuery = "";
 
-      const regionResponse = await axios.get(searchUrl, {
-        headers: {
-          "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
-        },
-        params: {
-          query: stateQuery,
-          max_results: 20,
-          "tweet.fields": "created_at,public_metrics,entities,geo",
-          "expansions": "author_id,geo.place_id",
-          "user.fields": "username,name,profile_image_url",
-          "place.fields": "full_name,geo,place_type",
-        },
-      });
+        if (cityName && stateName) {
+          // Search for both city and state
+          locationQuery = `("${cityName}" OR "${stateName}") -is:retweet -is:reply`;
+        } else if (stateName) {
+          // Just state
+          locationQuery = `"${stateName}" -is:retweet -is:reply`;
+        } else if (cityName) {
+          // Just city (less reliable without state context)
+          locationQuery = `"${cityName}" -is:retweet -is:reply`;
+        }
 
-      if (regionResponse.data?.data) {
-        allTweets.push(...regionResponse.data.data.map(tweet => ({
-          ...tweet,
-          searchType: 'local',
-          includes: regionResponse.data.includes,
-        })));
-        console.log(`🐦 Found ${regionResponse.data.data.length} region tweets`);
+        console.log(`🐦 Searching for location mentions: ${locationQuery}`);
+
+        const regionResponse = await axios.get(searchUrl, {
+          headers: {
+            "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          },
+          params: {
+            query: locationQuery,
+            max_results: 20,
+            "tweet.fields": "created_at,public_metrics,entities,geo",
+            "expansions": "author_id,geo.place_id",
+            "user.fields": "username,name,profile_image_url",
+            "place.fields": "full_name,geo,place_type",
+          },
+        });
+
+        if (regionResponse.data?.data) {
+          allTweets.push(...regionResponse.data.data.map(tweet => ({
+            ...tweet,
+            searchType: 'local',
+            includes: regionResponse.data.includes,
+          })));
+          console.log(`🐦 Found ${regionResponse.data.data.length} location name tweets`);
+        }
+      } catch (error) {
+        console.error(`🐦 Location name search failed:`, error.message);
       }
-    } catch (error) {
-      console.error(`🐦 Region search failed:`, error.message);
+    } else {
+      console.log(`🐦 Skipping location name search - no city/state provided`);
     }
 
     // Deduplicate by tweet ID
