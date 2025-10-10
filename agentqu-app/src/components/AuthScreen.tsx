@@ -459,8 +459,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
       {/* Wavy Mountain Background Layers */}
       <div className="absolute inset-0 -z-10">
-        {/* Dynamic Sky gradient based on time */}
-        <div className={`absolute inset-0 bg-gradient-to-b ${getSkyGradient()}`}></div>
+        {/* Dynamic Sky gradient - Fixed to viewport */}
+        <div className={`fixed inset-0 bg-gradient-to-b ${getSkyGradient()}`}></div>
 
         {/* Sun (daytime, clear weather) - positioned by time */}
         {showSun && (
@@ -571,7 +571,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
       <div className="max-w-5xl w-full relative z-10">
         {/* Hero Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border border-blue-900/20">
+        <div className={`backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border ${timeOfDay === 'night' ? 'bg-indigo-900/60 border-indigo-400/30' : 'bg-white/80 border-blue-900/20'}`}>
           <div className="flex flex-col md:flex-row items-start gap-8">
             {/* Left side - Logo (top aligned) */}
             <div className="flex-shrink-0">
@@ -584,27 +584,27 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
             {/* Middle - Content */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl font-bold text-navy-text mb-3">AgentQu</h1>
-              <p className="text-xl md:text-2xl text-ocean-bright font-semibold mb-4">
+              <h1 className={`text-4xl md:text-5xl font-bold mb-3 ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>AgentQu</h1>
+              <p className={`text-xl md:text-2xl font-semibold mb-4 ${timeOfDay === 'night' ? 'text-sky-300' : 'text-ocean-bright'}`}>
                 Discover Amazing Activities Near You
               </p>
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
+              <p className={`text-base md:text-lg leading-relaxed mb-6 ${timeOfDay === 'night' ? 'text-gray-200' : 'text-gray-700'}`}>
                 Your personal AI-powered activity discovery assistant. Find the perfect things to do based on your location, interests, and preferences - from restaurants and events to outdoor adventures and hidden gems.
               </p>
 
               {/* Feature pills - horizontal */}
               <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10 px-4 py-2 rounded-full">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeOfDay === 'night' ? 'bg-sky-400/30' : 'bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10'}`}>
                   <span className="text-xl">📍</span>
-                  <span className="text-sm font-semibold text-navy-text">Location-Based</span>
+                  <span className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>Location-Based</span>
                 </div>
-                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10 px-4 py-2 rounded-full">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeOfDay === 'night' ? 'bg-sky-400/30' : 'bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10'}`}>
                   <span className="text-xl">🎯</span>
-                  <span className="text-sm font-semibold text-navy-text">Personalized</span>
+                  <span className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>Personalized</span>
                 </div>
-                <div className="flex items-center gap-2 bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10 px-4 py-2 rounded-full">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeOfDay === 'night' ? 'bg-sky-400/30' : 'bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10'}`}>
                   <span className="text-xl">✨</span>
-                  <span className="text-sm font-semibold text-navy-text">AI-Powered</span>
+                  <span className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>AI-Powered</span>
                 </div>
               </div>
             </div>
@@ -619,30 +619,30 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                   onError={() => setMapError(true)}
                 />
                 {locationCity && (
-                  <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-center">
-                    <p className="text-sm font-semibold text-navy-text">📍 {locationCity}</p>
+                  <div className={`absolute bottom-2 left-2 right-2 backdrop-blur-sm px-3 py-1 rounded-full text-center ${timeOfDay === 'night' ? 'bg-indigo-900/90' : 'bg-white/90'}`}>
+                    <p className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>📍 {locationCity}</p>
                   </div>
                 )}
               </div>
             ) : location && mapError ? (
-              <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl bg-gradient-to-br from-ocean-bright/30 to-seafoam/40 flex items-center justify-center border-2 border-ocean-bright/20">
+              <div className={`flex-shrink-0 w-full md:w-64 h-48 rounded-xl flex items-center justify-center border-2 ${timeOfDay === 'night' ? 'bg-gradient-to-br from-sky-400/30 to-indigo-400/30 border-sky-400/20' : 'bg-gradient-to-br from-ocean-bright/30 to-seafoam/40 border-ocean-bright/20'}`}>
                 <div className="text-center px-4">
                   <div className="text-4xl mb-2">📍</div>
                   {locationCity ? (
                     <>
-                      <p className="text-xl font-bold text-navy-text mb-1">{locationCity}</p>
-                      <p className="text-sm text-gray-600">Your location</p>
+                      <p className={`text-xl font-bold mb-1 ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>{locationCity}</p>
+                      <p className={`text-sm ${timeOfDay === 'night' ? 'text-gray-200' : 'text-gray-600'}`}>Your location</p>
                     </>
                   ) : (
-                    <p className="text-sm text-gray-600">Location detected</p>
+                    <p className={`text-sm ${timeOfDay === 'night' ? 'text-gray-200' : 'text-gray-600'}`}>Location detected</p>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="flex-shrink-0 w-full md:w-64 h-48 rounded-xl bg-gradient-to-br from-ocean-bright/20 to-seafoam/30 flex items-center justify-center">
+              <div className={`flex-shrink-0 w-full md:w-64 h-48 rounded-xl flex items-center justify-center ${timeOfDay === 'night' ? 'bg-gradient-to-br from-sky-400/20 to-indigo-400/20' : 'bg-gradient-to-br from-ocean-bright/20 to-seafoam/30'}`}>
                 <div className="text-center px-4">
                   <div className="text-4xl mb-2">🗺️</div>
-                  <p className="text-sm text-gray-600">Allow location to see nearby activities</p>
+                  <p className={`text-sm ${timeOfDay === 'night' ? 'text-gray-200' : 'text-gray-600'}`}>Allow location to see nearby activities</p>
                 </div>
               </div>
             )}
@@ -650,25 +650,25 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
         </div>
 
         {/* Sign In Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-blue-900/20">
-          <h2 className="text-2xl font-bold text-navy-text mb-6 text-center">
+        <div className={`backdrop-blur-sm rounded-2xl shadow-lg p-8 border ${timeOfDay === 'night' ? 'bg-indigo-900/60 border-indigo-400/30' : 'bg-white/80 border-blue-900/20'}`}>
+          <h2 className={`text-2xl font-bold mb-6 text-center ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>
             Get Started
           </h2>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className={`border rounded-xl p-4 mb-6 ${timeOfDay === 'night' ? 'bg-red-900/50 border-red-400/50' : 'bg-red-50 border-red-200'}`}>
+              <p className={`text-sm ${timeOfDay === 'night' ? 'text-red-200' : 'text-red-800'}`}>{error}</p>
             </div>
           )}
 
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full bg-white border-2 border-gray-300 hover:border-ocean-bright text-navy-text font-medium py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`w-full border-2 font-medium py-4 px-6 rounded-xl transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed ${timeOfDay === 'night' ? 'bg-indigo-800/60 border-sky-400/50 hover:border-sky-300 text-white' : 'bg-white border-gray-300 hover:border-ocean-bright text-navy-text'}`}
           >
             {loading ? (
               <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-ocean-bright border-t-transparent"></div>
+                <div className={`animate-spin rounded-full h-5 w-5 border-2 border-t-transparent ${timeOfDay === 'night' ? 'border-sky-300' : 'border-ocean-bright'}`}></div>
                 <span>Signing in...</span>
               </>
             ) : (
@@ -697,27 +697,27 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           </button>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className={`text-sm ${timeOfDay === 'night' ? 'text-gray-200' : 'text-gray-600'}`}>
               By signing in, you agree to our{' '}
-              <a href="/terms" className="text-ocean-bright hover:text-ocean-mid font-medium underline">Terms of Service</a>
+              <a href="/terms" className={`font-medium underline ${timeOfDay === 'night' ? 'text-sky-300 hover:text-sky-200' : 'text-ocean-bright hover:text-ocean-mid'}`}>Terms of Service</a>
               {' '}and{' '}
-              <a href="/privacy" className="text-ocean-bright hover:text-ocean-mid font-medium underline">Privacy Policy</a>
+              <a href="/privacy" className={`font-medium underline ${timeOfDay === 'night' ? 'text-sky-300 hover:text-sky-200' : 'text-ocean-bright hover:text-ocean-mid'}`}>Privacy Policy</a>
             </p>
           </div>
         </div>
 
         {/* Corporate Links */}
-        <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-blue-900/20">
+        <div className={`mt-6 backdrop-blur-sm rounded-xl p-4 border ${timeOfDay === 'night' ? 'bg-indigo-900/60 border-indigo-400/30' : 'bg-white/80 border-blue-900/20'}`}>
           <div className="flex items-center justify-center gap-6 text-sm">
-            <a href="/privacy" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
+            <a href="/privacy" className={`font-medium transition-colors ${timeOfDay === 'night' ? 'text-gray-200 hover:text-sky-300' : 'text-gray-700 hover:text-ocean-bright'}`}>
               Privacy Policy
             </a>
-            <span className="text-gray-400">•</span>
-            <a href="/terms" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
+            <span className={timeOfDay === 'night' ? 'text-gray-400' : 'text-gray-400'}>•</span>
+            <a href="/terms" className={`font-medium transition-colors ${timeOfDay === 'night' ? 'text-gray-200 hover:text-sky-300' : 'text-gray-700 hover:text-ocean-bright'}`}>
               Terms of Service
             </a>
-            <span className="text-gray-400">•</span>
-            <a href="/contact" className="text-gray-700 hover:text-ocean-bright transition-colors font-medium">
+            <span className={timeOfDay === 'night' ? 'text-gray-400' : 'text-gray-400'}>•</span>
+            <a href="/contact" className={`font-medium transition-colors ${timeOfDay === 'night' ? 'text-gray-200 hover:text-sky-300' : 'text-gray-700 hover:text-ocean-bright'}`}>
               Contact Us
             </a>
           </div>

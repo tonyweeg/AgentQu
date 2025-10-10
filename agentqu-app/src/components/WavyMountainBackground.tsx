@@ -376,8 +376,8 @@ const WavyMountainBackground: React.FC<WavyMountainBackgroundProps> = ({ classNa
 
   return (
     <div className={`absolute inset-0 -z-10 ${className}`}>
-      {/* Dynamic Sky gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-b ${getSkyGradient()}`}></div>
+      {/* Dynamic Sky gradient - Fixed to viewport */}
+      <div className={`fixed inset-0 bg-gradient-to-b ${getSkyGradient()}`}></div>
 
       {/* Sun */}
       {showSun && (
