@@ -9,37 +9,8 @@ interface ActivityCardProps {
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
   const [showDetails, setShowDetails] = useState(false);
 
-  // Category-based colorful gradients
   const category = activity.primaryCategory || 'other';
-  const getCategoryGradient = () => {
-    switch (category) {
-      case 'hiking': return 'from-green-50 to-emerald-100';
-      case 'events': return 'from-purple-50 to-pink-100';
-      case 'food_and_dining': return 'from-orange-50 to-amber-100';
-      case 'arts_and_culture': return 'from-pink-50 to-rose-100';
-      case 'sports_and_recreation': return 'from-blue-50 to-cyan-100';
-      case 'nature_and_outdoors': return 'from-teal-50 to-green-100';
-      case 'entertainment': return 'from-indigo-50 to-purple-100';
-      case 'shopping': return 'from-yellow-50 to-amber-100';
-      case 'museums': return 'from-amber-50 to-orange-100';
-      default: return 'from-gray-50 to-slate-100';
-    }
-  };
-
-  const getCategoryBorder = () => {
-    switch (category) {
-      case 'hiking': return 'border-green-300';
-      case 'events': return 'border-purple-300';
-      case 'food_and_dining': return 'border-orange-300';
-      case 'arts_and_culture': return 'border-pink-300';
-      case 'sports_and_recreation': return 'border-blue-300';
-      case 'nature_and_outdoors': return 'border-teal-300';
-      case 'entertainment': return 'border-indigo-300';
-      case 'shopping': return 'border-yellow-300';
-      case 'museums': return 'border-amber-300';
-      default: return 'border-gray-300';
-    }
-  };
+  const score = activity.score || 0;
 
   const getCategoryEmoji = () => {
     switch (category) {
@@ -56,126 +27,103 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
     }
   };
 
-  // STOKED badge with vibrant gradients
-  let stokedLabel = "";
-  let stokedGradient = "";
-  const score = activity.score || 0;
-
+  // Smaller, subtler Q Score badge (text only, no gradients)
+  let qScoreBadge = "";
   if (score >= 280) {
-    stokedLabel = "You'll love it";
-    stokedGradient = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+    qScoreBadge = "❤️ You'll love it";
   } else if (score >= 220) {
-    stokedLabel = "You'll like it";
-    stokedGradient = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+    qScoreBadge = "😊 You'll like it";
   } else if (score >= 180) {
-    stokedLabel = "You should like it";
-    stokedGradient = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+    qScoreBadge = "👍 You should like it";
   } else if (score >= 140) {
-    stokedLabel = "Give it a shot!";
-    stokedGradient = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+    qScoreBadge = "🎯 Give it a shot";
   }
 
   return (
     <>
+      {/* Compact list-style card with sandy background */}
       <div
-        className={`bg-gradient-to-br ${getCategoryGradient()} rounded-lg shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden border ${getCategoryBorder()} cursor-pointer`}
+        className="bg-amber-50 border border-amber-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
         onClick={() => setShowDetails(true)}
       >
-        {/* Always try to show image first */}
-        <div className="relative h-32 bg-gray-100">
-          {activity.images && activity.images[0] ? (
-            <>
-              <img
-                src={activity.images[0]}
-                alt={activity.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                onError={(e) => {
-                  // Fallback to placeholder if image fails
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  const parent = target.parentElement;
-                  if (parent) {
-                    const placeholder = document.createElement('div');
-                    placeholder.className = `absolute inset-0 bg-gradient-to-br ${getCategoryGradient()} flex items-center justify-center`;
-                    placeholder.innerHTML = `<span class="text-6xl">${getCategoryEmoji()}</span>`;
-                    parent.appendChild(placeholder);
-                  }
-                }}
-              />
-              {/* Subtle gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-
-              {/* Small category emoji badge - top left */}
-              <div className="absolute top-1.5 left-1.5 bg-white/90 backdrop-blur-sm rounded-md px-1.5 py-0.5 text-lg shadow-md">
-                {getCategoryEmoji()}
+        {/* Horizontal layout: image left, content right */}
+        <div className="flex gap-3 p-2">
+          {/* Small thumbnail image (60x60) */}
+          <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-amber-100 relative">
+            {activity.images && activity.images[0] ? (
+              <>
+                <img
+                  src={activity.images[0]}
+                  alt={activity.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    // Fallback to emoji if image fails
+                    const target = e.currentTarget;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const placeholder = document.createElement('div');
+                      placeholder.className = 'absolute inset-0 bg-amber-100 flex items-center justify-center';
+                      placeholder.innerHTML = `<span class="text-3xl">${getCategoryEmoji()}</span>`;
+                      parent.appendChild(placeholder);
+                    }
+                  }}
+                />
+              </>
+            ) : (
+              /* No image - show emoji */
+              <div className="absolute inset-0 bg-amber-100 flex items-center justify-center">
+                <span className="text-3xl">{getCategoryEmoji()}</span>
               </div>
+            )}
+          </div>
 
-              {/* STOKED Badge - bottom overlay */}
-              {stokedLabel && (
-                <div className={`absolute bottom-0 left-0 right-0 ${stokedGradient} text-white px-2 py-1 text-[10px] font-bold`}>
-                  {stokedLabel}
-                </div>
+          {/* Content area */}
+          <div className="flex-1 min-w-0">
+            {/* Title and Distance */}
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <h3 className="font-bold text-sm text-gray-900 line-clamp-1 leading-tight">
+                {activity.name}
+              </h3>
+              <span className="text-xs text-gray-600 font-semibold whitespace-nowrap">
+                {activity.distance?.toFixed(1)} mi
+              </span>
+            </div>
+
+            {/* Compact info row */}
+            <div className="flex items-center gap-1.5 text-xs text-gray-700 flex-wrap mb-1">
+              <span className="text-amber-700 font-medium">{getCategoryEmoji()}</span>
+              {activity.rating && (
+                <span className="flex items-center gap-0.5">
+                  ⭐ {activity.rating.toFixed(1)}
+                </span>
               )}
-            </>
-          ) : (
-            /* Fallback: No image available */
-            <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient()} flex flex-col items-center justify-center`}>
-              <div className="text-6xl mb-2">
-                {getCategoryEmoji()}
-              </div>
-              {stokedLabel && (
-                <div className={`${stokedGradient} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
-                  {stokedLabel}
-                </div>
+              {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
+                <span className="text-green-600 font-semibold">Free</span>
+              )}
+              {activity.cost?.priceLevel && activity.cost.priceLevel > 0 && (
+                <span className="text-gray-600">{'$'.repeat(activity.cost.priceLevel)}</span>
+              )}
+              {activity.openNow && (
+                <span className="text-green-600 font-semibold">Open</span>
               )}
             </div>
-          )}
-        </div>
 
-        <div className="p-2.5">
-          {/* Title + Distance */}
-          <div className="flex items-start justify-between gap-1.5 mb-1.5">
-            <h3 className="font-bold text-sm text-navy-text line-clamp-2 flex-1 leading-tight">
-              {activity.name}
-            </h3>
-            <span className="text-xs text-gray-700 font-bold whitespace-nowrap">
-              {activity.distance?.toFixed(1)} mi
-            </span>
-          </div>
-
-          {/* Dense Info Row - Tufte style */}
-          <div className="flex items-center gap-2 text-xs text-gray-700 mb-1.5 flex-wrap">
-            <span className="capitalize text-gray-600 font-medium">
-              {category.replace(/_/g, ' ')}
-            </span>
-            {activity.rating && (
-              <span className="flex items-center gap-0.5 font-medium">
-                ⭐ {activity.rating.toFixed(1)}
-              </span>
-            )}
-            {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
-              <span className="text-green-600 font-bold">Free</span>
-            )}
-            {activity.cost?.priceLevel && activity.cost.priceLevel > 0 && (
-              <span className="font-medium">{'$'.repeat(activity.cost.priceLevel)}</span>
-            )}
-            {activity.openNow && (
-              <span className="text-green-600 font-bold">Open</span>
+            {/* Small Q Score badge - subtle text only */}
+            {qScoreBadge && (
+              <div className="text-[10px] text-amber-700 font-medium">
+                {qScoreBadge} · Q{score}
+              </div>
             )}
           </div>
-
-          {/* Description */}
-          {activity.description && (
-            <p className="text-gray-700 text-xs line-clamp-2 leading-tight">{activity.description}</p>
-          )}
         </div>
       </div>
 
-    {/* Activity Details Modal */}
-    {showDetails && (
-      <ActivityDetails activity={activity} onClose={() => setShowDetails(false)} />
-    )}
-  </>
+      {/* Activity Details Modal */}
+      {showDetails && (
+        <ActivityDetails activity={activity} onClose={() => setShowDetails(false)} />
+      )}
+    </>
   );
 };
 
