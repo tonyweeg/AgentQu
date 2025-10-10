@@ -2583,26 +2583,33 @@ exports.searchTwitter = onCall(async (request) => {
       throw new Error("Location (lat, lng) is required");
     }
 
-    // Get top affinity categories (rating >= 50)
+    // Get top affinity categories (lowered threshold to 10 for wider search)
     const topCategories = Object.entries(affinities)
-      .filter(([_, rating]) => rating >= 50)
+      .filter(([_, rating]) => rating >= 10)
       .sort(([_, a], [__, b]) => b - a)
       .slice(0, 5)
       .map(([category, _]) => category);
 
-    console.log(`🐦 Top affinity categories:`, topCategories);
+    console.log(`🐦 Top affinity categories (>= 10):`, topCategories);
 
-    // Build search query with affinity hashtags
-    const hashtags = topCategories.map(cat => `#${cat.replace(/_/g, '')}`).join(" OR ");
-    const eventKeywords = "(event OR festival OR concert OR exhibit OR fair OR market OR show)";
-    
+    // Build search query with affinity hashtags + general local hashtags
+    let hashtags = topCategories.map(cat => `#${cat.replace(/_/g, '')}`).join(" OR ");
+
+    // If no affinities, add general local/community hashtags
+    if (!hashtags) {
+      hashtags = "#local OR #community OR #downtown OR #smalltown OR #visitmaryland OR #maryland";
+      console.log(`🐦 No user affinities >= 10, using general local hashtags`);
+    }
+
+    const eventKeywords = "(event OR festival OR concert OR exhibit OR fair OR market OR show OR happening OR tonight OR weekend)";
+
     // Twitter API v2 Recent Search endpoint
     const searchUrl = "https://api.twitter.com/2/tweets/search/recent";
-    
+
     const allTweets = [];
-    
-    // Search 1: Events with affinity tags
-    if (hashtags) {
+
+    // Search 1: Events with hashtags (now always runs)
+    if (true) {
       try {
         console.log(`🐦 Searching for events with hashtags: ${hashtags}`);
         const eventResponse = await axios.get(searchUrl, {
@@ -2632,18 +2639,23 @@ exports.searchTwitter = onCall(async (request) => {
       }
     }
 
-    // Search 2: General local content near location
+    // Search 2: General local content near location (expanded radius and terms)
     try {
-      const radiusKm = radius * 1.60934; // miles to km
-      console.log(`🐦 Searching near ${lat},${lng} within ${radiusKm}km`);
-      
+      // Double the radius for wider geographic search
+      const expandedRadius = radius * 2;
+      const radiusKm = expandedRadius * 1.60934; // miles to km
+      console.log(`🐦 Searching near ${lat},${lng} within ${radiusKm}km (${expandedRadius}mi expanded)`);
+
+      // Add location-specific search terms
+      const localQuery = `point_radius:[${lng} ${lat} ${radiusKm}km] -is:retweet -is:reply`;
+
       const localResponse = await axios.get(searchUrl, {
         headers: {
           "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
         },
         params: {
-          query: `point_radius:[${lng} ${lat} ${radiusKm}km] -is:retweet -is:reply`,
-          max_results: 30,
+          query: localQuery,
+          max_results: 50,  // Increased from 30 to 50
           "tweet.fields": "created_at,public_metrics,entities,geo",
           "expansions": "author_id,geo.place_id",
           "user.fields": "username,name,profile_image_url",
@@ -2661,6 +2673,39 @@ exports.searchTwitter = onCall(async (request) => {
       }
     } catch (error) {
       console.error(`🐦 Local search failed:`, error.message);
+    }
+
+    // Search 3: City/Town name mentions (catch tweets without location data)
+    try {
+      // Try to get city name from reverse geocoding or user-provided data
+      // For now, use a broader Maryland search as fallback
+      const stateQuery = "(Maryland OR #Maryland OR MD) -is:retweet -is:reply";
+      console.log(`🐦 Searching for state/region mentions: ${stateQuery}`);
+
+      const regionResponse = await axios.get(searchUrl, {
+        headers: {
+          "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+        },
+        params: {
+          query: stateQuery,
+          max_results: 20,
+          "tweet.fields": "created_at,public_metrics,entities,geo",
+          "expansions": "author_id,geo.place_id",
+          "user.fields": "username,name,profile_image_url",
+          "place.fields": "full_name,geo,place_type",
+        },
+      });
+
+      if (regionResponse.data?.data) {
+        allTweets.push(...regionResponse.data.data.map(tweet => ({
+          ...tweet,
+          searchType: 'local',
+          includes: regionResponse.data.includes,
+        })));
+        console.log(`🐦 Found ${regionResponse.data.data.length} region tweets`);
+      }
+    } catch (error) {
+      console.error(`🐦 Region search failed:`, error.message);
     }
 
     // Deduplicate by tweet ID
