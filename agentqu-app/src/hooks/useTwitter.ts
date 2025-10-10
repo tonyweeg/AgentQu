@@ -30,6 +30,12 @@ export interface TwitterSearchResult {
   total: number;
   location: { lat: number; lng: number; radius: number };
   affinityCategories: string[];
+  rateLimit?: {
+    limit: number | null;
+    remaining: number | null;
+    reset: number | null;
+    resetTime: string | null;
+  };
 }
 
 interface UseTwitterParams {

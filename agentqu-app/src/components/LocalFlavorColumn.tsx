@@ -6,9 +6,15 @@ interface LocalFlavorColumnProps {
   buzz: Tweet[];
   loading: boolean;
   error: string | null;
+  rateLimit?: {
+    limit: number | null;
+    remaining: number | null;
+    reset: number | null;
+    resetTime: string | null;
+  } | null;
 }
 
-const LocalFlavorColumn: React.FC<LocalFlavorColumnProps> = ({ events, buzz, loading, error }) => {
+const LocalFlavorColumn: React.FC<LocalFlavorColumnProps> = ({ events, buzz, loading, error, rateLimit }) => {
   // Mix events and buzz - prioritize events
   const mixedContent = [...events, ...buzz].slice(0, 20);
 
@@ -72,6 +78,26 @@ const LocalFlavorColumn: React.FC<LocalFlavorColumnProps> = ({ events, buzz, loa
           <p className="text-xs text-gray-500">
             {events.length} events · {buzz.length} buzz
           </p>
+
+          {/* Rate Limit Indicator */}
+          {rateLimit && rateLimit.remaining !== null && (
+            <div className="mt-1 flex items-center gap-2">
+              {rateLimit.remaining < 50 ? (
+                <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium">
+                  ⚠️ Rate limit: {rateLimit.remaining}/{rateLimit.limit} left
+                </span>
+              ) : (
+                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                  ✅ API: {rateLimit.remaining}/{rateLimit.limit}
+                </span>
+              )}
+              {rateLimit.resetTime && rateLimit.remaining < 50 && (
+                <span className="text-[9px] text-gray-500">
+                  Resets: {new Date(rateLimit.resetTime).toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

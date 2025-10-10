@@ -2608,6 +2608,14 @@ exports.searchTwitter = onCall(async (request) => {
 
     const allTweets = [];
 
+    // Rate limit tracking
+    let rateLimitInfo = {
+      limit: null,
+      remaining: null,
+      reset: null,
+      resetTime: null,
+    };
+
     // Search 1: Events with hashtags (now always runs)
     if (true) {
       try {
@@ -2625,6 +2633,17 @@ exports.searchTwitter = onCall(async (request) => {
             "place.fields": "full_name,geo,place_type",
           },
         });
+
+        // Capture rate limit info from headers
+        const headers = eventResponse.headers;
+        rateLimitInfo = {
+          limit: parseInt(headers['x-rate-limit-limit']) || null,
+          remaining: parseInt(headers['x-rate-limit-remaining']) || null,
+          reset: parseInt(headers['x-rate-limit-reset']) || null,
+          resetTime: headers['x-rate-limit-reset'] ? new Date(parseInt(headers['x-rate-limit-reset']) * 1000).toISOString() : null,
+        };
+
+        console.log(`🐦 RATE LIMIT: ${rateLimitInfo.remaining}/${rateLimitInfo.limit} remaining, resets at ${rateLimitInfo.resetTime}`);
 
         if (eventResponse.data?.data) {
           allTweets.push(...eventResponse.data.data.map(tweet => ({
@@ -2793,6 +2812,7 @@ exports.searchTwitter = onCall(async (request) => {
       total: structuredTweets.length,
       location: { lat, lng, radius },
       affinityCategories: topCategories,
+      rateLimit: rateLimitInfo,
     };
 
   } catch (error) {

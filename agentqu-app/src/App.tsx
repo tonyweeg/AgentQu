@@ -1491,6 +1491,7 @@ function App() {
                         buzz={tweets?.buzz || []}
                         loading={twitterLoading}
                         error={twitterError}
+                        rateLimit={tweets?.rateLimit}
                       />
                     </div>
                   </div>
