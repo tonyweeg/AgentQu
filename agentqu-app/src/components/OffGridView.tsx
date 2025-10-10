@@ -114,9 +114,47 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
         ) : (
           <>
             {(() => {
+              // Helper function to check if text contains date/time information
+              const hasDateInfo = (text: string): boolean => {
+                if (!text) return false;
+                const lower = text.toLowerCase();
+
+                // Date patterns
+                const datePatterns = [
+                  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}/i, // "Oct 12", "October 12"
+                  /\b\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?/,  // "10/12", "10-12-2025"
+                  /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i, // Day names
+                  /\b(today|tomorrow|tonight|this\s+(week|weekend|month))/i, // Relative dates
+                  /\b\d{1,2}(st|nd|rd|th)\s+(of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i, // "12th of October"
+                ];
+
+                // Time patterns
+                const timePatterns = [
+                  /\b\d{1,2}:\d{2}\s*(am|pm|AM|PM)?/,  // "7:30pm", "19:30"
+                  /\b(at|from|starting|begins)\s+\d{1,2}/i, // "at 7", "from 6"
+                ];
+
+                return datePatterns.some(pattern => pattern.test(text)) ||
+                       timePatterns.some(pattern => pattern.test(text));
+              };
+
               // Separate places from events
               const places = offGridActivities.filter(a => a.type === 'permanent');
-              const events = offGridActivities.filter(a => a.type === 'event');
+
+              // Filter events to only those with date/time information
+              const events = offGridActivities.filter(a => {
+                if (a.type !== 'event') return false;
+
+                // Check name, description, and snippet for date/time info
+                const textToCheck = [
+                  a.name,
+                  a.description,
+                  (a as any).details?.description,
+                  (a as any).details?.shortDescription
+                ].filter(Boolean).join(' ');
+
+                return hasDateInfo(textToCheck);
+              });
 
               // Get unique categories from places only
               const allCategories = Array.from(new Set(places.map(a => a.primaryCategory || 'other')));
