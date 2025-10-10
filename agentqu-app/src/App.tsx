@@ -49,6 +49,7 @@ function App() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [showAdventureMenu, setShowAdventureMenu] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -1252,89 +1253,182 @@ function App() {
                 {/* Trip Detail View */}
                 {viewMode === 'trip-detail' && tripId && <TripDetail tripId={tripId} />}
 
-                {/* List View - Grouped by Category */}
+                {/* List View - Places First (Cards), Events Below (Text List) */}
                 {viewMode === 'list' && (
                   <>
-                    {/* Group activities by primary category */}
                     {(() => {
-                      // Group activities by category
-                      const grouped = activities.reduce((acc, activity) => {
-                        const category = activity.primaryCategory || 'Other';
-                        if (!acc[category]) {
-                          acc[category] = [];
-                        }
-                        acc[category].push(activity);
+                      // Separate places from events
+                      const places = activities.filter(a => a.type === 'permanent');
+                      const events = activities.filter(a => a.type === 'event');
+
+                      // Get unique categories from places only (exclude events from category chips)
+                      const allCategories = Array.from(new Set(places.map(a => a.primaryCategory || 'other')));
+
+                      // Filter places by selected category
+                      const filteredPlaces = selectedCategory === 'all'
+                        ? places
+                        : places.filter(a => (a.primaryCategory || 'other') === selectedCategory);
+
+                      // Sort places by Q Score
+                      const sortedPlaces = [...filteredPlaces].sort((a, b) => (b.score || 0) - (a.score || 0));
+
+                      // Sort events by Q Score
+                      const sortedEvents = [...events].sort((a, b) => (b.score || 0) - (a.score || 0));
+
+                      // Category emoji mapping
+                      const getCategoryEmoji = (cat: string) => {
+                        const emojiMap: Record<string, string> = {
+                          hiking: '🥾', events: '🎉', food_and_dining: '🍽️',
+                          arts_and_culture: '🎨', sports_and_recreation: '⚽',
+                          nature_and_outdoors: '🌲', entertainment: '🎭',
+                          shopping: '🛍️', museums: '🏛️', camping: '⛺',
+                          parks: '🌳', other: '📍'
+                        };
+                        return emojiMap[cat] || '📍';
+                      };
+
+                      // Count places per category
+                      const categoryCounts = allCategories.reduce((acc, cat) => {
+                        acc[cat] = places.filter(a => (a.primaryCategory || 'other') === cat).length;
                         return acc;
-                      }, {} as Record<string, typeof activities>);
-
-                      // Sort each group by score (desc), then name (asc)
-                      Object.keys(grouped).forEach(category => {
-                        grouped[category].sort((a, b) => {
-                          const scoreDiff = (b.score || 0) - (a.score || 0);
-                          if (scoreDiff !== 0) return scoreDiff;
-                          return a.name.localeCompare(b.name);
-                        });
-                      });
-
-                      // Get categories sorted by highest score in each group
-                      const sortedCategories = Object.keys(grouped).sort((a, b) => {
-                        const maxScoreA = Math.max(...grouped[a].map(act => act.score || 0));
-                        const maxScoreB = Math.max(...grouped[b].map(act => act.score || 0));
-                        return maxScoreB - maxScoreA;
-                      });
+                      }, {} as Record<string, number>);
 
                       return (
-                        <div className="space-y-8">
-                          {sortedCategories.map(category => (
-                            <div key={category}>
-                              {/* Category Header */}
-                              <div className="mb-4">
-                                <h3 className={`text-xl font-bold ${headerTextColor} capitalize`}>
-                                  {category.replace(/_/g, ' ')}
-                                </h3>
-                                <p className={`text-sm ${subTextColor}`}>
-                                  {grouped[category].length} {grouped[category].length === 1 ? 'activity' : 'activities'}
-                                </p>
+                        <>
+                          {/* Category Filter Chips - For Places Only */}
+                          {places.length > 0 && (
+                            <div className="mb-6 flex flex-wrap gap-2">
+                              <button
+                                onClick={() => setSelectedCategory('all')}
+                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                  selectedCategory === 'all'
+                                    ? 'bg-ocean-bright text-white shadow-md'
+                                    : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
+                                }`}
+                              >
+                                All Places ({places.length})
+                              </button>
+                              {allCategories
+                                .sort((a, b) => categoryCounts[b] - categoryCounts[a])
+                                .map(category => (
+                                  <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+                                      selectedCategory === category
+                                        ? 'bg-ocean-bright text-white shadow-md'
+                                        : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
+                                    }`}
+                                  >
+                                    <span>{getCategoryEmoji(category)}</span>
+                                    <span className="capitalize">{category.replace(/_/g, ' ')}</span>
+                                    <span className="text-xs opacity-75">({categoryCounts[category]})</span>
+                                  </button>
+                                ))}
+                            </div>
+                          )}
+
+                          {/* Places Grid - Cards */}
+                          {sortedPlaces.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+                              {sortedPlaces.map((activity) => (
+                                <ActivityCard key={activity.id || activity.activityId} activity={activity} />
+                              ))}
+                            </div>
+                          )}
+
+                          {sortedPlaces.length === 0 && places.length > 0 && (
+                            <div className="text-center py-12 mb-12">
+                              <div className="text-4xl mb-3">{getCategoryEmoji(selectedCategory)}</div>
+                              <p className="text-gray-600">No {selectedCategory.replace(/_/g, ' ')} places found</p>
+                            </div>
+                          )}
+
+                          {/* Events Section - Compact Text List */}
+                          {sortedEvents.length > 0 && (
+                            <div className="mt-8">
+                              <div className="flex items-center gap-3 mb-4">
+                                <h3 className="text-2xl font-bold text-navy-text">🎉 Upcoming Events</h3>
+                                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
+                                  {sortedEvents.length}
+                                </span>
                               </div>
 
-                              {/* Activities Grid */}
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                {grouped[category].map((activity) => (
-                                  <ActivityCard key={activity.id || activity.activityId} activity={activity} />
+                              <div className="space-y-2">
+                                {sortedEvents.map((event) => (
+                                  <div
+                                    key={event.id || event.activityId}
+                                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-purple-300 transition-all"
+                                  >
+                                    <div className="flex items-start justify-between gap-4">
+                                      {/* Event Info */}
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="font-bold text-base text-navy-text mb-1">
+                                          {event.name}
+                                        </h4>
+                                        <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
+                                          <span className="flex items-center gap-1">
+                                            📍 {event.distance?.toFixed(1)} mi
+                                          </span>
+                                          {event.rating && (
+                                            <span className="flex items-center gap-1">
+                                              ⭐ {event.rating.toFixed(1)}
+                                            </span>
+                                          )}
+                                          {event.cost?.free && (
+                                            <span className="text-green-600 font-semibold">Free</span>
+                                          )}
+                                          {event.cost?.priceLevel && !event.cost.free && (
+                                            <span className="font-medium">{'$'.repeat(event.cost.priceLevel)}</span>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Q Score Badge */}
+                                      {(() => {
+                                        const score = event.score || 0;
+                                        let badgeText = "";
+                                        let badgeColor = "";
+                                        if (score >= 280) {
+                                          badgeText = "❤️ You'll love it";
+                                          badgeColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+                                        } else if (score >= 220) {
+                                          badgeText = "😊 You'll like it";
+                                          badgeColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+                                        } else if (score >= 180) {
+                                          badgeText = "👍 You should like it";
+                                          badgeColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+                                        } else if (score >= 140) {
+                                          badgeText = "🎯 Give it a shot";
+                                          badgeColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+                                        }
+                                        if (badgeText) {
+                                          return (
+                                            <div className={`${badgeColor} text-white px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm`}>
+                                              {badgeText}
+                                            </div>
+                                          );
+                                        }
+                                        return null;
+                                      })()}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
-                          ))}
-                        </div>
+                          )}
+
+                          {/* Empty State */}
+                          {places.length === 0 && events.length === 0 && (
+                            <div className="text-center py-12">
+                              <div className="text-6xl mb-4">🔍</div>
+                              <h3 className="text-xl font-bold text-navy-text mb-2">No activities found</h3>
+                              <p className="text-gray-600">Try expanding your search radius</p>
+                            </div>
+                          )}
+                        </>
                       );
                     })()}
-
-                    {/* Edge Suggestions - Try Something New! */}
-                    {activities.length > 3 && (
-                      <div className="mt-12">
-                        <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 mb-6">
-                          <h3 className="text-2xl font-bold text-navy-text mb-2">
-                            ✨ Try Something New
-                          </h3>
-                          <p className="text-gray-600">
-                            Step outside your comfort zone with these edge suggestions
-                          </p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          {activities
-                            .sort((a, b) => (a.score || 0) - (b.score || 0))
-                            .slice(0, 3)
-                            .map((activity) => (
-                              <div key={`edge-${activity.id || activity.activityId}`} className="relative">
-                                <div className="absolute -top-2 -right-2 bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-bold z-10 shadow-lg">
-                                  🌟 NEW!
-                                </div>
-                                <ActivityCard activity={activity} />
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
                   </>
                 )}
               </>
