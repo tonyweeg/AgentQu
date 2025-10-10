@@ -27,6 +27,18 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
     }
   };
 
+  // Generate Twitter share URL
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click from opening details
+
+    const cityName = activity.location?.address?.split(',')[0] || 'my area';
+    const tweetText = `🎯 I'm discovering ${activity.name} in ${cityName} with AgentQu! ${getCategoryEmoji()} Check it out:`;
+    const url = 'https://agentqu-platform.web.app';
+
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+  };
+
   // Smaller, subtler Q Score badge (text only, no gradients)
   let qScoreBadge = "";
   if (score >= 280) {
@@ -80,14 +92,30 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
 
           {/* Content area */}
           <div className="flex-1 min-w-0">
-            {/* Title and Distance */}
+            {/* Title, Distance, and Share Button */}
             <div className="flex items-start justify-between gap-2 mb-1">
               <h3 className="font-bold text-sm text-gray-900 line-clamp-1 leading-tight">
                 {activity.name}
               </h3>
-              <span className="text-xs text-gray-600 font-semibold whitespace-nowrap">
-                {activity.distance?.toFixed(1)} mi
-              </span>
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <span className="text-xs text-gray-600 font-semibold whitespace-nowrap">
+                  {activity.distance?.toFixed(1)} mi
+                </span>
+                {/* Twitter Share Button */}
+                <button
+                  onClick={handleShare}
+                  className="p-1 rounded-full hover:bg-blue-100 transition-colors group"
+                  title="Share on X"
+                >
+                  <svg
+                    className="w-3.5 h-3.5 text-gray-500 group-hover:text-blue-500 transition-colors"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Compact info row */}
