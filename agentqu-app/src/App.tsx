@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import { useLocation } from './hooks/useLocation';
 import { useDiscovery } from './hooks/useDiscovery';
 import { useReverseGeocode } from './hooks/useReverseGeocode';
+import { useTwitter } from './hooks/useTwitter';
 import AuthScreen from './components/AuthScreen';
 import OnboardingScreen from './components/OnboardingScreen';
 import ActivityCard from './components/ActivityCard';
@@ -20,6 +21,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import ContactUs from './components/ContactUs';
 import BiomeRenderer from './biomes/core/BiomeRenderer';
+import LocalFlavorColumn from './components/LocalFlavorColumn';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -74,6 +76,15 @@ function App() {
     enablePlaces,
     enableCustomSearch,
     key: refreshKey
+  });
+
+  // Fetch Twitter content (only when user is onboarded)
+  const { tweets, loading: twitterLoading, error: twitterError } = useTwitter({
+    location: profile?.onboarded ? activeLocation : null,
+    userId: user?.uid || null,
+    affinities: profile?.affinities || {},
+    radius: radius,
+    enabled: true
   });
 
   // Request location when user completes onboarding
@@ -1253,10 +1264,12 @@ function App() {
                 {/* Trip Detail View */}
                 {viewMode === 'trip-detail' && tripId && <TripDetail tripId={tripId} />}
 
-                {/* List View - Places First (Cards), Events Below (Text List) */}
+                {/* List View - Places First (Cards), Events Below (Text List) + Twitter Column */}
                 {viewMode === 'list' && (
-                  <>
-                    {(() => {
+                  <div className="flex flex-col lg:flex-row gap-6">
+                    {/* Left Side - 70% - Activities */}
+                    <div className="flex-1 lg:w-[70%]">
+                      {(() => {
                       // Helper function to check if text contains date/time information
                       const hasDateInfo = (text: string): boolean => {
                         if (!text) return false;
@@ -1467,7 +1480,18 @@ function App() {
                         </>
                       );
                     })()}
-                  </>
+                    </div>
+
+                    {/* Right Side - 30% - Twitter Column */}
+                    <div className="lg:w-[30%]">
+                      <LocalFlavorColumn
+                        events={tweets?.events || []}
+                        buzz={tweets?.buzz || []}
+                        loading={twitterLoading}
+                        error={twitterError}
+                      />
+                    </div>
+                  </div>
                 )}
               </>
             )}
