@@ -1416,6 +1416,7 @@ exports.discoverActivities = onCall(
 
     // Filter by radius
     allActivities = allActivities.filter((a) => a.distance <= radius);
+    console.log(`📏 After radius filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
 
     // Filter events by music genre affinity
     if (musicGenreAffinities) {
@@ -1435,6 +1436,7 @@ exports.discoverActivities = onCall(
       if (beforeGenreFilter > afterGenreFilter) {
         console.log(`🎵 Music genre filter: removed ${beforeGenreFilter - afterGenreFilter} events with low affinity`);
       }
+      console.log(`🎵 After genre filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
     }
 
     // Calculate scores
@@ -1463,7 +1465,21 @@ exports.discoverActivities = onCall(
     console.log("🚧 CACHE DISABLED - skipping cache write");
     // await saveActivitiesAndCache(allActivities, geohashKey, radius, affinitySignature, userAffinities);
 
-    const results = allActivities.slice(0, 50);
+    console.log(`📊 Before slice: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+
+    // Separate events and places to ensure balanced results
+    const events = allActivities.filter(a => a.type === 'event');
+    const places = allActivities.filter(a => a.type === 'permanent');
+
+    // Take top 30 events and top 30 places (frontend shows top 3 per genre, so 30 events is plenty)
+    const topEvents = events.slice(0, 30);
+    const topPlaces = places.slice(0, 30);
+
+    // Combine: events first, then places
+    const results = [...topEvents, ...topPlaces];
+
+    console.log(`📊 After balanced slice: ${results.length} total (${topPlaces.length} places, ${topEvents.length} events)`);
+    console.log(`✅ Balanced results: ${topEvents.length} events + ${topPlaces.length} places`);
 
     return {
       success: true,
