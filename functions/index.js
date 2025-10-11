@@ -371,11 +371,11 @@ async function fetchGoogleSearch(lat, lng, city = null) {
       return [];
     }
 
-    // Multiple search queries for better coverage
+    // Multiple search queries for immediate/actionable events (next 3 days)
     const queries = [
-      `events ${city} this week`,
-      `events site:facebook.com ${city}`,
-      `things to do ${city}`,
+      `events ${city} today tonight this weekend`,
+      `events site:facebook.com ${city} today this weekend`,
+      `things to do ${city} this weekend`,
     ];
 
     const allResults = [];
@@ -724,7 +724,13 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
     // Ticketmaster requires YYYY-MM-DDTHH:mm:ssZ (no milliseconds)
     const now = new Date();
     const startDateTime = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
-    console.log(`🎫 TICKETMASTER: Today is ${now.toLocaleDateString()}, filtering events after ${startDateTime}`);
+
+    // Filter to next 3 days for immediate/actionable events
+    const threeDaysFromNow = new Date(now);
+    threeDaysFromNow.setDate(now.getDate() + 3);
+    const endDateTime = threeDaysFromNow.toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+    console.log(`🎫 TICKETMASTER: Searching events from ${now.toLocaleDateString()} to ${threeDaysFromNow.toLocaleDateString()}`);
 
     const response = await axios.get(`https://app.ticketmaster.com/discovery/v2/events.json`, {
       params: {
@@ -734,7 +740,8 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
         unit: 'miles',
         size: 50,
         sort: 'date,asc',
-        startDateTime: startDateTime // Only future events
+        startDateTime: startDateTime, // Now
+        endDateTime: endDateTime // Next 3 days
       }
     });
 
@@ -850,10 +857,12 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
       // Filter out events without names
       if (!activity.name) return false;
 
-      // Filter out past events (safety check) - STRICT FILTERING
+      // Filter out past events AND events beyond 3 days (safety check) - STRICT FILTERING
       if (activity.details?.eventDate) {
         const eventDate = new Date(activity.details.eventDate);
         const nowCheck = new Date();
+        const threeDaysOut = new Date(nowCheck);
+        threeDaysOut.setDate(nowCheck.getDate() + 3);
 
         // For localDate format (YYYY-MM-DD), compare just the dates
         // For dateTime format, compare full timestamps
@@ -863,15 +872,24 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
           // Compare dates only (set time to start of day)
           const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
           const today = new Date(nowCheck.getFullYear(), nowCheck.getMonth(), nowCheck.getDate());
+          const maxDay = new Date(threeDaysOut.getFullYear(), threeDaysOut.getMonth(), threeDaysOut.getDate());
 
           if (eventDay < today) {
-            console.log(`🎫 FILTERED: "${activity.name}" - Date: ${activity.details.eventDate} (${eventDay.toLocaleDateString()}) is before today (${today.toLocaleDateString()})`);
+            console.log(`🎫 FILTERED (past): "${activity.name}" - Date: ${activity.details.eventDate} is before today`);
+            return false;
+          }
+          if (eventDay > maxDay) {
+            console.log(`🎫 FILTERED (too far): "${activity.name}" - Date: ${activity.details.eventDate} is beyond 3 days`);
             return false;
           }
         } else {
           // Full timestamp comparison
           if (eventDate < nowCheck) {
-            console.log(`🎫 FILTERED: "${activity.name}" - DateTime: ${activity.details.eventDate} (${eventDate.toLocaleString()}) is before now (${nowCheck.toLocaleString()})`);
+            console.log(`🎫 FILTERED (past): "${activity.name}" - DateTime: ${activity.details.eventDate} is before now`);
+            return false;
+          }
+          if (eventDate > threeDaysOut) {
+            console.log(`🎫 FILTERED (too far): "${activity.name}" - DateTime: ${activity.details.eventDate} is beyond 3 days`);
             return false;
           }
         }
