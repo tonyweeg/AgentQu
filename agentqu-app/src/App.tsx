@@ -387,16 +387,16 @@ function App() {
             {/* Desktop Navigation */}
             {location && (
               <div className="hidden lg:flex items-center gap-3">
-                {/* Location Display */}
+                {/* Location Display with Date/Time */}
                 <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
                   <span className="text-base">📍</span>
                   {city && state ? (
                     <span className="text-xs font-bold text-gray-800">
-                      {city}, {state} · {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                      {city}, {state} · {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   ) : (
                     <span className="text-xs text-gray-700">
-                      {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                      {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   )}
                 </div>
@@ -588,7 +588,7 @@ function App() {
                 <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
                   <span className="text-base">📍</span>
                   <span className="text-xs font-bold text-gray-800">
-                    {city}, {state} · {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
+                    {city}, {state} · {currentTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} · {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                   </span>
                 </div>
               )}
@@ -1070,25 +1070,6 @@ function App() {
         </div>
       </div>
 
-      {/* Date and Time Info Bar */}
-      {activeLocation && city && state && (
-        <div className="bg-gray-50/80 backdrop-blur-sm border-b border-gray-200 py-2">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <span className="text-gray-600">Searching in:</span>
-              <span className="font-bold text-navy-text">{city}, {state}</span>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-600">
-                {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-              <span className="text-gray-400">•</span>
-              <span className="font-bold text-ocean-bright">
-                {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
