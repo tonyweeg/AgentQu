@@ -154,9 +154,131 @@ function calculateAffinityScore(activityCategories, userAffinities) {
 }
 
 /**
+ * Music Genre Affinity Mapping
+ * Maps Ticketmaster genre names to our genre IDs
+ */
+const MUSIC_GENRE_MAP = {
+  // Rock & Alternative
+  'rock': 'rock',
+  'classic rock': 'rock',
+  'hard rock': 'rock',
+  'alternative': 'alternative',
+  'alternative rock': 'alternative',
+  'indie rock': 'alternative',
+  'metal': 'metal',
+  'heavy metal': 'metal',
+  'metalcore': 'metal',
+
+  // Pop & Electronic
+  'pop': 'pop',
+  'dance pop': 'pop',
+  'electro pop': 'pop',
+  'dance/electronic': 'dance-electronic',
+  'edm': 'dance-electronic',
+  'house': 'dance-electronic',
+  'techno': 'dance-electronic',
+  'electronic': 'dance-electronic',
+
+  // Hip Hop & Rap
+  'hip-hop/rap': 'hip-hop-rap',
+  'rap': 'hip-hop-rap',
+  'hip hop': 'hip-hop-rap',
+  'french rap': 'hip-hop-rap',
+
+  // R&B & Soul
+  'r&b': 'r-and-b',
+  'soul': 'r-and-b',
+  'funk': 'r-and-b',
+  'neo-soul': 'r-and-b',
+
+  // Country & Folk
+  'country': 'country',
+  'bluegrass': 'country',
+  'country folk': 'country',
+  'americana': 'country',
+  'folk': 'folk',
+  'singer-songwriter': 'folk',
+  'acoustic': 'folk',
+
+  // Jazz & Blues
+  'jazz': 'jazz',
+  'swing': 'jazz',
+  'bebop': 'jazz',
+  'jazz fusion': 'jazz',
+  'blues': 'blues',
+  'blues rock': 'blues',
+
+  // Classical & Opera
+  'classical': 'classical',
+  'orchestral': 'classical',
+  'chamber music': 'classical',
+  'symphony': 'classical',
+  'opera': 'opera',
+  'operetta': 'opera',
+
+  // Latin & World
+  'latin': 'latin',
+  'reggaeton': 'latin',
+  'salsa': 'latin',
+  'latin pop': 'latin',
+  'world': 'world',
+  'world music': 'world',
+  'international': 'world',
+  'reggae': 'reggae',
+  'ska': 'reggae',
+  'caribbean': 'reggae',
+
+  // Special Categories
+  'oldies & classics': 'oldies-classics',
+  'classic hits': 'oldies-classics',
+  'retro': 'oldies-classics',
+  'christian': 'christian-gospel',
+  'gospel': 'christian-gospel',
+  'contemporary christian': 'christian-gospel',
+  'other': 'other',
+  'undefined': 'other',
+  'miscellaneous': 'other',
+};
+
+/**
+ * Calculate music genre affinity score for an event
+ * Returns score 0-100, or null if not a music event
+ */
+function calculateMusicGenreAffinityScore(musicGenres, musicGenreAffinities) {
+  // If no genre data or no user affinities, return neutral
+  if (!musicGenres || musicGenres.length === 0 || !musicGenreAffinities) {
+    return null; // Not applicable
+  }
+
+  let totalScore = 0;
+  let matchCount = 0;
+
+  // Map Ticketmaster genres to our genre IDs and get affinity scores
+  musicGenres.forEach((tmGenre) => {
+    const genreId = MUSIC_GENRE_MAP[tmGenre.toLowerCase()];
+    if (genreId && musicGenreAffinities[genreId] !== undefined) {
+      totalScore += musicGenreAffinities[genreId];
+      matchCount++;
+    }
+  });
+
+  // If no matches found, return neutral score
+  if (matchCount === 0) return 50;
+
+  // Return average affinity score
+  return Math.round(totalScore / matchCount);
+}
+
+/**
+ * Filter threshold for music genres (configurable)
+ * Events with genre affinity below this score will be filtered out
+ */
+const MUSIC_GENRE_FILTER_THRESHOLD = 20;
+
+/**
  * Calculate final composite score
  */
-function calculateFinalScore(activity, userLat, userLng, userAffinities) {
+function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGenreAffinities) {
   let baseScore = 100;
 
   // Distance factor (0-30 points)
@@ -189,15 +311,27 @@ function calculateFinalScore(activity, userLat, userLng, userAffinities) {
     baseScore += Math.min(15, activity.ratings.voteScore);
   }
 
-  // Affinity factor (0-40 points) - BIGGEST WEIGHT
+  // Category affinity factor (0-40 points) - BIGGEST WEIGHT
   const affinityScore = calculateAffinityScore(activity.categories, userAffinities);
   const affinityPoints = affinityScore * 40;
   baseScore += affinityPoints;
 
+  // Music genre affinity bonus for events (0-20 points)
+  let genreAffinityPoints = 0;
+  if (activity.type === 'event' && activity.musicGenres && musicGenreAffinities) {
+    const genreScore = calculateMusicGenreAffinityScore(activity.musicGenres, musicGenreAffinities);
+    if (genreScore !== null) {
+      // Convert 0-100 score to 0-20 points bonus
+      genreAffinityPoints = (genreScore / 100) * 20;
+      baseScore += genreAffinityPoints;
+    }
+  }
+
   return {
     finalScore: Math.max(0, Math.round(baseScore)),
-    baseScore: Math.round(baseScore - affinityPoints),
+    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints),
     affinityScore: Math.round(affinityPoints),
+    genreAffinityScore: Math.round(genreAffinityPoints),
   };
 }
 
@@ -620,6 +754,21 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
       const priceMin = event.priceRanges?.[0]?.min || null;
       const priceMax = event.priceRanges?.[0]?.max || null;
 
+      // Extract music genres from classifications
+      const classifications = event.classifications || [];
+      const musicClassification = classifications.find(c => c.segment?.name === 'Music');
+      const musicGenres = [];
+
+      if (musicClassification) {
+        if (musicClassification.genre?.name) {
+          musicGenres.push(musicClassification.genre.name);
+        }
+        if (musicClassification.subGenre?.name &&
+            musicClassification.subGenre.name !== musicClassification.genre?.name) {
+          musicGenres.push(musicClassification.subGenre.name);
+        }
+      }
+
       return {
         activityId: `ticketmaster_${event.id}`,
         name: event.name,
@@ -640,6 +789,7 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
         },
         categories: ["events", "activities", ...(event.classifications?.[0]?.segment?.name ? [event.classifications[0].segment.name.toLowerCase()] : [])],
         primaryCategory: "events",
+        musicGenres: musicGenres, // TOP-LEVEL: Music genre tags for filtering
         cost: {
           free: isFree,
           price: priceMin,
@@ -656,6 +806,7 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
           organizerName: event.promoter?.name || event._embedded?.attractions?.[0]?.name,
           priceLevel: isFree ? 0 : (priceMin > 50 ? 3 : priceMin > 25 ? 2 : 1),
           priceRange: priceMin && priceMax ? `$${priceMin}-$${priceMax}` : null,
+          musicGenres: musicGenres, // Array of genre tags
         },
         expiration: {
           type: "date",
@@ -1141,10 +1292,12 @@ exports.discoverActivities = onCall(
   try {
     // Get user affinities
     let userAffinities = null;
+    let musicGenreAffinities = null;
     if (userId) {
       const userDoc = await db.collection("users").doc(userId).get();
       if (userDoc.exists) {
         userAffinities = userDoc.data().affinities;
+        musicGenreAffinities = userDoc.data().musicGenreAffinities || null;
       }
     }
 
@@ -1242,14 +1395,35 @@ exports.discoverActivities = onCall(
     // Filter by radius
     allActivities = allActivities.filter((a) => a.distance <= radius);
 
+    // Filter events by music genre affinity
+    if (musicGenreAffinities) {
+      const beforeGenreFilter = allActivities.length;
+      allActivities = allActivities.filter((activity) => {
+        // Only filter music events
+        if (activity.type === 'event' && activity.musicGenres && activity.musicGenres.length > 0) {
+          const genreScore = calculateMusicGenreAffinityScore(activity.musicGenres, musicGenreAffinities);
+          if (genreScore !== null && genreScore < MUSIC_GENRE_FILTER_THRESHOLD) {
+            console.log(`🎵 Filtered out event: ${activity.name} (genre score: ${genreScore}, genres: ${activity.musicGenres.join(', ')})`);
+            return false; // Filter out
+          }
+        }
+        return true; // Keep
+      });
+      const afterGenreFilter = allActivities.length;
+      if (beforeGenreFilter > afterGenreFilter) {
+        console.log(`🎵 Music genre filter: removed ${beforeGenreFilter - afterGenreFilter} events with low affinity`);
+      }
+    }
+
     // Calculate scores
     allActivities = allActivities.map((activity) => {
-      const scores = calculateFinalScore(activity, lat, lng, userAffinities);
+      const scores = calculateFinalScore(activity, lat, lng, userAffinities, musicGenreAffinities);
       return {
         ...activity,
         score: scores.finalScore,
         baseScore: scores.baseScore,
         affinityScore: scores.affinityScore,
+        genreAffinityScore: scores.genreAffinityScore,
       };
     });
 

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
+import MusicGenresPanel from './MusicGenresPanel';
 
 interface SettingsProps {
   onClose: () => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ onClose }) => {
-  const { profile, updateAffinities } = useAuth();
+  const { profile, updateAffinities, updateMusicGenreAffinities } = useAuth();
   const [affinities, setAffinities] = useState<Record<string, number>>(profile?.affinities || {});
   const [saving, setSaving] = useState(false);
 
@@ -115,6 +116,12 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
               );
             })}
           </div>
+
+          {/* Music Genres Panel */}
+          <MusicGenresPanel
+            initialAffinities={profile?.musicGenreAffinities}
+            onSave={updateMusicGenreAffinities}
+          />
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4 border-t">

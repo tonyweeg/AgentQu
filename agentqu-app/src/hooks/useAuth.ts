@@ -10,6 +10,7 @@ export interface UserProfile {
   displayName: string | null;
   photoURL: string | null;
   affinities: Record<string, number>;
+  musicGenreAffinities?: Record<string, number>; // Music genre preferences (0-100)
   onboarded: boolean;
   createdAt: number;
   lastActive: number;
@@ -102,11 +103,39 @@ export function useAuth() {
     }
   };
 
+  const updateMusicGenreAffinities = async (musicGenreAffinities: Record<string, number>) => {
+    if (!user) return;
+
+    try {
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(
+        profileRef,
+        {
+          musicGenreAffinities,
+          lastActive: Date.now(),
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      if (profile) {
+        setProfile({
+          ...profile,
+          musicGenreAffinities,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating music genre affinities:', error);
+      throw error;
+    }
+  };
+
   return {
     user,
     profile,
     loading,
     updateAffinities,
+    updateMusicGenreAffinities,
     signOut: () => auth.signOut(),
   };
 }
