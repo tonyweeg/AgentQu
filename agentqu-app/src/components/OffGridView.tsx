@@ -7,6 +7,7 @@ interface OffGridViewProps {
   activities: Activity[];
   onLocationSearch?: (city: string) => void;
   userLocation?: { lat: number; lng: number } | null;
+  viewMode: 'list' | 'map';
 }
 
 // Off-grid categories - outdoor and nature activities
@@ -23,10 +24,9 @@ const OFF_GRID_CATEGORIES = [
   'wildlife'
 ];
 
-const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch, userLocation }) => {
+const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch, userLocation, viewMode }) => {
   const [citySearch, setCitySearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const handleCitySearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,43 +91,15 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
           </div>
         </form>
 
-        {/* Stats with View Mode Toggle */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-4">
-            <div className="bg-gray-100 rounded-lg px-4 py-2">
-              <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
-              <div className="text-xs text-gray-600">Activities</div>
-            </div>
-            <div className="bg-gray-100 rounded-lg px-4 py-2">
-              <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
-              <div className="text-xs text-gray-600">Categories</div>
-            </div>
+        {/* Stats */}
+        <div className="flex gap-4">
+          <div className="bg-gray-100 rounded-lg px-4 py-2">
+            <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
+            <div className="text-xs text-gray-600">Activities</div>
           </div>
-
-          {/* View Mode Toggle */}
-          <div className="flex bg-gray-100 rounded-lg p-0.5">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-2.5 py-1 rounded-md text-base transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white text-ocean-bright shadow-sm'
-                  : 'text-gray-600'
-              }`}
-              title="List View"
-            >
-              📋
-            </button>
-            <button
-              onClick={() => setViewMode('map')}
-              className={`px-2.5 py-1 rounded-md text-base transition-all ${
-                viewMode === 'map'
-                  ? 'bg-white text-ocean-bright shadow-sm'
-                  : 'text-gray-600'
-              }`}
-              title="Map View"
-            >
-              🗺️
-            </button>
+          <div className="bg-gray-100 rounded-lg px-4 py-2">
+            <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
+            <div className="text-xs text-gray-600">Categories</div>
           </div>
         </div>
       </div>

@@ -55,6 +55,7 @@ function App() {
   const [showAdventureMenu, setShowAdventureMenu] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [offgridViewMode, setOffgridViewMode] = useState<'list' | 'map'>('list');
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -778,12 +779,18 @@ function App() {
               </button>
 
               {/* View Mode Toggle - Next to drawer button */}
-              {viewMode !== 'offgrid' && viewMode !== 'cirqle' && viewMode !== 'trip-creation' && viewMode !== 'trips' && viewMode !== 'trip-detail' && (
+              {(viewMode === 'list' || viewMode === 'map' || viewMode === 'offgrid') && (
                 <div className="flex bg-gray-100 rounded-lg p-0.5">
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => {
+                      if (viewMode === 'offgrid') {
+                        setOffgridViewMode('list');
+                      } else {
+                        setViewMode('list');
+                      }
+                    }}
                     className={`px-2.5 py-1 rounded-md text-base transition-all ${
-                      viewMode === 'list'
+                      (viewMode === 'list') || (viewMode === 'offgrid' && offgridViewMode === 'list')
                         ? 'bg-white text-ocean-bright shadow-sm'
                         : 'text-gray-600'
                     }`}
@@ -792,9 +799,15 @@ function App() {
                     📋
                   </button>
                   <button
-                    onClick={() => setViewMode('map')}
+                    onClick={() => {
+                      if (viewMode === 'offgrid') {
+                        setOffgridViewMode('map');
+                      } else {
+                        setViewMode('map');
+                      }
+                    }}
                     className={`px-2.5 py-1 rounded-md text-base transition-all ${
-                      viewMode === 'map'
+                      (viewMode === 'map') || (viewMode === 'offgrid' && offgridViewMode === 'map')
                         ? 'bg-white text-ocean-bright shadow-sm'
                         : 'text-gray-600'
                     }`}
@@ -1249,6 +1262,7 @@ function App() {
                   <OffGridView
                     activities={activities}
                     userLocation={activeLocation}
+                    viewMode={offgridViewMode}
                     onLocationSearch={async (cityName) => {
                       try {
                         const { getFunctions, httpsCallable } = await import('firebase/functions');
