@@ -179,6 +179,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                               weekday: 'short',
                               month: 'short',
                               day: 'numeric',
+                              year: 'numeric',
                             })}
                           </div>
                           <div className="text-sm text-white/80">
