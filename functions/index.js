@@ -719,6 +719,11 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
 
     console.log(`🎫 TICKETMASTER: Searching events within ${radiusMiles} miles of ${lat},${lng}`);
 
+    // Get current date in ISO format for filtering future events only
+    const now = new Date();
+    const startDateTime = now.toISOString();
+    console.log(`🎫 TICKETMASTER: Today is ${now.toLocaleDateString()}, filtering events after ${startDateTime}`);
+
     const response = await axios.get(`https://app.ticketmaster.com/discovery/v2/events.json`, {
       params: {
         apikey: TICKETMASTER_API_KEY,
@@ -726,7 +731,8 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
         radius: radiusMiles,
         unit: 'miles',
         size: 50,
-        sort: 'date,asc'
+        sort: 'date,asc',
+        startDateTime: startDateTime // Only future events
       }
     });
 
@@ -832,7 +838,22 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
         },
         openNow: true,
       };
-    }).filter((activity) => activity.name);
+    }).filter((activity) => {
+      // Filter out events without names
+      if (!activity.name) return false;
+
+      // Filter out past events (safety check)
+      if (activity.details?.eventDate) {
+        const eventDate = new Date(activity.details.eventDate);
+        const now = new Date();
+        if (eventDate < now) {
+          console.log(`🎫 TICKETMASTER: Filtered out past event: ${activity.name} (${eventDate.toLocaleDateString()})`);
+          return false;
+        }
+      }
+
+      return true;
+    });
   } catch (error) {
     console.error("🎫 TICKETMASTER: Error fetching events:", error.message);
     if (error.response) {

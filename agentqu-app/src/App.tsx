@@ -1427,28 +1427,77 @@ function App() {
                             </div>
                           )}
 
-                          {/* Events Section - Card Grid */}
-                          {sortedEvents.length > 0 && (
-                            <div className="mt-8">
-                              <div className="flex items-center gap-3 mb-6">
-                                <h3 className="text-2xl font-bold text-white">🎉 Upcoming Events</h3>
-                                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
-                                  {sortedEvents.length}
-                                </span>
-                              </div>
+                          {/* Events Section - Grouped by Genre (Top 3 per genre) */}
+                          {sortedEvents.length > 0 && (() => {
+                            // Group events by music genre
+                            const eventsByGenre = sortedEvents.reduce((acc, event) => {
+                              const genres = (event as any).musicGenres || ['Other'];
+                              const primaryGenre = genres[0] || 'Other';
 
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                {sortedEvents.map((event, index) => (
-                                  <ActivityCard
-                                    key={event.id || event.activityId}
-                                    activity={event}
-                                    index={index}
-                                    allActivities={sortedEvents}
-                                  />
-                                ))}
+                              if (!acc[primaryGenre]) {
+                                acc[primaryGenre] = [];
+                              }
+                              acc[primaryGenre].push(event);
+                              return acc;
+                            }, {} as Record<string, typeof sortedEvents>);
+
+                            // Get genre display info
+                            const getGenreInfo = (genre: string): { emoji: string; name: string } => {
+                              const genreMap: Record<string, { emoji: string; name: string }> = {
+                                'Rock': { emoji: '🎸', name: 'Rock' },
+                                'Pop': { emoji: '✨', name: 'Pop' },
+                                'Country': { emoji: '🤠', name: 'Country' },
+                                'Hip-Hop/Rap': { emoji: '🎤', name: 'Hip-Hop' },
+                                'R&B': { emoji: '💜', name: 'R&B' },
+                                'Jazz': { emoji: '🎺', name: 'Jazz' },
+                                'Blues': { emoji: '🎹', name: 'Blues' },
+                                'Classical': { emoji: '🎻', name: 'Classical' },
+                                'Latin': { emoji: '💃', name: 'Latin' },
+                                'Other': { emoji: '🎵', name: 'Other' }
+                              };
+                              return genreMap[genre] || { emoji: '🎵', name: genre };
+                            };
+
+                            return (
+                              <div className="mt-8 space-y-8">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-2xl font-bold text-white">🎉 Upcoming Events</h3>
+                                  <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
+                                    {Object.keys(eventsByGenre).length} genres, {sortedEvents.length} total
+                                  </span>
+                                </div>
+
+                                {Object.entries(eventsByGenre)
+                                  .sort(([, a], [, b]) => b.length - a.length) // Sort by number of events per genre
+                                  .map(([genre, genreEvents]) => {
+                                    const { emoji, name } = getGenreInfo(genre);
+                                    const topEvents = genreEvents.slice(0, 3); // Only show top 3
+
+                                    return (
+                                      <div key={genre} className="space-y-3">
+                                        <h4 className="text-lg font-bold text-white flex items-center gap-2">
+                                          <span className="text-2xl">{emoji}</span>
+                                          <span>{name}</span>
+                                          <span className="text-sm font-normal text-white/70">
+                                            ({genreEvents.length} event{genreEvents.length !== 1 ? 's' : ''})
+                                          </span>
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                          {topEvents.map((event, index) => (
+                                            <ActivityCard
+                                              key={event.id || event.activityId}
+                                              activity={event}
+                                              index={index}
+                                              allActivities={topEvents}
+                                            />
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                               </div>
-                            </div>
-                          )}
+                            );
+                          })()}
 
                           {/* Empty State */}
                           {places.length === 0 && events.length === 0 && (
