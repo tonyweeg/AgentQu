@@ -756,6 +756,12 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
       // Extract event date/time
       const startDate = event.dates?.start?.dateTime || event.dates?.start?.localDate;
 
+      // DEBUG: Log the actual date from Ticketmaster
+      if (startDate) {
+        const parsedDate = new Date(startDate);
+        console.log(`🎫 DEBUG: Event "${event.name}" - Raw date: ${startDate}, Parsed: ${parsedDate.toLocaleDateString()}, Is past? ${parsedDate < now}`);
+      }
+
       // Check if free
       const isFree = event.priceRanges?.[0]?.min === 0;
       const priceMin = event.priceRanges?.[0]?.min || null;
@@ -843,13 +849,30 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
       // Filter out events without names
       if (!activity.name) return false;
 
-      // Filter out past events (safety check)
+      // Filter out past events (safety check) - STRICT FILTERING
       if (activity.details?.eventDate) {
         const eventDate = new Date(activity.details.eventDate);
-        const now = new Date();
-        if (eventDate < now) {
-          console.log(`🎫 TICKETMASTER: Filtered out past event: ${activity.name} (${eventDate.toLocaleDateString()})`);
-          return false;
+        const nowCheck = new Date();
+
+        // For localDate format (YYYY-MM-DD), compare just the dates
+        // For dateTime format, compare full timestamps
+        const isLocalDateOnly = activity.details.eventDate.length === 10; // "YYYY-MM-DD"
+
+        if (isLocalDateOnly) {
+          // Compare dates only (set time to start of day)
+          const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+          const today = new Date(nowCheck.getFullYear(), nowCheck.getMonth(), nowCheck.getDate());
+
+          if (eventDay < today) {
+            console.log(`🎫 FILTERED: "${activity.name}" - Date: ${activity.details.eventDate} (${eventDay.toLocaleDateString()}) is before today (${today.toLocaleDateString()})`);
+            return false;
+          }
+        } else {
+          // Full timestamp comparison
+          if (eventDate < nowCheck) {
+            console.log(`🎫 FILTERED: "${activity.name}" - DateTime: ${activity.details.eventDate} (${eventDate.toLocaleString()}) is before now (${nowCheck.toLocaleString()})`);
+            return false;
+          }
         }
       }
 
