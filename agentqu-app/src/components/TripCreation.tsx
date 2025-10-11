@@ -335,8 +335,13 @@ const TripCreation: React.FC = () => {
                 </div>
               ) : activities.length > 0 ? (
                 <div className="space-y-4">
-                  {activities.slice(0, 6).map((activity) => (
-                    <ActivityCard key={activity.id} activity={activity} />
+                  {activities.slice(0, 6).map((activity, index) => (
+                    <ActivityCard
+                      key={activity.id}
+                      activity={activity}
+                      index={index}
+                      allActivities={activities.slice(0, 6)}
+                    />
                   ))}
                   {activities.length > 6 && (
                     <p className="text-center text-sm text-gray-500 mt-4">

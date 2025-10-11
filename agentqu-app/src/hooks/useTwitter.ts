@@ -23,6 +23,14 @@ export interface Tweet {
   searchType: 'event' | 'local';
 }
 
+export interface VibeData {
+  mood: string;
+  energy: 'low' | 'medium' | 'high';
+  description: string;
+  topThemes: string[];
+  eventCount: number;
+}
+
 export interface TwitterSearchResult {
   success: boolean;
   events: Tweet[];
@@ -30,6 +38,7 @@ export interface TwitterSearchResult {
   total: number;
   location: { lat: number; lng: number; radius: number };
   affinityCategories: string[];
+  vibe?: VibeData;
   rateLimit?: {
     limit: number | null;
     remaining: number | null;

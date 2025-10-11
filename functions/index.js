@@ -2567,10 +2567,75 @@ exports.scoreThereThenActivities = onCall(async (request) => {
 // TWITTER/X INTEGRATION
 // ============================================================================
 
+/**
+ * Calculate simple vibe summary from events
+ * Analyzes event content and engagement to determine local mood/energy
+ */
+function calculateSimpleVibe(events) {
+  if (!events || events.length === 0) {
+    return {
+      mood: "quiet",
+      energy: "low",
+      description: "Not much happening right now. Check back later for local events!",
+      topThemes: [],
+      eventCount: 0,
+    };
+  }
+
+  // Analyze keywords to determine themes
+  const allText = events.map(e => e.text.toLowerCase()).join(" ");
+
+  const themes = {
+    music: ["concert", "music", "band", "show", "live music", "festival"].some(k => allText.includes(k)),
+    food: ["food", "restaurant", "dining", "chef", "culinary"].some(k => allText.includes(k)),
+    arts: ["art", "gallery", "exhibit", "museum", "theater"].some(k => allText.includes(k)),
+    sports: ["game", "sports", "team", "match", "tournament"].some(k => allText.includes(k)),
+    nightlife: ["bar", "club", "party", "drinks", "nightlife"].some(k => allText.includes(k)),
+    family: ["family", "kids", "children", "festival", "fair"].some(k => allText.includes(k)),
+  };
+
+  const topThemes = Object.entries(themes)
+    .filter(([_, active]) => active)
+    .map(([theme, _]) => theme);
+
+  // Calculate energy level based on engagement
+  const avgLikes = events.reduce((sum, e) => sum + e.engagement.likes, 0) / events.length;
+  const energy = avgLikes > 50 ? "high" : avgLikes > 20 ? "medium" : "low";
+
+  // Determine mood based on themes
+  let mood = "mixed";
+  if (themes.music && themes.nightlife) mood = "lively";
+  else if (themes.arts && themes.food) mood = "cultured";
+  else if (themes.family) mood = "family-friendly";
+  else if (themes.sports) mood = "energetic";
+  else if (events.length > 10) mood = "buzzing";
+  else if (events.length > 5) mood = "active";
+  else mood = "calm";
+
+  // Generate description
+  const descriptions = {
+    "lively": "The scene is lively with music and nightlife! Lots happening tonight.",
+    "cultured": "Arts and dining scene is active. Great time to explore cultural offerings.",
+    "family-friendly": "Family-friendly events happening. Perfect for all ages!",
+    "energetic": "Sports and competitive energy in the air. Game on!",
+    "buzzing": `${events.length} events happening! The area is buzzing with activity.`,
+    "active": "Several events happening around you. Good time to get out!",
+    "calm": "A few low-key events happening. Relaxed vibe in the area.",
+    "mixed": `${events.length} diverse events happening. Something for everyone!`,
+  };
+
+  return {
+    mood,
+    energy,
+    description: descriptions[mood],
+    topThemes: topThemes.slice(0, 3),
+    eventCount: events.length,
+  };
+}
 
 /**
  * Search Twitter/X for local content based on location and user affinities
- * 
+ *
  * Returns both event tweets and general local buzz
  */
 exports.searchTwitter = onCall(async (request) => {
@@ -2658,12 +2723,12 @@ exports.searchTwitter = onCall(async (request) => {
       }
     }
 
-    // Search 2: General local content near location (expanded radius and terms)
+    // Search 2: General local content near location (tighter radius for truly local content)
     try {
-      // Double the radius for wider geographic search
-      const expandedRadius = radius * 2;
+      // Use the original radius for stricter geographic filtering
+      const expandedRadius = radius; // Changed from radius * 2 to just radius
       const radiusKm = expandedRadius * 1.60934; // miles to km
-      console.log(`🐦 Searching near ${lat},${lng} within ${radiusKm}km (${expandedRadius}mi expanded)`);
+      console.log(`🐦 Searching near ${lat},${lng} within ${radiusKm}km (${expandedRadius}mi strict)`);
 
       // Add location-specific search terms
       const localQuery = `point_radius:[${lng} ${lat} ${radiusKm}km] -is:retweet -is:reply`;
@@ -2805,6 +2870,9 @@ exports.searchTwitter = onCall(async (request) => {
 
     console.log(`🐦 Structured: ${events.length} events, ${buzz.length} buzz tweets`);
 
+    // Calculate simple vibe summary
+    const vibeSummary = calculateSimpleVibe(events);
+
     return {
       success: true,
       events,
@@ -2813,6 +2881,7 @@ exports.searchTwitter = onCall(async (request) => {
       location: { lat, lng, radius },
       affinityCategories: topCategories,
       rateLimit: rateLimitInfo,
+      vibe: vibeSummary,
     };
 
   } catch (error) {

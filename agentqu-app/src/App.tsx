@@ -22,6 +22,7 @@ import TermsOfService from './components/TermsOfService';
 import ContactUs from './components/ContactUs';
 import BiomeRenderer from './biomes/core/BiomeRenderer';
 import LocalFlavorColumn from './components/LocalFlavorColumn';
+import TwitterVibeModal from './components/TwitterVibeModal';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showGeocaches, setShowGeocaches] = useState(false);
+  const [showTwitterModal, setShowTwitterModal] = useState(false);
   const [enablePlaces, setEnablePlaces] = useState(true);
   const [enableCustomSearch, setEnableCustomSearch] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -528,6 +530,12 @@ function App() {
                 ✉️ Contact
               </a>
               <button
+                onClick={() => setShowTwitterModal(true)}
+                className="text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
+              >
+                🐦 Local Buzz
+              </button>
+              <button
                 onClick={() => setShowSettings(true)}
                 className="text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
               >
@@ -692,6 +700,17 @@ function App() {
                   <span>{geocaches.length} Geocache{geocaches.length !== 1 ? 's' : ''}</span>
                 </button>
               )}
+
+              {/* Twitter/Local Buzz */}
+              <button
+                onClick={() => {
+                  setShowTwitterModal(true);
+                  setShowMobileMenu(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
+              >
+                🐦 Local Buzz
+              </button>
 
               {/* Settings */}
               <button
@@ -1266,12 +1285,9 @@ function App() {
                 {/* Trip Detail View */}
                 {viewMode === 'trip-detail' && tripId && <TripDetail tripId={tripId} />}
 
-                {/* List View - Places First (Cards), Events Below (Text List) + Twitter Column */}
+                {/* List View - Places First (Cards), Events Below (Text List) */}
                 {viewMode === 'list' && (
-                  <div className="flex flex-col lg:flex-row gap-6">
-                    {/* Left Side - 70% - Activities */}
-                    <div className="flex-1 lg:w-[70%]">
-                      {(() => {
+                  (() => {
                       // Helper function to check if text contains date/time information
                       const hasDateInfo = (text: string): boolean => {
                         if (!text) return false;
@@ -1384,8 +1400,13 @@ function App() {
                           {/* Places Grid - Cards */}
                           {sortedPlaces.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-                              {sortedPlaces.map((activity) => (
-                                <ActivityCard key={activity.id || activity.activityId} activity={activity} />
+                              {sortedPlaces.map((activity, index) => (
+                                <ActivityCard
+                                  key={activity.id || activity.activityId}
+                                  activity={activity}
+                                  index={index}
+                                  allActivities={sortedPlaces}
+                                />
                               ))}
                             </div>
                           )}
@@ -1481,20 +1502,7 @@ function App() {
                           )}
                         </>
                       );
-                    })()}
-                    </div>
-
-                    {/* Right Side - 30% - Twitter Column */}
-                    <div className="lg:w-[30%]">
-                      <LocalFlavorColumn
-                        events={tweets?.events || []}
-                        buzz={tweets?.buzz || []}
-                        loading={twitterLoading}
-                        error={twitterError}
-                        rateLimit={tweets?.rateLimit}
-                      />
-                    </div>
-                  </div>
+                    })()
                 )}
               </>
             )}
@@ -1508,6 +1516,18 @@ function App() {
       {/* Geocache View Modal */}
       {showGeocaches && (
         <GeocacheView geocaches={geocaches} onClose={() => setShowGeocaches(false)} />
+      )}
+
+      {/* Twitter Vibe Modal */}
+      {showTwitterModal && (
+        <TwitterVibeModal
+          events={tweets?.events || []}
+          loading={twitterLoading}
+          error={twitterError}
+          vibe={tweets?.vibe}
+          rateLimit={tweets?.rateLimit}
+          onClose={() => setShowTwitterModal(false)}
+        />
       )}
 
       {/* Footer */}

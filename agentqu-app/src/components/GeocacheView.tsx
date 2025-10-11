@@ -41,8 +41,13 @@ const GeocacheView: React.FC<GeocacheViewProps> = ({ geocaches, onClose }) => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {geocaches.map((geocache) => (
-                <ActivityCard key={geocache.id || geocache.activityId} activity={geocache} />
+              {geocaches.map((geocache, index) => (
+                <ActivityCard
+                  key={geocache.id || geocache.activityId}
+                  activity={geocache}
+                  index={index}
+                  allActivities={geocaches}
+                />
               ))}
             </div>
           )}

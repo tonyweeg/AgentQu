@@ -224,8 +224,13 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
                   {/* Places Grid - Cards */}
                   {sortedPlaces.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-                      {sortedPlaces.map((activity) => (
-                        <ActivityCard key={activity.id || activity.activityId} activity={activity} />
+                      {sortedPlaces.map((activity, index) => (
+                        <ActivityCard
+                          key={activity.id || activity.activityId}
+                          activity={activity}
+                          index={index}
+                          allActivities={sortedPlaces}
+                        />
                       ))}
                     </div>
                   )}
