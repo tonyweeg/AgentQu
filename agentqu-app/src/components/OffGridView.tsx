@@ -242,75 +242,24 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
                     </div>
                   )}
 
-                  {/* Events Section - Compact Text List */}
+                  {/* Events Section - Card Grid */}
                   {sortedEvents.length > 0 && (
                     <div className="mt-8">
-                      <div className="flex items-center gap-3 mb-4">
-                        <h3 className="text-2xl font-bold text-navy-text">🎉 Upcoming Events</h3>
+                      <div className="flex items-center gap-3 mb-6">
+                        <h3 className="text-2xl font-bold text-white">🎉 Upcoming Events</h3>
                         <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
                           {sortedEvents.length}
                         </span>
                       </div>
 
-                      <div className="space-y-2">
-                        {sortedEvents.map((event) => (
-                          <div
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {sortedEvents.map((event, index) => (
+                          <ActivityCard
                             key={event.id || event.activityId}
-                            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-purple-300 transition-all"
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              {/* Event Info */}
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-base text-navy-text mb-1">
-                                  {event.name}
-                                </h4>
-                                <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
-                                  <span className="flex items-center gap-1">
-                                    📍 {event.distance?.toFixed(1)} mi
-                                  </span>
-                                  {event.rating && (
-                                    <span className="flex items-center gap-1">
-                                      ⭐ {event.rating.toFixed(1)}
-                                    </span>
-                                  )}
-                                  {event.cost?.free && (
-                                    <span className="text-green-600 font-semibold">Free</span>
-                                  )}
-                                  {event.cost?.priceLevel && !event.cost.free && (
-                                    <span className="font-medium">{'$'.repeat(event.cost.priceLevel)}</span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Q Score Badge */}
-                              {(() => {
-                                const score = event.score || 0;
-                                let badgeText = "";
-                                let badgeColor = "";
-                                if (score >= 280) {
-                                  badgeText = "❤️ You'll love it";
-                                  badgeColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
-                                } else if (score >= 220) {
-                                  badgeText = "😊 You'll like it";
-                                  badgeColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
-                                } else if (score >= 180) {
-                                  badgeText = "👍 You should like it";
-                                  badgeColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
-                                } else if (score >= 140) {
-                                  badgeText = "🎯 Give it a shot";
-                                  badgeColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
-                                }
-                                if (badgeText) {
-                                  return (
-                                    <div className={`${badgeColor} text-white px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm`}>
-                                      {badgeText}
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              })()}
-                            </div>
-                          </div>
+                            activity={event}
+                            index={index}
+                            allActivities={sortedEvents}
+                          />
                         ))}
                       </div>
                     </div>
