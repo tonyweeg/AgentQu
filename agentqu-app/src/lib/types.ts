@@ -72,6 +72,23 @@ export interface Activity {
   // Media
   images?: string[];
   website?: string;
+
+  // Additional details (backend format)
+  details?: {
+    description?: string;
+    shortDescription?: string;
+    imageUrl?: string;
+    website?: string;
+    // Event-specific fields
+    eventDate?: string;
+    eventEndDate?: string;
+    venue?: string;
+    venueAddress?: string;
+    organizerName?: string;
+    capacity?: number;
+    priceLevel?: number;
+    priceRange?: string;
+  };
 }
 
 export interface DiscoveryFilters {

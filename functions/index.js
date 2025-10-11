@@ -23,6 +23,8 @@ const googleSearchApiKey = defineString("GOOGLE_SEARCH_API_KEY");
 const googleSearchEngineId = defineString("GOOGLE_SEARCH_ENGINE_ID");
 const googleGeocodingApiKey = defineString("GOOGLE_GEOCODING_API_KEY");
 const openWeatherApiKey = defineString("OPENWEATHER_API_KEY");
+const eventbritePrivateToken = defineString("EVENTBRITE_PRIVATE_TOKEN");
+const ticketmasterApiKey = defineString("TICKETMASTER_API_KEY");
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -391,6 +393,392 @@ async function fetchGoogleSearch(lat, lng, city = null) {
       .filter((activity) => activity.name);
   } catch (error) {
     console.error("Error fetching Google Search:", error.message);
+    return [];
+  }
+}
+
+/**
+ * Fetch events from Eventbrite API
+ */
+async function fetchEventbriteEvents(lat, lng, radius = 10, city = null) {
+  const EVENTBRITE_TOKEN = eventbritePrivateToken.value();
+
+  if (!EVENTBRITE_TOKEN) {
+    console.warn("🎟️ EVENTBRITE: Not configured");
+    return [];
+  }
+
+  try {
+    const radiusKm = radius * 1.60934; // Convert miles to km
+
+    console.log(`🎟️ EVENTBRITE: Searching events within ${radius} miles (${radiusKm}km) of ${lat},${lng}`);
+
+    const response = await axios.get(`https://www.eventbriteapi.com/v3/events/search`, {
+      params: {
+        'location.latitude': lat,
+        'location.longitude': lng,
+        'location.within': `${radiusKm}km`,
+        'expand': 'venue,organizer,ticket_availability',
+        'page_size': 50,
+      },
+      headers: {
+        'Authorization': `Bearer ${EVENTBRITE_TOKEN}`,
+      },
+    });
+
+    console.log(`🎟️ EVENTBRITE: Got ${response.data.events?.length || 0} events`);
+
+    if (!response.data.events || response.data.events.length === 0) {
+      return [];
+    }
+
+    return response.data.events.map((event) => {
+      const eventLat = event.venue?.latitude ? parseFloat(event.venue.latitude) : lat;
+      const eventLng = event.venue?.longitude ? parseFloat(event.venue.longitude) : lng;
+
+      // Extract event date/time
+      const startDate = event.start?.local || event.start?.utc;
+      const endDate = event.end?.local || event.end?.utc;
+
+      // Get high-quality image
+      const imageUrl = event.logo?.original?.url || event.logo?.url || null;
+
+      // Extract venue info
+      const venueName = event.venue?.name || 'Venue TBA';
+      const venueAddress = event.venue?.address?.localized_address_display ||
+                          event.venue?.address?.address_1 || '';
+
+      // Check if free
+      const isFree = event.is_free ||
+                    (event.ticket_availability?.minimum_ticket_price?.major_value === 0);
+
+      // Build description
+      const description = event.description?.text || event.summary ||
+                         `${event.name.text} at ${venueName}`;
+
+      return {
+        activityId: `eventbrite_${event.id}`,
+        name: event.name.text,
+        type: "event",
+        location: {
+          lat: eventLat,
+          lng: eventLng,
+          geohash: geohash.encode(eventLat, eventLng, 7),
+          geohashPrecise: geohash.encode(eventLat, eventLng, 9),
+          address: venueAddress || city || 'Location TBA',
+        },
+        categories: ["events", "activities"],
+        primaryCategory: "event",
+        details: {
+          description: description,
+          shortDescription: description.substring(0, 200),
+          imageUrl: imageUrl,
+          website: event.url,
+          eventDate: startDate,
+          eventEndDate: endDate,
+          venue: venueName,
+          venueAddress: venueAddress,
+          organizerName: event.organizer?.name,
+          capacity: event.capacity,
+          priceLevel: isFree ? 0 : (event.ticket_availability?.minimum_ticket_price?.major_value > 50 ? 3 : 2),
+        },
+        expiration: {
+          type: "date",
+          expiresAt: new Date(endDate || startDate).getTime() || Date.now() + 86400000,
+          lastVerified: Date.now(),
+          isActive: true,
+        },
+        ratings: {
+          googleRating: null,
+          agentQuRating: null,
+          totalReviews: 0,
+          totalVotes: 0,
+          upvotes: 0,
+          downvotes: 0,
+          voteScore: 0,
+        },
+        searchMetadata: {
+          firstSeen: Date.now(),
+          lastSearched: Date.now(),
+          searchCount: 1,
+          source: "eventbrite",
+          sourceId: event.id,
+        },
+        openNow: true,
+      };
+    }).filter((activity) => activity.name);
+  } catch (error) {
+    console.error("🎟️ EVENTBRITE: Error fetching events:", error.message);
+    if (error.response) {
+      console.error(`🎟️ EVENTBRITE: Status ${error.response.status}:`, error.response.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Affiliate Tracking Configuration
+ *
+ * To monetize event ticket sales, sign up for affiliate programs:
+ * - Ticketmaster: https://ticketmaster.com/partners
+ * - StubHub: https://stubhub.com/affiliates
+ * - SeatGeek: https://seatgeek.com/partners
+ *
+ * Add your affiliate IDs to .env:
+ * TICKETMASTER_AFFILIATE_ID=your_id_here
+ * STUBHUB_AFFILIATE_ID=your_id_here
+ * SEATGEEK_AFFILIATE_ID=your_id_here
+ */
+function addAffiliateTracking(url, platform) {
+  // TODO: Add your affiliate IDs to .env and uncomment the tracking logic below
+
+  // For now, return the URL as-is (may have default tracking from API)
+  // The Ticketmaster Discovery API returns URLs with affiliate tracking by default
+  return url;
+
+  /* UNCOMMENT WHEN YOU HAVE AFFILIATE IDs:
+
+  const affiliateIds = {
+    ticketmaster: process.env.TICKETMASTER_AFFILIATE_ID || null,
+    stubhub: process.env.STUBHUB_AFFILIATE_ID || null,
+    seatgeek: process.env.SEATGEEK_AFFILIATE_ID || null,
+  };
+
+  if (!affiliateIds[platform]) {
+    console.warn(`⚠️ No affiliate ID configured for ${platform}`);
+    return url;
+  }
+
+  // Add affiliate tracking based on platform
+  switch (platform) {
+    case 'ticketmaster':
+      // Ticketmaster affiliate link format
+      return `https://ticketmaster.evyy.net/c/${affiliateIds.ticketmaster}?u=${encodeURIComponent(url)}`;
+
+    case 'stubhub':
+      // StubHub affiliate link format
+      return `${url}${url.includes('?') ? '&' : '?'}affiliateId=${affiliateIds.stubhub}`;
+
+    case 'seatgeek':
+      // SeatGeek affiliate link format
+      return `${url}${url.includes('?') ? '&' : '?'}aid=${affiliateIds.seatgeek}`;
+
+    default:
+      return url;
+  }
+  */
+}
+
+/**
+ * Fetch events from Ticketmaster Discovery API
+ */
+async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
+  const TICKETMASTER_API_KEY = ticketmasterApiKey.value();
+
+  if (!TICKETMASTER_API_KEY) {
+    console.warn("🎫 TICKETMASTER: Not configured");
+    return [];
+  }
+
+  try {
+    const radiusMiles = radius; // Ticketmaster uses miles directly
+
+    console.log(`🎫 TICKETMASTER: Searching events within ${radiusMiles} miles of ${lat},${lng}`);
+
+    const response = await axios.get(`https://app.ticketmaster.com/discovery/v2/events.json`, {
+      params: {
+        apikey: TICKETMASTER_API_KEY,
+        latlong: `${lat},${lng}`,
+        radius: radiusMiles,
+        unit: 'miles',
+        size: 50,
+        sort: 'date,asc'
+      }
+    });
+
+    console.log(`🎫 TICKETMASTER: Got ${response.data._embedded?.events?.length || 0} events`);
+
+    if (!response.data._embedded?.events || response.data._embedded.events.length === 0) {
+      return [];
+    }
+
+    return response.data._embedded.events.map((event) => {
+      // Extract venue location
+      const venue = event._embedded?.venues?.[0];
+      const eventLat = venue?.location?.latitude ? parseFloat(venue.location.latitude) : lat;
+      const eventLng = venue?.location?.longitude ? parseFloat(venue.location.longitude) : lng;
+
+      // Get high-quality image
+      const images = event.images || [];
+      const imageUrl = images.find(img => img.width >= 1024)?.url || images[0]?.url || null;
+
+      // Extract event date/time
+      const startDate = event.dates?.start?.dateTime || event.dates?.start?.localDate;
+
+      // Check if free
+      const isFree = event.priceRanges?.[0]?.min === 0;
+      const priceMin = event.priceRanges?.[0]?.min || null;
+      const priceMax = event.priceRanges?.[0]?.max || null;
+
+      return {
+        activityId: `ticketmaster_${event.id}`,
+        name: event.name,
+        type: "event",
+        // TOP-LEVEL: Frontend looks for these
+        images: imageUrl ? [imageUrl] : [], // Frontend expects array
+        website: addAffiliateTracking(event.url, 'ticketmaster'), // TOP-LEVEL for frontend
+        description: event.info || event.pleaseNote || `${event.name} at ${venue?.name || 'venue'}`,
+        address: venue?.address?.line1 || city || 'Location TBA',
+        city: venue?.city?.name || city || '',
+        state: venue?.state?.stateCode || '',
+        location: {
+          lat: eventLat,
+          lng: eventLng,
+          geohash: geohash.encode(eventLat, eventLng, 7),
+          geohashPrecise: geohash.encode(eventLat, eventLng, 9),
+          address: venue?.address?.line1 || city || 'Location TBA',
+        },
+        categories: ["events", "activities", ...(event.classifications?.[0]?.segment?.name ? [event.classifications[0].segment.name.toLowerCase()] : [])],
+        primaryCategory: "events",
+        cost: {
+          free: isFree,
+          price: priceMin,
+          priceLevel: isFree ? 0 : (priceMin > 50 ? 3 : priceMin > 25 ? 2 : 1),
+        },
+        details: {
+          description: event.info || event.pleaseNote || `${event.name} at ${venue?.name || 'venue'}`,
+          shortDescription: (event.info || event.name).substring(0, 200),
+          imageUrl: imageUrl,
+          website: addAffiliateTracking(event.url, 'ticketmaster'),
+          eventDate: startDate,
+          venue: venue?.name || 'Venue TBA',
+          venueAddress: venue?.address?.line1 || '',
+          organizerName: event.promoter?.name || event._embedded?.attractions?.[0]?.name,
+          priceLevel: isFree ? 0 : (priceMin > 50 ? 3 : priceMin > 25 ? 2 : 1),
+          priceRange: priceMin && priceMax ? `$${priceMin}-$${priceMax}` : null,
+        },
+        expiration: {
+          type: "date",
+          expiresAt: new Date(startDate).getTime() || Date.now() + 86400000,
+          lastVerified: Date.now(),
+          isActive: true,
+        },
+        ratings: {
+          googleRating: null,
+          agentQuRating: null,
+          totalReviews: 0,
+          totalVotes: 0,
+          upvotes: 0,
+          downvotes: 0,
+          voteScore: 0,
+        },
+        searchMetadata: {
+          firstSeen: Date.now(),
+          lastSearched: Date.now(),
+          searchCount: 1,
+          source: "ticketmaster",
+          sourceId: event.id,
+        },
+        openNow: true,
+      };
+    }).filter((activity) => activity.name);
+  } catch (error) {
+    console.error("🎫 TICKETMASTER: Error fetching events:", error.message);
+    if (error.response) {
+      console.error(`🎫 TICKETMASTER: Status ${error.response.status}:`, error.response.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Fetch local recommendations from Reddit
+ */
+async function fetchRedditLocalBuzz(lat, lng, city = null, state = null) {
+  if (!city) {
+    console.log('🤖 REDDIT: Skipping - no city name available');
+    return [];
+  }
+
+  try {
+    console.log(`🤖 REDDIT: Searching for local buzz in ${city}, ${state}`);
+
+    // Build subreddit search queries
+    const subredditQueries = [
+      city.toLowerCase().replace(/\s+/g, ''), // e.g., "baltimore"
+      state ? state.toLowerCase() : null, // e.g., "maryland"
+    ].filter(Boolean);
+
+    const allPosts = [];
+
+    // Search multiple subreddits
+    for (const sub of subredditQueries.slice(0, 2)) { // Limit to 2 subreddits
+      try {
+        const searchQuery = `things to do OR hidden gem OR local favorite OR must visit`;
+        const redditUrl = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(searchQuery)}&restrict_sr=1&sort=top&t=month&limit=10`;
+
+        const response = await axios.get(redditUrl, {
+          headers: {
+            'User-Agent': 'AgentQu/1.0'
+          }
+        });
+
+        if (response.data?.data?.children) {
+          allPosts.push(...response.data.data.children.map(child => child.data));
+        }
+      } catch (subError) {
+        console.log(`🤖 REDDIT: Subreddit r/${sub} failed:`, subError.message);
+      }
+    }
+
+    console.log(`🤖 REDDIT: Found ${allPosts.length} local posts`);
+
+    // Convert Reddit posts to activities
+    return allPosts.slice(0, 10).map((post, index) => ({
+      activityId: `reddit_${post.id}`,
+      name: post.title,
+      type: "event", // Treat as recommendation
+      location: {
+        lat,
+        lng,
+        geohash: geohash.encode(lat, lng, 7),
+        geohashPrecise: geohash.encode(lat, lng, 9),
+        address: `${city}, ${state}`,
+      },
+      categories: ["local_buzz", "community_rec"],
+      primaryCategory: "local_buzz",
+      details: {
+        description: post.selftext || post.title,
+        shortDescription: (post.selftext || post.title).substring(0, 200),
+        imageUrl: post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : null,
+        website: `https://reddit.com${post.permalink}`,
+      },
+      expiration: {
+        type: "date",
+        expiresAt: Date.now() + 86400000 * 7, // 7 days
+        lastVerified: Date.now(),
+        isActive: true,
+      },
+      ratings: {
+        googleRating: null,
+        agentQuRating: post.score / 100, // Convert Reddit score to 0-10 scale
+        totalReviews: post.num_comments,
+        totalVotes: post.ups + post.downs,
+        upvotes: post.ups,
+        downvotes: post.downs || 0,
+        voteScore: post.score,
+      },
+      searchMetadata: {
+        firstSeen: Date.now(),
+        lastSearched: Date.now(),
+        searchCount: 1,
+        source: "reddit",
+        sourceId: post.id,
+      },
+      openNow: true,
+    }));
+  } catch (error) {
+    console.error("🤖 REDDIT: Error fetching local buzz:", error.message);
     return [];
   }
 }
@@ -814,25 +1202,36 @@ exports.discoverActivities = onCall(
       }
     }
 
-    // Fetch from enabled sources only
-    const fetchPromises = [];
-    if (enableCustomSearch) {
-      fetchPromises.push(fetchGoogleSearch(lat, lng, cityName));
-    } else {
-      fetchPromises.push(Promise.resolve([]));
-    }
+    // Extract city and state from cityName for Reddit
+    const cityOnly = cityName ? cityName.split(',')[0].trim() : null;
+    const stateOnly = cityName ? cityName.split(',')[1]?.trim() : null;
 
+    // Fetch from all enabled sources in parallel
+    const fetchPromises = [];
+
+    // Google Places (permanent locations)
     if (enablePlaces) {
       fetchPromises.push(fetchGooglePlaces(lat, lng, radius, userAffinities));
     } else {
       fetchPromises.push(Promise.resolve([]));
     }
 
-    const [googleSearch, googlePlaces] = await Promise.all(fetchPromises);
+    // Ticketmaster Events (only if events enabled)
+    // NOTE: Get your affiliate ID from https://ticketmaster.com/partners
+    if (enableCustomSearch) {
+      fetchPromises.push(fetchTicketmasterEvents(lat, lng, radius, cityName));
+    } else {
+      fetchPromises.push(Promise.resolve([]));
+    }
 
-    let allActivities = [...googleSearch, ...googlePlaces];
+    // Reddit (local community buzz)
+    fetchPromises.push(fetchRedditLocalBuzz(lat, lng, cityOnly, stateOnly));
 
-    console.log(`✅ Fetched ${googleSearch.length} from Custom Search, ${googlePlaces.length} from Places API`);
+    const [googlePlaces, ticketmasterEvents, redditBuzz] = await Promise.all(fetchPromises);
+
+    let allActivities = [...googlePlaces, ...ticketmasterEvents, ...redditBuzz];
+
+    console.log(`✅ Fetched ${googlePlaces.length} from Places, ${ticketmasterEvents.length} from Ticketmaster, ${redditBuzz.length} from Reddit`);
 
     // Calculate distances
     allActivities = allActivities.map((activity) => ({
@@ -854,8 +1253,15 @@ exports.discoverActivities = onCall(
       };
     });
 
-    // Sort by score
-    allActivities.sort((a, b) => b.score - a.score);
+    // Sort by type first (events at top), then by score
+    allActivities.sort((a, b) => {
+      // Events always come first
+      if (a.type === 'event' && b.type !== 'event') return -1;
+      if (a.type !== 'event' && b.type === 'event') return 1;
+
+      // Within same type, sort by score
+      return b.score - a.score;
+    });
 
     // CACHE DISABLED FOR DEVELOPMENT - Skip saving to cache
     console.log("🚧 CACHE DISABLED - skipping cache write");
@@ -871,8 +1277,9 @@ exports.discoverActivities = onCall(
         queryTimeMs: Date.now() - startTime,
         cacheHit: false,
         sources: {
-          google_search: googleSearch.length,
           google_places: googlePlaces.length,
+          ticketmaster: ticketmasterEvents.length,
+          reddit: redditBuzz.length,
         },
         userLocation: {lat, lng},
       },

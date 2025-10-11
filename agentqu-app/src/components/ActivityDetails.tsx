@@ -118,8 +118,12 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
               </div>
             )}
 
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+            {/* Gradient overlay - lighter for events to show more image */}
+            <div className={`absolute inset-0 ${
+              activity.type === 'event'
+                ? 'bg-gradient-to-t from-black/90 via-transparent to-transparent'
+                : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'
+            }`}></div>
 
             {/* Position indicator - top center */}
             {currentIndex !== undefined && totalCount !== undefined && (
@@ -154,77 +158,169 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
 
             {/* Content section - bottom half with translucent pills */}
             <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4 pb-32">
-              {/* Title */}
-              <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4 inline-block">
-                <h1 className="font-bold text-white text-4xl leading-tight drop-shadow-2xl">
-                  {activity.name}
-                </h1>
-              </div>
+              {/* EVENT LAYOUT - Cleaner, more concise */}
+              {activity.type === 'event' ? (
+                <>
+                  {/* Title */}
+                  <div className="bg-black/60 backdrop-blur-xl rounded-2xl px-6 py-4">
+                    <h1 className="font-bold text-white text-3xl leading-tight">
+                      {activity.name}
+                    </h1>
+                  </div>
 
-              {/* Rating & Score row */}
-              <div className="flex items-center gap-3 flex-wrap">
-                {activity.rating && (
-                  <div className="bg-amber-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
-                    ⭐ {activity.rating.toFixed(1)}
-                    {activity.reviewCount && (
-                      <span className="text-xs opacity-90">({activity.reviewCount})</span>
+                  {/* Event Info - Single compact card */}
+                  <div className="bg-black/60 backdrop-blur-xl rounded-2xl px-6 py-4 space-y-3">
+                    {activity.details?.eventDate && (
+                      <div className="flex items-center gap-3 text-white">
+                        <span className="text-2xl">📅</span>
+                        <div>
+                          <div className="font-bold">
+                            {new Date(activity.details.eventDate).toLocaleDateString('en-US', {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </div>
+                          <div className="text-sm text-white/80">
+                            {new Date(activity.details.eventDate).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit'
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {activity.details?.venue && (
+                      <div className="flex items-center gap-3 text-white">
+                        <span className="text-2xl">📍</span>
+                        <div>
+                          <div className="font-semibold">{activity.details.venue}</div>
+                          {activity.address && (
+                            <div className="text-sm text-white/70">{activity.address}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {activity.details?.organizerName && (
+                      <div className="flex items-center gap-3 text-white">
+                        <span className="text-2xl">👤</span>
+                        <div className="font-semibold">{activity.details.organizerName}</div>
+                      </div>
+                    )}
+                    {activity.details?.priceRange && (
+                      <div className="flex items-center gap-3 text-white">
+                        <span className="text-2xl">💰</span>
+                        <div className="font-semibold">${activity.details.priceRange}</div>
+                      </div>
                     )}
                   </div>
-                )}
 
-                {/* Affinity Meter */}
-                <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg">
-                  {[1, 2, 3, 4, 5].map((dot) => (
-                    <div
-                      key={dot}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        dot <= signalBars
-                          ? 'bg-gradient-to-br from-sky-400 to-sky-600'
-                          : 'bg-gray-300'
-                      }`}
-                    />
-                  ))}
-                </div>
+                  {/* Ticket Button - Prominent */}
+                  {activity.website && (
+                    <a
+                      href={activity.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-5 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                      </svg>
+                      🎫 Get Tickets
+                    </a>
+                  )}
 
-                {/* Directions button */}
-                {googleMapsUrl && (
-                  <a
-                    href={googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-blue-600/80 backdrop-blur-sm hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all flex items-center gap-1.5"
-                  >
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                    </svg>
-                    Directions
-                  </a>
-                )}
-              </div>
+                  {/* Directions button */}
+                  {googleMapsUrl && (
+                    <a
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-6 py-3 rounded-2xl font-semibold shadow-lg transition-all"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                      </svg>
+                      Get Directions
+                    </a>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* NON-EVENT LAYOUT - Original detailed layout */}
+                  {/* Title */}
+                  <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4 inline-block">
+                    <h1 className="font-bold text-white text-4xl leading-tight drop-shadow-2xl">
+                      {activity.name}
+                    </h1>
+                  </div>
 
-              {/* Info badges row */}
-              <div className="flex items-center gap-3 flex-wrap">
-                {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
-                  <div className="bg-green-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    Free
+                  {/* Rating & Score row */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {activity.rating && (
+                      <div className="bg-amber-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                        ⭐ {activity.rating.toFixed(1)}
+                        {activity.reviewCount && (
+                          <span className="text-xs opacity-90">({activity.reviewCount})</span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Affinity Meter */}
+                    <div className="flex items-center gap-1.5 bg-white/80 backdrop-blur-sm px-3 py-2 rounded-full shadow-lg">
+                      {[1, 2, 3, 4, 5].map((dot) => (
+                        <div
+                          key={dot}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            dot <= signalBars
+                              ? 'bg-gradient-to-br from-sky-400 to-sky-600'
+                              : 'bg-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Directions button */}
+                    {googleMapsUrl && (
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-blue-600/80 backdrop-blur-sm hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all flex items-center gap-1.5"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        Directions
+                      </a>
+                    )}
                   </div>
-                )}
-                {activity.cost?.priceLevel && activity.cost.priceLevel > 0 && (
-                  <div className="bg-white/80 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    {'$'.repeat(activity.cost.priceLevel)}
+
+                  {/* Info badges row */}
+                  <div className="flex items-center gap-3 flex-wrap">
+                    {(activity.cost?.free || activity.cost?.priceLevel === 0) && (
+                      <div className="bg-green-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        Free
+                      </div>
+                    )}
+                    {activity.cost?.priceLevel && activity.cost.priceLevel > 0 && (
+                      <div className="bg-white/80 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        {'$'.repeat(activity.cost.priceLevel)}
+                      </div>
+                    )}
+                    {activity.openNow && (
+                      <div className="bg-emerald-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        Open Now
+                      </div>
+                    )}
+                    {activity.accessibility?.wheelchairAccessible && (
+                      <div className="bg-blue-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                        ♿ Accessible
+                      </div>
+                    )}
                   </div>
-                )}
-                {activity.openNow && (
-                  <div className="bg-emerald-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    Open Now
-                  </div>
-                )}
-                {activity.accessibility?.wheelchairAccessible && (
-                  <div className="bg-blue-500/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    ♿ Accessible
-                  </div>
-                )}
-              </div>
+                </>
+              )}
 
               {/* Hiking-specific info */}
               {isHike && (hikingDuration || hikingDifficulty) && (
@@ -244,8 +340,8 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* Description/Highlights */}
-              {activity.description && (
+              {/* Description/Highlights - NOT for events */}
+              {activity.type !== 'event' && activity.description && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
                   <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
                     <span className="text-2xl">💡</span>
@@ -257,8 +353,8 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* Location */}
-              {activity.address && (
+              {/* Location - NOT for events */}
+              {activity.type !== 'event' && activity.address && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
                   <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
                     <span className="text-2xl">📍</span>
@@ -275,8 +371,8 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* Why you'll like it */}
-              {score > 0 && (
+              {/* Why you'll like it - NOT for events */}
+              {activity.type !== 'event' && score > 0 && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
                   <h3 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
                     <span className="text-2xl">💭</span>
@@ -332,13 +428,13 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* Website button */}
-              {activity.website && (
+              {/* Website button - ONLY for non-events */}
+              {activity.type !== 'event' && activity.website && (
                 <a
                   href={activity.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-white/90 backdrop-blur-sm hover:bg-white text-gray-900 px-6 py-3 rounded-2xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
