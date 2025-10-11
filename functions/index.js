@@ -390,6 +390,7 @@ async function fetchGoogleSearch(lat, lng, city = null) {
             cx: GOOGLE_SEARCH_ENGINE_ID,
             q: searchQuery,
             num: 10,
+            dateRestrict: 'd30', // Only results from past 30 days (fresh event listings)
           },
         });
 
