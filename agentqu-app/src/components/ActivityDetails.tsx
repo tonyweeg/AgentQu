@@ -92,7 +92,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
           {onPrev && (
             <button
               onClick={onPrev}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-4 shadow-lg transition-all text-white z-10"
+              className="absolute left-4 top-1/3 transform -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-4 shadow-lg transition-all text-white z-10"
               title="Previous activity"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
           {onNext && (
             <button
               onClick={onNext}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-4 shadow-lg transition-all text-white z-10"
+              className="absolute right-4 top-1/3 transform -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white/30 rounded-full p-4 shadow-lg transition-all text-white z-10"
               title="Next activity"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
