@@ -54,6 +54,7 @@ function App() {
   const [showControlsDrawer, setShowControlsDrawer] = useState(false);
   const [showAdventureMenu, setShowAdventureMenu] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [currentTime, setCurrentTime] = useState(new Date());
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -97,6 +98,14 @@ function App() {
       requestLocation();
     }
   }, [profile?.onboarded, location, requestLocation]);
+
+  // Update current time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Fetch nearby towns when location and city are available
   useEffect(() => {
@@ -1061,7 +1070,7 @@ function App() {
         </div>
       </div>
 
-      {/* Location Info Bar */}
+      {/* Date and Time Info Bar */}
       {activeLocation && city && state && (
         <div className="bg-gray-50/80 backdrop-blur-sm border-b border-gray-200 py-2">
           <div className="max-w-7xl mx-auto px-4">
@@ -1069,7 +1078,13 @@ function App() {
               <span className="text-gray-600">Searching in:</span>
               <span className="font-bold text-navy-text">{city}, {state}</span>
               <span className="text-gray-400">•</span>
-              <span className="text-gray-600">{activeLocation.lat.toFixed(4)}, {activeLocation.lng.toFixed(4)}</span>
+              <span className="text-gray-600">
+                {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="font-bold text-ocean-bright">
+                {currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}
+              </span>
             </div>
           </div>
         </div>
