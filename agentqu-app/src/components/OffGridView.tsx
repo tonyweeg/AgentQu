@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Activity } from '../lib/types';
 import ActivityCard from './ActivityCard';
+import ActivityMap from './ActivityMap';
 
 interface OffGridViewProps {
   activities: Activity[];
   onLocationSearch?: (city: string) => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
 // Off-grid categories - outdoor and nature activities
@@ -21,9 +23,10 @@ const OFF_GRID_CATEGORIES = [
   'wildlife'
 ];
 
-const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch }) => {
+const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch, userLocation }) => {
   const [citySearch, setCitySearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const handleCitySearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,20 +91,48 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
           </div>
         </form>
 
-        {/* Stats */}
-        <div className="flex gap-4">
-          <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
-            <div className="text-xs text-gray-600">Activities</div>
+        {/* Stats with View Mode Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-4">
+            <div className="bg-gray-100 rounded-lg px-4 py-2">
+              <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
+              <div className="text-xs text-gray-600">Activities</div>
+            </div>
+            <div className="bg-gray-100 rounded-lg px-4 py-2">
+              <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
+              <div className="text-xs text-gray-600">Categories</div>
+            </div>
           </div>
-          <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
-            <div className="text-xs text-gray-600">Categories</div>
+
+          {/* View Mode Toggle */}
+          <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-2.5 py-1 rounded-md text-base transition-all ${
+                viewMode === 'list'
+                  ? 'bg-white text-ocean-bright shadow-sm'
+                  : 'text-gray-600'
+              }`}
+              title="List View"
+            >
+              📋
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`px-2.5 py-1 rounded-md text-base transition-all ${
+                viewMode === 'map'
+                  ? 'bg-white text-ocean-bright shadow-sm'
+                  : 'text-gray-600'
+              }`}
+              title="Map View"
+            >
+              🗺️
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Content - Unified Grid with Filters */}
+      {/* Content - Map View or List View */}
       <div>
         {offGridActivities.length === 0 ? (
           <div className="text-center py-12">
@@ -110,6 +141,104 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
             <p className="text-gray-600">
               Try adjusting your location or search radius to find outdoor adventures nearby.
             </p>
+          </div>
+        ) : viewMode === 'map' && userLocation ? (
+          <div className="space-y-4">
+            {/* Map */}
+            <ActivityMap
+              activities={offGridActivities}
+              userLocation={userLocation}
+            />
+
+            {/* Compact Activity List below map */}
+            <div className="space-y-2">
+              {offGridActivities
+                .sort((a, b) => (b.score || 0) - (a.score || 0))
+                .slice(0, 20)
+                .map((activity) => {
+                  const category = activity.primaryCategory || 'other';
+                  const getCategoryGradient = (cat: string) => {
+                    switch (cat) {
+                      case 'hiking': return 'from-green-50 to-emerald-50 border-green-200';
+                      case 'nature_and_outdoors': return 'from-teal-50 to-green-50 border-teal-200';
+                      case 'sports_and_recreation': return 'from-blue-50 to-cyan-50 border-blue-200';
+                      case 'camping': return 'from-orange-50 to-amber-50 border-orange-200';
+                      case 'parks': return 'from-lime-50 to-green-50 border-lime-200';
+                      default: return 'from-gray-50 to-slate-50 border-gray-200';
+                    }
+                  };
+
+                  const getCategoryEmoji = (cat: string) => {
+                    const emojiMap: Record<string, string> = {
+                      hiking: '🥾', nature_and_outdoors: '🌲', sports_and_recreation: '⚽',
+                      camping: '⛺', parks: '🌳', trails: '🥾', biking: '🚴',
+                      water_sports: '🏄', adventure: '🧗', wildlife: '🦌', other: '🏞️'
+                    };
+                    return emojiMap[cat] || '🏞️';
+                  };
+
+                  const score = activity.score || 0;
+                  let stokedText = "";
+                  let stokedColor = "";
+                  if (score >= 280) {
+                    stokedText = "You'll love it";
+                    stokedColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+                  } else if (score >= 220) {
+                    stokedText = "You'll like it";
+                    stokedColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+                  } else if (score >= 180) {
+                    stokedText = "You should like it";
+                    stokedColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+                  } else if (score >= 140) {
+                    stokedText = "Give it a shot!";
+                    stokedColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+                  }
+
+                  return (
+                    <div
+                      key={activity.id || activity.activityId}
+                      className={`bg-gradient-to-r ${getCategoryGradient(category)} border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="text-3xl flex-shrink-0">
+                          {getCategoryEmoji(category)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-3 mb-1.5">
+                            <h4 className="font-bold text-base text-navy-text line-clamp-2 flex-1 leading-snug">
+                              {activity.name}
+                            </h4>
+                            <span className="text-sm text-gray-600 whitespace-nowrap font-medium">
+                              {activity.distance?.toFixed(1)} mi
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-gray-700 mb-2 flex-wrap">
+                            <span className="capitalize text-gray-600 font-medium">
+                              {category.replace(/_/g, ' ')}
+                            </span>
+                            {activity.rating && (
+                              <span className="flex items-center gap-1 font-medium">
+                                ⭐ {activity.rating.toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                          {stokedText && (
+                            <div className={`${stokedColor} text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide inline-block shadow-sm`}>
+                              {stokedText}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {offGridActivities.length > 20 && (
+              <p className="text-center text-xs text-gray-500 mt-2">
+                Showing top 20 of {offGridActivities.length} activities • Switch to List view for full details
+              </p>
+            )}
           </div>
         ) : (
           <>

@@ -1248,6 +1248,7 @@ function App() {
                 {viewMode === 'offgrid' && (
                   <OffGridView
                     activities={activities}
+                    userLocation={activeLocation}
                     onLocationSearch={async (cityName) => {
                       try {
                         const { getFunctions, httpsCallable } = await import('firebase/functions');
