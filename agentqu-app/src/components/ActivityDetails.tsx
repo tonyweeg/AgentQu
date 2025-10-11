@@ -275,47 +275,60 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* AI Score Breakdown */}
+              {/* Why you'll like it */}
               {score > 0 && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
                   <h3 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
-                    <span className="text-2xl">🎯</span>
-                    Why Q{score}?
+                    <span className="text-2xl">💭</span>
+                    Why we think you'll like it
                   </h3>
-                  <div className="space-y-2">
-                    {activity.distance && (
-                      <div className="flex items-center justify-between text-white">
-                        <span className="text-sm">
-                          📍 {activity.distance <= 1 ? 'Very close' : activity.distance <= 3 ? 'Nearby' : 'Reachable'}
-                        </span>
-                        <span className="text-sm font-bold">
-                          {activity.distance <= 1 ? '+30' : activity.distance <= 3 ? '+20' : '+10'} pts
-                        </span>
-                      </div>
-                    )}
-                    {activity.rating && (
-                      <div className="flex items-center justify-between text-white">
-                        <span className="text-sm">⭐ Highly rated ({activity.rating.toFixed(1)}/5)</span>
-                        <span className="text-sm font-bold">+{Math.round((activity.rating / 5) * 20)} pts</span>
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between text-white">
-                      <span className="text-sm">❤️ Matches your interests</span>
-                      <span className="text-sm font-bold">Up to +40 pts</span>
-                    </div>
-                    {activity.cost?.free && (
-                      <div className="flex items-center justify-between text-white">
-                        <span className="text-sm">🎁 Free activity</span>
-                        <span className="text-sm font-bold">+5 pts</span>
-                      </div>
-                    )}
-                    {activity.openNow && (
-                      <div className="flex items-center justify-between text-white">
-                        <span className="text-sm">🟢 Open now</span>
-                        <span className="text-sm font-bold">+10 pts</span>
-                      </div>
-                    )}
-                  </div>
+                  <p className="text-white text-base leading-relaxed">
+                    {(() => {
+                      const reasons = [];
+                      const categoryName = category.replace(/_/g, ' ');
+
+                      // Distance-based reason
+                      if (activity.distance && activity.distance <= 1) {
+                        reasons.push("it's super close to you");
+                      } else if (activity.distance && activity.distance <= 3) {
+                        reasons.push("it's nearby");
+                      }
+
+                      // Rating-based reason
+                      if (activity.rating && activity.rating >= 4.5) {
+                        reasons.push("people absolutely love it");
+                      } else if (activity.rating && activity.rating >= 4.0) {
+                        reasons.push("it's highly rated");
+                      }
+
+                      // Category match reason
+                      if (signalBars >= 4) {
+                        reasons.push(`it matches your passion for ${categoryName}`);
+                      } else if (signalBars >= 2) {
+                        reasons.push(`it aligns with your interest in ${categoryName}`);
+                      }
+
+                      // Special perks
+                      if (activity.cost?.free) {
+                        reasons.push("it's free");
+                      }
+                      if (activity.openNow) {
+                        reasons.push("you can check it out right now");
+                      }
+
+                      // Construct friendly message
+                      if (reasons.length === 0) {
+                        return `This ${categoryName} spot caught our attention for you - seems like something you'd enjoy!`;
+                      } else if (reasons.length === 1) {
+                        return `We picked this because ${reasons[0]}. Sounds like your kind of place!`;
+                      } else if (reasons.length === 2) {
+                        return `We think you'll really enjoy this - ${reasons[0]} and ${reasons[1]}!`;
+                      } else {
+                        const lastReason = reasons.pop();
+                        return `This one checks a lot of boxes for you: ${reasons.join(', ')}, and ${lastReason}. Worth a visit!`;
+                      }
+                    })()}
+                  </p>
                 </div>
               )}
 
