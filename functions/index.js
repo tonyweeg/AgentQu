@@ -720,8 +720,9 @@ async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
     console.log(`🎫 TICKETMASTER: Searching events within ${radiusMiles} miles of ${lat},${lng}`);
 
     // Get current date in ISO format for filtering future events only
+    // Ticketmaster requires YYYY-MM-DDTHH:mm:ssZ (no milliseconds)
     const now = new Date();
-    const startDateTime = now.toISOString();
+    const startDateTime = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
     console.log(`🎫 TICKETMASTER: Today is ${now.toLocaleDateString()}, filtering events after ${startDateTime}`);
 
     const response = await axios.get(`https://app.ticketmaster.com/discovery/v2/events.json`, {
