@@ -1404,7 +1404,7 @@ function App() {
 
                           {/* Places Grid - Cards */}
                           {sortedPlaces.length > 0 && (
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-12">
                               {sortedPlaces.map((activity, index) => (
                                 <ActivityCard
                                   key={activity.id || activity.activityId}
@@ -1478,7 +1478,7 @@ function App() {
                                             ({genreEvents.length} event{genreEvents.length !== 1 ? 's' : ''})
                                           </span>
                                         </h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                                           {topEvents.map((event, index) => (
                                             <ActivityCard
                                               key={event.id || event.activityId}
