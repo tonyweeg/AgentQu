@@ -165,9 +165,15 @@ function App() {
       is250kw
     };
   }).sort((a, b) => {
-    // Sort by priority first, then Q score
+    // Tesla superchargers take absolute precedence
+    if (a.isTesla && !b.isTesla) return -1;
+    if (!a.isTesla && b.isTesla) return 1;
+
+    // Then other priorities (Wawa, 250kW+)
     if (a.isPriority && !b.isPriority) return -1;
     if (!a.isPriority && b.isPriority) return 1;
+
+    // Within same priority level, sort by Q score
     return b.qScore - a.qScore;
   });
 

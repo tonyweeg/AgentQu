@@ -432,8 +432,8 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
           );
         })}
 
-        {/* EV Charging Station markers - only show in EV mode */}
-        {!compact && evMode && evStations.map((station, index) => {
+        {/* EV Charging Station markers - only show top 3 in EV mode */}
+        {!compact && evMode && top3EVStations.map((station, index) => {
           const lat = station.location?.lat;
           const lng = station.location?.lng;
 
@@ -454,64 +454,53 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
           return (
             <Marker key={station.id} position={[lat, lng]} icon={stationIcon}>
               <Popup>
-                <div style={{ minWidth: '250px', padding: '8px' }}>
+                <div style={{ minWidth: '180px', padding: '6px' }}>
                   <h3 style={{
-                    fontSize: '18px',
+                    fontSize: '13px',
                     fontWeight: 'bold',
-                    marginBottom: '12px',
+                    marginBottom: '6px',
                     color: '#1f2937',
-                    lineHeight: '1.3'
+                    lineHeight: '1.2'
                   }}>
                     {station.name}
                   </h3>
 
-                  {station.address && (
-                    <p style={{
-                      fontSize: '13px',
-                      color: '#6b7280',
-                      marginBottom: '8px',
-                      fontWeight: '400'
-                    }}>
-                      {station.address}
-                    </p>
-                  )}
-
                   {station.distance && (
                     <p style={{
-                      fontSize: '14px',
+                      fontSize: '11px',
                       color: '#4b5563',
-                      marginBottom: '8px',
+                      marginBottom: '4px',
                       fontWeight: '500'
                     }}>
-                      📍 {station.distance.toFixed(1)} miles away
+                      📍 {station.distance.toFixed(1)} mi
                     </p>
                   )}
 
                   {station.qScore && (
                     <p style={{
-                      fontSize: '16px',
+                      fontSize: '12px',
                       fontWeight: '700',
                       color: '#10b981',
-                      marginBottom: '8px',
+                      marginBottom: '4px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '4px'
+                      gap: '3px'
                     }}>
                       <span>⚡</span>
-                      <span>Q Score: {station.qScore}</span>
+                      <span>Q{station.qScore}</span>
                     </p>
                   )}
 
                   {station.isPriority && (
                     <p style={{
-                      fontSize: '12px',
+                      fontSize: '10px',
                       fontWeight: '600',
                       color: '#f59e0b',
-                      marginBottom: '12px',
+                      marginBottom: '6px',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0.3px'
                     }}>
-                      {station.isTesla ? '⚡ Tesla Supercharger' : station.isWawa ? '⚡ Wawa Fast Charge' : '⚡ High-Power Charging'}
+                      {station.isTesla ? '⚡ Tesla' : station.isWawa ? '⚡ Wawa' : '⚡ Fast'}
                     </p>
                   )}
 
@@ -523,15 +512,15 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: '4px',
                       background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                       color: 'white',
-                      padding: '12px 20px',
-                      borderRadius: '10px',
+                      padding: '6px 12px',
+                      borderRadius: '6px',
                       textDecoration: 'none',
-                      fontSize: '15px',
+                      fontSize: '11px',
                       fontWeight: '700',
-                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                      boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)',
                       transition: 'all 0.2s',
                       width: '100%',
                       justifyContent: 'center',
@@ -539,16 +528,16 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
                       cursor: 'pointer'
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.5)';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                      e.currentTarget.style.boxShadow = '0 4px 10px rgba(16, 185, 129, 0.4)';
                     }}
                     onMouseOut={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                      e.currentTarget.style.boxShadow = '0 2px 6px rgba(16, 185, 129, 0.3)';
                     }}
                   >
-                    <span style={{ fontSize: '20px' }}>🗺️</span>
-                    <span>Get Directions</span>
+                    <span style={{ fontSize: '14px' }}>🗺️</span>
+                    <span>Directions</span>
                   </a>
                 </div>
               </Popup>
