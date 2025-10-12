@@ -3,7 +3,6 @@ import { useAuth } from './hooks/useAuth';
 import { useLocation } from './hooks/useLocation';
 import { useDiscovery } from './hooks/useDiscovery';
 import { useReverseGeocode } from './hooks/useReverseGeocode';
-import { useTwitter } from './hooks/useTwitter';
 import AuthScreen from './components/AuthScreen';
 import OnboardingScreen from './components/OnboardingScreen';
 import ActivityCard from './components/ActivityCard';
@@ -22,7 +21,6 @@ import TermsOfService from './components/TermsOfService';
 import ContactUs from './components/ContactUs';
 import BiomeRenderer from './biomes/core/BiomeRenderer';
 import LocalFlavorColumn from './components/LocalFlavorColumn';
-import TwitterVibeModal from './components/TwitterVibeModal';
 import EVPanel from './components/EVPanel';
 import { DiscoveryFilters } from './lib/types';
 
@@ -45,7 +43,6 @@ function App() {
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showGeocaches, setShowGeocaches] = useState(false);
-  const [showTwitterModal, setShowTwitterModal] = useState(false);
   const [enablePlaces, setEnablePlaces] = useState(true);
   const [enableCustomSearch, setEnableCustomSearch] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -83,17 +80,6 @@ function App() {
     enablePlaces,
     enableCustomSearch,
     key: refreshKey
-  });
-
-  // Fetch Twitter content (only when user is onboarded)
-  const { tweets, loading: twitterLoading, error: twitterError } = useTwitter({
-    location: profile?.onboarded ? activeLocation : null,
-    userId: user?.uid || null,
-    affinities: profile?.affinities || {},
-    radius: radius,
-    enabled: true,
-    cityName: city || undefined,
-    stateName: state || undefined
   });
 
   // Request location when user completes onboarding
@@ -582,12 +568,6 @@ function App() {
                 ✉️ Contact
               </a>
               <button
-                onClick={() => setShowTwitterModal(true)}
-                className="text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
-              >
-                🐦 Local Buzz
-              </button>
-              <button
                 onClick={() => setShowSettings(true)}
                 className="text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
               >
@@ -752,17 +732,6 @@ function App() {
                   <span>{geocaches.length} Geocache{geocaches.length !== 1 ? 's' : ''}</span>
                 </button>
               )}
-
-              {/* Twitter/Local Buzz */}
-              <button
-                onClick={() => {
-                  setShowTwitterModal(true);
-                  setShowMobileMenu(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:text-ocean-bright transition-colors font-medium"
-              >
-                🐦 Local Buzz
-              </button>
 
               {/* Settings */}
               <button
@@ -1622,18 +1591,6 @@ function App() {
       {/* Geocache View Modal */}
       {showGeocaches && (
         <GeocacheView geocaches={geocaches} onClose={() => setShowGeocaches(false)} />
-      )}
-
-      {/* Twitter Vibe Modal */}
-      {showTwitterModal && (
-        <TwitterVibeModal
-          events={tweets?.events || []}
-          loading={twitterLoading}
-          error={twitterError}
-          vibe={tweets?.vibe}
-          rateLimit={tweets?.rateLimit}
-          onClose={() => setShowTwitterModal(false)}
-        />
       )}
 
       {/* Footer */}
