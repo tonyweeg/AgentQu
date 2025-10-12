@@ -57,6 +57,8 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [offgridViewMode, setOffgridViewMode] = useState<'list' | 'map'>('list');
+  const [showEVPanel, setShowEVPanel] = useState(false);
+  const [showEVMap, setShowEVMap] = useState(false);
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -138,6 +140,39 @@ function App() {
 
   // Filter geocaches from activities
   const geocaches = activities.filter((activity) => activity.type === 'cache');
+
+  // Calculate Q scores for charging stations (for EV map mode)
+  const evStationsWithQScores = chargingStations.map(station => {
+    const name = station.name.toLowerCase();
+
+    // Priority detection
+    const isWawa = name.includes('wawa');
+    const isTesla = name.includes('tesla');
+    const is250kw = name.includes('250') || name.includes('350');
+    const isPriority = isWawa || isTesla || is250kw;
+
+    // Q Score calculation
+    let qScore = 100; // Base
+    if (isPriority) qScore += 40; // Priority bonus
+    qScore += Math.max(0, 30 - (station.distance * 2)); // Distance score (closer = higher)
+
+    return {
+      ...station,
+      qScore: Math.round(qScore),
+      isPriority,
+      isWawa,
+      isTesla,
+      is250kw
+    };
+  }).sort((a, b) => {
+    // Sort by priority first, then Q score
+    if (a.isPriority && !b.isPriority) return -1;
+    if (!a.isPriority && b.isPriority) return 1;
+    return b.qScore - a.qScore;
+  });
+
+  // Top 3 EV stations for map display
+  const top3EVStations = evStationsWithQScores.slice(0, 3);
 
   // Handle map drag to search new location
   const handleMapLocationChange = (lat: number, lng: number) => {
@@ -779,43 +814,63 @@ function App() {
                 </span>
               </button>
 
-              {/* View Mode Toggle - Next to drawer button */}
+              {/* View Mode Toggle - Pill style with text */}
               {(viewMode === 'list' || viewMode === 'map' || viewMode === 'offgrid') && (
-                <div className="flex bg-gray-100 rounded-lg p-0.5">
-                  <button
-                    onClick={() => {
-                      if (viewMode === 'offgrid') {
-                        setOffgridViewMode('list');
-                      } else {
-                        setViewMode('list');
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded-md text-base transition-all ${
-                      (viewMode === 'list') || (viewMode === 'offgrid' && offgridViewMode === 'list')
-                        ? 'bg-white text-ocean-bright shadow-sm'
-                        : 'text-gray-600'
-                    }`}
-                    title="List View"
-                  >
-                    📋
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (viewMode === 'offgrid') {
-                        setOffgridViewMode('map');
-                      } else {
-                        setViewMode('map');
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded-md text-base transition-all ${
-                      (viewMode === 'map') || (viewMode === 'offgrid' && offgridViewMode === 'map')
-                        ? 'bg-white text-ocean-bright shadow-sm'
-                        : 'text-gray-600'
-                    }`}
-                    title="Map View"
-                  >
-                    🗺️
-                  </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex bg-white/80 backdrop-blur-sm rounded-full p-1 border border-gray-200 shadow-sm">
+                    <button
+                      onClick={() => {
+                        if (viewMode === 'offgrid') {
+                          setOffgridViewMode('list');
+                        } else {
+                          setViewMode('list');
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        (viewMode === 'list') || (viewMode === 'offgrid' && offgridViewMode === 'list')
+                          ? 'bg-ocean-bright text-white shadow-md'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <span className="text-base">📋</span>
+                      <span>List</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (viewMode === 'offgrid') {
+                          setOffgridViewMode('map');
+                        } else {
+                          setViewMode('map');
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        (viewMode === 'map') || (viewMode === 'offgrid' && offgridViewMode === 'map')
+                          ? 'bg-ocean-bright text-white shadow-md'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <span className="text-base">🗺️</span>
+                      <span>Map</span>
+                    </button>
+                  </div>
+
+                  {/* EV Charging Button - Only show for EV owners with stations */}
+                  {profile?.isEV && chargingStations && chargingStations.length > 0 && (
+                    <button
+                      onClick={() => setShowEVPanel(!showEVPanel)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm ${
+                        showEVPanel
+                          ? 'bg-green-600 text-white shadow-md border-green-700'
+                          : 'bg-white/80 text-gray-700 hover:bg-green-50 border-gray-200'
+                      }`}
+                    >
+                      <span className="text-base">⚡</span>
+                      <span>Charging</span>
+                      <span className="text-xs bg-white/30 px-1.5 py-0.5 rounded-full">
+                        {chargingStations.length}
+                      </span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -1084,6 +1139,18 @@ function App() {
         </div>
       </div>
 
+      {/* EV Charging Panel - Collapsible Tray */}
+      {profile?.isEV && activeLocation && showEVPanel && (
+        <EVPanel
+          stations={chargingStations}
+          userLocation={activeLocation}
+          onViewAllMap={() => {
+            setViewMode('map');
+            setShowEVPanel(false);
+            setShowEVMap(true);
+          }}
+        />
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
@@ -1122,15 +1189,29 @@ function App() {
                 {/* Map View with Compact List */}
                 {viewMode === 'map' && (
                   <div className="space-y-4">
+                    {/* Back to Activities Button (EV mode only) */}
+                    {showEVMap && (
+                      <button
+                        onClick={() => setShowEVMap(false)}
+                        className="flex items-center gap-2 bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 transition-colors shadow-sm"
+                      >
+                        <span>←</span>
+                        <span>Back to Activities</span>
+                      </button>
+                    )}
+
                     {/* Map */}
                     <ActivityMap
                       activities={activities}
                       userLocation={activeLocation}
                       onLocationChange={handleMapLocationChange}
+                      evMode={showEVMap}
+                      evStations={evStationsWithQScores}
+                      top3EVStations={top3EVStations}
                     />
 
-                    {/* Compact Activity List - Tufte Style */}
-                    <div className="space-y-2">
+                    {/* Compact Activity List - Tufte Style (hide in EV mode) */}
+                    {!showEVMap && <div className="space-y-2">
                       {/* Sort events first, then by score and show top 20 */}
                       {activities
                         .sort((a, b) => {
@@ -1248,13 +1329,13 @@ function App() {
                             </div>
                           );
                         })}
-                    </div>
 
                     {activities.length > 20 && (
                       <p className="text-center text-xs text-gray-500 mt-2">
                         Showing top 20 of {activities.length} activities • Switch to List view for full details
                       </p>
                     )}
+                    </div>}
                   </div>
                 )}
 
@@ -1528,14 +1609,6 @@ function App() {
           </>
         )}
       </main>
-
-      {/* EV Charging Panel - Fixed Right Side */}
-      {profile?.isEV && activeLocation && (
-        <EVPanel
-          stations={chargingStations}
-          userLocation={activeLocation}
-        />
-      )}
 
       {/* Settings Modal */}
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}

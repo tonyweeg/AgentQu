@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface ChargingStation {
   id: string;
@@ -16,117 +16,123 @@ interface ChargingStation {
 interface EVPanelProps {
   stations: ChargingStation[];
   userLocation?: { lat: number; lng: number } | null;
+  onViewAllMap?: () => void;
 }
 
-const EVPanel: React.FC<EVPanelProps> = ({ stations, userLocation }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
+const EVPanel: React.FC<EVPanelProps> = ({ stations, userLocation, onViewAllMap }) => {
   if (!stations || stations.length === 0) {
-    return null; // Don't show panel if no stations
+    return null;
   }
 
+  // Extract charger type and landmark from station name
+  const parseStation = (station: ChargingStation) => {
+    const name = station.name;
+    const address = station.address;
+
+    // Check for priority stations
+    const isWawa = name.toLowerCase().includes('wawa');
+    const isTesla = name.toLowerCase().includes('tesla');
+    const is250kw = name.toLowerCase().includes('250') || name.toLowerCase().includes('350');
+
+    // Extract type (Supercharger, DC Fast, Level 2, etc.)
+    let type = 'L2';
+    if (name.toLowerCase().includes('supercharger') || name.toLowerCase().includes('dc fast')) {
+      type = 'DC Fast';
+    }
+    if (is250kw) {
+      type = '250kW+';
+    }
+    if (isTesla) {
+      type = 'Tesla SC';
+    }
+
+    // Extract landmark (first part of address or business name)
+    let landmark = name.split('-')[0].trim();
+    if (landmark.length > 30) {
+      landmark = address.split(',')[0].trim();
+    }
+
+    return {
+      ...station,
+      type,
+      landmark,
+      isPriority: isWawa || is250kw || isTesla,
+      isWawa,
+      isTesla
+    };
+  };
+
+  // Parse and sort: Priority first (Wawa, 250kw, Tesla), then by distance
+  const sortedStations = stations
+    .map(parseStation)
+    .sort((a, b) => {
+      if (a.isPriority && !b.isPriority) return -1;
+      if (!a.isPriority && b.isPriority) return 1;
+      return a.distance - b.distance;
+    });
+
+  // Show only top 3 closest
+  const topStations = sortedStations.slice(0, 3);
+  const hasMore = sortedStations.length > 3;
+
   return (
-    <div
-      className={`fixed right-0 top-20 bottom-0 bg-gradient-to-b from-green-50 to-emerald-100 border-l-4 border-green-500 shadow-2xl transition-all duration-300 overflow-hidden z-40 ${
-        isExpanded ? 'w-80' : 'w-16'
-      }`}
-    >
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute top-4 left-0 w-16 h-16 flex items-center justify-center bg-green-600 hover:bg-green-700 text-white rounded-l-xl shadow-lg transition-colors"
-        title={isExpanded ? 'Collapse EV Panel' : 'Expand EV Panel'}
-      >
-        {isExpanded ? (
-          <span className="text-2xl">→</span>
-        ) : (
-          <span className="text-3xl">⚡</span>
-        )}
-      </button>
-
-      {/* Panel Content */}
-      {isExpanded && (
-        <div className="mt-24 px-4 pb-4 h-full overflow-y-auto">
-          {/* Header */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-3xl">⚡</span>
-              <h3 className="text-xl font-bold text-green-900">Charging Stations</h3>
-            </div>
-            <p className="text-sm text-green-700">
-              {stations.length} station{stations.length !== 1 ? 's' : ''} nearby
-            </p>
-          </div>
-
-          {/* Station List */}
-          <div className="space-y-3">
-            {stations
-              .sort((a, b) => (a.distance || 0) - (b.distance || 0))
-              .map((station) => (
-                <div
-                  key={station.id}
-                  className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow border border-green-200"
-                >
-                  {/* Station Name */}
-                  <div className="flex items-start justify-between mb-2">
-                    <h4 className="font-bold text-navy-text text-sm line-clamp-2 flex-1">
-                      {station.name}
-                    </h4>
-                    <span className="text-xs text-green-600 font-bold whitespace-nowrap ml-2">
-                      {station.distance?.toFixed(1)} mi
+    <div className="w-full bg-white/75 border-b border-gray-300 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        {/* Tufte-style Table */}
+        <div className="space-y-1">
+          {topStations.map((station, idx) => (
+            <a
+              key={station.id}
+              href={`https://www.google.com/maps/dir/?api=1&destination=${station.location.lat},${station.location.lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block hover:bg-black/5 transition-colors py-1.5 px-2 rounded"
+            >
+              <div className="flex items-center justify-between gap-3">
+                {/* Left: Priority badge + Landmark */}
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {/* Priority indicator */}
+                  {station.isPriority && (
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+                      station.isTesla ? 'bg-red-100 text-red-700' :
+                      station.isWawa ? 'bg-blue-100 text-blue-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {station.isTesla ? 'TESLA' : station.isWawa ? 'WAWA' : '250KW'}
                     </span>
-                  </div>
-
-                  {/* Address */}
-                  <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                    {station.address}
-                  </p>
-
-                  {/* Rating & Status */}
-                  <div className="flex items-center gap-2 text-xs">
-                    {station.rating && (
-                      <span className="flex items-center gap-1 text-yellow-600 font-medium">
-                        ⭐ {station.rating.toFixed(1)}
-                      </span>
-                    )}
-                    {station.openNow !== undefined && (
-                      <span
-                        className={`px-2 py-0.5 rounded-full font-bold ${
-                          station.openNow
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}
-                      >
-                        {station.openNow ? 'Open' : 'Closed'}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Directions Link */}
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${station.location.lat},${station.location.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 block w-full text-center bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2 rounded-lg transition-colors"
-                  >
-                    Get Directions →
-                  </a>
+                  )}
+                  <span className="text-sm text-gray-900 font-medium truncate">
+                    {station.landmark}
+                  </span>
                 </div>
-              ))}
-          </div>
-        </div>
-      )}
 
-      {/* Collapsed View - Vertical Text */}
-      {!isExpanded && (
-        <div className="absolute top-24 left-4 transform -rotate-90 origin-left whitespace-nowrap">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-green-700">
-              {stations.length} Chargers
-            </span>
-          </div>
+                {/* Middle: Type */}
+                <span className="text-xs text-gray-600 font-mono whitespace-nowrap">
+                  {station.type}
+                </span>
+
+                {/* Right: Distance + Arrow */}
+                <div className="flex items-center gap-1.5 text-xs text-gray-700 font-bold">
+                  <span>{station.distance.toFixed(1)} mi</span>
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </div>
+              </div>
+            </a>
+          ))}
         </div>
-      )}
+
+        {/* View All link */}
+        {hasMore && (
+          <div className="mt-2 pt-2 border-t border-gray-300">
+            <button
+              onClick={onViewAllMap}
+              className="text-xs text-gray-600 hover:text-ocean-bright font-medium transition-colors"
+            >
+              + {sortedStations.length - 3} more stations • View All on Map →
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -43,11 +43,80 @@ const userIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
+// EV Charging icon (green charging bolt)
+const createEVIcon = () => {
+  const svgIcon = `
+    <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+      <!-- Pushpin shape -->
+      <path d="M16 0C9.373 0 4 5.373 4 12c0 8.5 12 26 12 26s12-17.5 12-26c0-6.627-5.373-12-12-12z"
+            fill="#10b981"
+            stroke="black"
+            stroke-width="2"/>
+      <!-- Charging bolt -->
+      <text x="16" y="16"
+            font-size="16"
+            fill="white"
+            text-anchor="middle"
+            dominant-baseline="middle">⚡</text>
+    </svg>
+  `;
+
+  return L.divIcon({
+    html: svgIcon,
+    className: 'custom-ev-icon',
+    iconSize: [32, 42],
+    iconAnchor: [16, 42],
+    popupAnchor: [0, -42],
+  });
+};
+
+// EV Charging icon with Q score badge (for top 3)
+const createEVQIcon = (qScore: number) => {
+  const svgIcon = `
+    <svg width="48" height="52" viewBox="0 0 48 52" xmlns="http://www.w3.org/2000/svg">
+      <!-- Pushpin shape -->
+      <path d="M24 0C17.373 0 12 5.373 12 12c0 8.5 12 26 12 26s12-17.5 12-26c0-6.627-5.373-12-12-12z"
+            fill="#10b981"
+            stroke="black"
+            stroke-width="2"/>
+      <!-- Charging bolt -->
+      <text x="24" y="16"
+            font-size="16"
+            fill="white"
+            font-weight="bold"
+            text-anchor="middle"
+            dominant-baseline="middle">⚡</text>
+      <!-- Q Score Badge -->
+      <rect x="28" y="-4" width="20" height="16" rx="8" fill="#f59e0b" stroke="black" stroke-width="1.5"/>
+      <text x="38" y="4"
+            font-family="Arial, sans-serif"
+            font-size="10"
+            font-weight="bold"
+            fill="white"
+            text-anchor="middle"
+            dominant-baseline="middle">Q${qScore}</text>
+    </svg>
+  `;
+
+  return L.divIcon({
+    html: svgIcon,
+    className: 'custom-ev-q-icon',
+    iconSize: [48, 52],
+    iconAnchor: [24, 42],
+    popupAnchor: [0, -42],
+  });
+};
+
+const evIcon = createEVIcon();
+
 interface ActivityMapProps {
   activities: Activity[];
   userLocation: Location | null;
   onLocationChange?: (lat: number, lng: number) => void;
   compact?: boolean;
+  evMode?: boolean;
+  evStations?: any[];
+  top3EVStations?: any[];
 }
 
 // Component to handle map drag events with manual search button
@@ -141,30 +210,30 @@ function MapUpdater({ center, compact }: { center: [number, number], compact: bo
   return null;
 }
 
-// Component to auto-zoom to fit all activity markers
-function AutoZoomToMarkers({ activities, userLocation }: { activities: Activity[], userLocation: Location }) {
+// Component to auto-zoom to fit all activity markers or EV stations
+function AutoZoomToMarkers({ items, userLocation }: { items: any[], userLocation: Location }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!activities || activities.length === 0) {
+    if (!items || items.length === 0) {
       return;
     }
 
-    // Get all valid activity coordinates
-    const activityCoords = activities
-      .map(activity => {
-        const lat = activity.location?.lat || activity.lat;
-        const lng = activity.location?.lng || activity.lng;
+    // Get all valid coordinates (works for activities or EV stations)
+    const itemCoords = items
+      .map(item => {
+        const lat = item.location?.lat || item.lat;
+        const lng = item.location?.lng || item.lng;
         return lat && lng ? [lat, lng] as [number, number] : null;
       })
       .filter((coord): coord is [number, number] => coord !== null);
 
-    if (activityCoords.length === 0) {
+    if (itemCoords.length === 0) {
       return;
     }
 
     // Include user location in bounds
-    const allCoords = [[userLocation.lat, userLocation.lng], ...activityCoords];
+    const allCoords = [[userLocation.lat, userLocation.lng], ...itemCoords];
 
     // Calculate bounds
     const bounds = allCoords.reduce(
@@ -181,16 +250,26 @@ function AutoZoomToMarkers({ activities, userLocation }: { activities: Activity[
     setTimeout(() => {
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
     }, 200);
-  }, [activities, userLocation, map]);
+  }, [items, userLocation, map]);
 
   return null;
 }
 
-const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onLocationChange, compact = false }) => {
-  console.log('🗺️ MAP_DEBUG: ActivityMap rendering with', activities.length, 'activities');
+const ActivityMap: React.FC<ActivityMapProps> = ({
+  activities,
+  userLocation,
+  onLocationChange,
+  compact = false,
+  evMode = false,
+  evStations = [],
+  top3EVStations = []
+}) => {
+  console.log('🗺️ MAP_DEBUG: ActivityMap rendering');
+  console.log('🗺️ MAP_DEBUG: EV mode:', evMode);
+  console.log('🗺️ MAP_DEBUG: Activities:', activities.length);
+  console.log('🗺️ MAP_DEBUG: EV stations:', evStations.length);
+  console.log('🗺️ MAP_DEBUG: Top 3 EV stations:', top3EVStations.length);
   console.log('🗺️ MAP_DEBUG: onLocationChange callback provided:', !!onLocationChange);
-  console.log('🗺️ MAP_DEBUG: Q icon created:', !!qIcon);
-  console.log('🗺️ MAP_DEBUG: User icon created:', !!userIcon);
   console.log('🗺️ MAP_DEBUG: Compact mode:', compact);
 
   if (!userLocation) {
@@ -218,7 +297,7 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
         touchZoom={!compact}
       >
         <MapUpdater center={center} compact={compact} />
-        {!compact && <AutoZoomToMarkers activities={activities} userLocation={userLocation} />}
+        {!compact && <AutoZoomToMarkers items={evMode ? evStations : activities} userLocation={userLocation} />}
         {!compact && <MapDragHandler onLocationChange={onLocationChange} />}
 
         {/* Map tiles */}
@@ -238,8 +317,8 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
           )}
         </Marker>
 
-        {/* Activity markers with custom Q icon - only show in full mode */}
-        {!compact && activities.map((activity, index) => {
+        {/* Activity markers with custom Q icon - only show in full mode and NOT in EV mode */}
+        {!compact && !evMode && activities.map((activity, index) => {
           const lat = activity.location?.lat || activity.lat;
           const lng = activity.location?.lng || activity.lng;
 
@@ -335,6 +414,130 @@ const ActivityMap: React.FC<ActivityMapProps> = ({ activities, userLocation, onL
                   >
                     <span style={{ fontSize: '20px' }}>🗺️</span>
                     <span>Open in Google Maps</span>
+                  </a>
+                </div>
+              </Popup>
+            </Marker>
+          );
+        })}
+
+        {/* EV Charging Station markers - only show in EV mode */}
+        {!compact && evMode && evStations.map((station, index) => {
+          const lat = station.location?.lat;
+          const lng = station.location?.lng;
+
+          console.log(`⚡ EV_MAP_DEBUG: Station ${index} - ${station.name}:`, { lat, lng, qScore: station.qScore });
+
+          if (!lat || !lng) {
+            console.log(`⚡ EV_MAP_DEBUG: Skipping station ${index} - no coordinates`);
+            return null;
+          }
+
+          // Check if this station is in the top 3
+          const isTop3 = top3EVStations.some(top => top.id === station.id);
+          const stationIcon = isTop3 ? createEVQIcon(station.qScore) : evIcon;
+
+          // Google Maps link
+          const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+
+          return (
+            <Marker key={station.id} position={[lat, lng]} icon={stationIcon}>
+              <Popup>
+                <div style={{ minWidth: '250px', padding: '8px' }}>
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    marginBottom: '12px',
+                    color: '#1f2937',
+                    lineHeight: '1.3'
+                  }}>
+                    {station.name}
+                  </h3>
+
+                  {station.address && (
+                    <p style={{
+                      fontSize: '13px',
+                      color: '#6b7280',
+                      marginBottom: '8px',
+                      fontWeight: '400'
+                    }}>
+                      {station.address}
+                    </p>
+                  )}
+
+                  {station.distance && (
+                    <p style={{
+                      fontSize: '14px',
+                      color: '#4b5563',
+                      marginBottom: '8px',
+                      fontWeight: '500'
+                    }}>
+                      📍 {station.distance.toFixed(1)} miles away
+                    </p>
+                  )}
+
+                  {station.qScore && (
+                    <p style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#10b981',
+                      marginBottom: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span>⚡</span>
+                      <span>Q Score: {station.qScore}</span>
+                    </p>
+                  )}
+
+                  {station.isPriority && (
+                    <p style={{
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#f59e0b',
+                      marginBottom: '12px',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px'
+                    }}>
+                      {station.isTesla ? '⚡ Tesla Supercharger' : station.isWawa ? '⚡ Wawa Fast Charge' : '⚡ High-Power Charging'}
+                    </p>
+                  )}
+
+                  {/* Google Maps Directions Link */}
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      color: 'white',
+                      padding: '12px 20px',
+                      borderRadius: '10px',
+                      textDecoration: 'none',
+                      fontSize: '15px',
+                      fontWeight: '700',
+                      boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                      transition: 'all 0.2s',
+                      width: '100%',
+                      justifyContent: 'center',
+                      border: 'none',
+                      cursor: 'pointer'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.5)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.4)';
+                    }}
+                  >
+                    <span style={{ fontSize: '20px' }}>🗺️</span>
+                    <span>Get Directions</span>
                   </a>
                 </div>
               </Popup>
