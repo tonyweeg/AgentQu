@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Activity } from '../lib/types';
 import ActivityDetails from './ActivityDetails';
+import { useAuth } from '../hooks/useAuth';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -9,11 +10,17 @@ interface ActivityCardProps {
 }
 
 const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivities }) => {
+  const { profile } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
   const [detailsIndex, setDetailsIndex] = useState(index);
 
   const category = activity.primaryCategory || 'other';
   const score = activity.score || 0;
+
+  // Check if this place has been visited
+  const isVisited = profile?.visitedPlaces?.some(
+    p => p.activityId === (activity.id || activity.activityId)
+  );
 
   const getCategoryEmoji = () => {
     switch (category) {
@@ -128,6 +135,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
             {activity.distance?.toFixed(1)} mi
           </span>
         </div>
+
+        {/* Visited badge - below distance */}
+        {isVisited && (
+          <div className="absolute top-12 right-3 bg-green-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full shadow-lg">
+            <span className="text-xs font-bold">✓ Visited</span>
+          </div>
+        )}
 
         {/* Off-Grid Icon - Bottom Left corner of image */}
         {isOffGrid && (

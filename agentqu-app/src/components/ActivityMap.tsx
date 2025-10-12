@@ -113,6 +113,7 @@ interface ActivityMapProps {
   activities: Activity[];
   userLocation: Location | null;
   onLocationChange?: (lat: number, lng: number) => void;
+  onMarkerClick?: (activity: Activity) => void;
   compact?: boolean;
   evMode?: boolean;
   evStations?: any[];
@@ -349,6 +350,7 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
   activities,
   userLocation,
   onLocationChange,
+  onMarkerClick,
   compact = false,
   evMode = false,
   evStations = [],
@@ -423,91 +425,19 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
           const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
           return (
-            <Marker key={activity.id || activity.activityId} position={[lat, lng]} icon={qIcon}>
-              <Popup>
-                <div style={{ minWidth: '250px', padding: '8px' }}>
-                  <h3 style={{
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    marginBottom: '12px',
-                    color: '#1f2937',
-                    lineHeight: '1.3'
-                  }}>
-                    {activity.name}
-                  </h3>
-
-                  {activity.distance && (
-                    <p style={{
-                      fontSize: '14px',
-                      color: '#4b5563',
-                      marginBottom: '8px',
-                      fontWeight: '500'
-                    }}>
-                      📍 {activity.distance.toFixed(1)} miles away
-                    </p>
-                  )}
-
-                  {activity.score && (
-                    <p style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#f97316',
-                      marginBottom: '8px'
-                    }}>
-                      Match Score: {activity.score}
-                    </p>
-                  )}
-
-                  {activity.primaryCategory && (
-                    <p style={{
-                      fontSize: '13px',
-                      color: '#6b7280',
-                      marginBottom: '16px',
-                      textTransform: 'capitalize',
-                      fontWeight: '500'
-                    }}>
-                      {activity.primaryCategory.replace(/_/g, ' ')}
-                    </p>
-                  )}
-
-                  {/* Google Maps Link */}
-                  <a
-                    href={googleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                      color: 'white',
-                      padding: '12px 20px',
-                      borderRadius: '10px',
-                      textDecoration: 'none',
-                      fontSize: '15px',
-                      fontWeight: '700',
-                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)',
-                      transition: 'all 0.2s',
-                      width: '100%',
-                      justifyContent: 'center',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.5)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.4)';
-                    }}
-                  >
-                    <span style={{ fontSize: '20px' }}>🗺️</span>
-                    <span>Open in Google Maps</span>
-                  </a>
-                </div>
-              </Popup>
-            </Marker>
+            <Marker
+              key={activity.id || activity.activityId}
+              position={[lat, lng]}
+              icon={qIcon}
+              eventHandlers={{
+                click: () => {
+                  console.log('🗺️ MAP_DEBUG: Marker clicked:', activity.name);
+                  if (onMarkerClick) {
+                    onMarkerClick(activity);
+                  }
+                }
+              }}
+            />
           );
         })}
 

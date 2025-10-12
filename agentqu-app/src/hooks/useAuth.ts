@@ -4,6 +4,19 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { getDefaultAffinities } from '../lib/affinityCategories';
 
+export interface VisitedPlace {
+  activityId: string;
+  name: string;
+  city?: string;
+  state?: string;
+  category: string;
+  visitedAt: number;
+  lat: number;
+  lng: number;
+  images?: string[];
+  rating?: number;
+}
+
 export interface UserProfile {
   uid: string;
   email: string | null;
@@ -13,6 +26,7 @@ export interface UserProfile {
   musicGenreAffinities?: Record<string, number>; // Music genre preferences (0-100)
   restaurantGenreAffinities?: Record<string, number>; // Restaurant genre preferences (0-100)
   isEV?: boolean; // Electric vehicle owner (unlocks eco-friendly visuals + supercharger locations)
+  visitedPlaces?: VisitedPlace[]; // Places the user has been to
   onboarded: boolean;
   createdAt: number;
   lastActive: number;
@@ -186,6 +200,77 @@ export function useAuth() {
     }
   };
 
+  const markAsVisited = async (place: VisitedPlace) => {
+    if (!user || !profile) return;
+
+    try {
+      const existingPlaces = profile.visitedPlaces || [];
+
+      // Check if already visited (don't duplicate)
+      const alreadyVisited = existingPlaces.some(
+        p => p.activityId === place.activityId
+      );
+
+      if (alreadyVisited) {
+        console.log('🗺️ Already marked as visited:', place.name);
+        return;
+      }
+
+      const updatedPlaces = [...existingPlaces, place];
+
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(
+        profileRef,
+        {
+          visitedPlaces: updatedPlaces,
+          lastActive: Date.now(),
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      setProfile({
+        ...profile,
+        visitedPlaces: updatedPlaces,
+      });
+
+      console.log('✅ Marked as visited:', place.name);
+    } catch (error) {
+      console.error('Error marking place as visited:', error);
+      throw error;
+    }
+  };
+
+  const removeVisitedPlace = async (activityId: string) => {
+    if (!user || !profile) return;
+
+    try {
+      const existingPlaces = profile.visitedPlaces || [];
+      const updatedPlaces = existingPlaces.filter(p => p.activityId !== activityId);
+
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(
+        profileRef,
+        {
+          visitedPlaces: updatedPlaces,
+          lastActive: Date.now(),
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      setProfile({
+        ...profile,
+        visitedPlaces: updatedPlaces,
+      });
+
+      console.log('🗑️ Removed from visited places');
+    } catch (error) {
+      console.error('Error removing visited place:', error);
+      throw error;
+    }
+  };
+
   return {
     user,
     profile,
@@ -194,6 +279,8 @@ export function useAuth() {
     updateMusicGenreAffinities,
     updateRestaurantGenreAffinities,
     updateEVStatus,
+    markAsVisited,
+    removeVisitedPlace,
     signOut: () => auth.signOut(),
   };
 }
