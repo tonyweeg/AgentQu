@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth, VisitedPlace } from '../hooks/useAuth';
 
-const BeenThereView: React.FC = () => {
+interface BeenThereViewProps {
+  onBackToResults?: () => void;
+}
+
+const BeenThereView: React.FC<BeenThereViewProps> = ({ onBackToResults }) => {
   const { profile, removeVisitedPlace } = useAuth();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [removing, setRemoving] = useState<string | null>(null);
@@ -86,10 +90,21 @@ const BeenThereView: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Back Button */}
+      {onBackToResults && (
+        <button
+          onClick={onBackToResults}
+          className="flex items-center gap-2 mb-6 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 transition-colors shadow-sm"
+        >
+          <span>←</span>
+          <span>Back to Results</span>
+        </button>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-navy-text mb-2">Been There 📍</h1>
+          <h1 className="text-3xl font-bold text-navy-text mb-2">Places I've Been 📍</h1>
           <p className="text-gray-600">
             {visitedPlaces.length} place{visitedPlaces.length !== 1 ? 's' : ''} you've visited
           </p>

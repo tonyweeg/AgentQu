@@ -534,7 +534,7 @@ function App() {
                         }`}
                       >
                         <span className="text-xl">✓</span>
-                        <span className="font-medium">Been There</span>
+                        <span className="font-medium">Places I've Been</span>
                       </button>
                       <button
                         onClick={() => {
@@ -677,7 +677,7 @@ function App() {
                     }`}
                   >
                     <span className="text-xl">✓</span>
-                    <span className="font-medium">Been There</span>
+                    <span className="font-medium">Places I've Been</span>
                   </button>
 
                   <button
@@ -1319,7 +1319,14 @@ function App() {
                 )}
 
                 {/* Been There View */}
-                {viewMode === 'been-there' && <BeenThereView />}
+                {viewMode === 'been-there' && (
+                  <BeenThereView
+                    onBackToResults={() => {
+                      setViewMode('list');
+                      window.history.pushState({}, '', '/');
+                    }}
+                  />
+                )}
 
                 {/* Off Grid View */}
                 {viewMode === 'offgrid' && (
