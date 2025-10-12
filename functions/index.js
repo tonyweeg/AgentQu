@@ -391,6 +391,94 @@ const RESTAURANT_GENRE_MAP = {
 };
 
 /**
+ * Known chain restaurants and convenience stores to filter out
+ * These should only appear as last resort (similar to gas stations)
+ */
+const KNOWN_CHAINS = [
+  // Fast Food Chains
+  'mcdonalds', "mcdonald's", 'burger king', 'wendy\'s', 'wendys',
+  'taco bell', 'kfc', 'popeyes', 'chick-fil-a', 'chick fil a',
+  'sonic', 'dairy queen', 'arby\'s', 'arbys', 'carl\'s jr', 'carls jr',
+  'hardee\'s', 'hardees', 'jack in the box', 'white castle',
+  'five guys', 'in-n-out', 'shake shack', 'whataburger',
+
+  // Pizza Chains
+  'pizza hut', 'dominos', 'domino\'s', 'papa john\'s', 'papa johns',
+  'little caesars', 'papa murphy\'s', 'marco\'s pizza',
+
+  // Sandwich/Sub Chains
+  'subway', 'jimmy john\'s', 'jimmy johns', 'jersey mike\'s',
+  'firehouse subs', 'quiznos', 'blimpie', 'potbelly',
+
+  // Coffee Chains (corporate, not local)
+  'starbucks', 'dunkin', 'dunkin donuts', 'tim hortons',
+
+  // Convenience Stores
+  'wawa', '7-eleven', '7 eleven', 'circle k', 'sheetz',
+  'cumberland farms', 'speedway', 'pilot', 'flying j',
+  'love\'s', 'loves', 'ta petro', 'am/pm', 'ampm',
+
+  // Casual Dining Chains
+  'applebee\'s', 'applebees', 'chili\'s', 'chilis', 'tgi friday\'s',
+  'red lobster', 'olive garden', 'outback steakhouse',
+  'texas roadhouse', 'longhorn steakhouse', 'cracker barrel',
+  'denny\'s', 'dennys', 'ihop', 'waffle house', 'bob evans',
+  'panera bread', 'panera', 'chipotle', 'qdoba', 'moe\'s southwest',
+
+  // Other Chains
+  'panda express', 'pei wei', 'noodles & company',
+  'buffalo wild wings', 'wingstop', 'hooters',
+  'golden corral', 'cici\'s pizza', 'cicis pizza'
+];
+
+/**
+ * Healthy food place types and keywords to prioritize
+ */
+const HEALTHY_FOOD_INDICATORS = [
+  // Place types
+  'smoothie', 'juice', 'juice bar', 'health food',
+  'organic', 'vegan', 'vegetarian', 'salad',
+  'whole foods', 'natural foods', 'farm to table',
+  'farmers market', 'produce', 'fresh market',
+
+  // Meal types
+  'acai', 'poke', 'poke bowl', 'grain bowl',
+  'mediterranean', 'middle eastern',
+
+  // Shop types
+  'bagel', 'bagel shop', 'deli', 'sandwich shop',
+  'smoothie bowl', 'fresh juice'
+];
+
+/**
+ * Check if a place is a known chain
+ */
+function isKnownChain(placeName) {
+  const nameLower = (placeName || '').toLowerCase();
+  return KNOWN_CHAINS.some(chain => nameLower.includes(chain));
+}
+
+/**
+ * Check if a place is a healthy food option
+ */
+function isHealthyFood(placeName, placeTypes = []) {
+  const nameLower = (placeName || '').toLowerCase();
+  const typesLower = placeTypes.map(t => (t || '').toLowerCase());
+
+  // Check name
+  const nameMatch = HEALTHY_FOOD_INDICATORS.some(indicator =>
+    nameLower.includes(indicator)
+  );
+
+  // Check types
+  const typeMatch = HEALTHY_FOOD_INDICATORS.some(indicator =>
+    typesLower.some(type => type.includes(indicator))
+  );
+
+  return nameMatch || typeMatch;
+}
+
+/**
  * Calculate music genre affinity score for an event
  * Returns score 0-100, or null if not a music event
  */
@@ -526,12 +614,28 @@ function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGe
     }
   }
 
+  // Healthy food bonus (20 points for smoothie bars, juice bars, bagel shops, etc.)
+  let healthyFoodBonus = 0;
+  if (isHealthyFood(activity.name, activity.placeTypes || [])) {
+    healthyFoodBonus = 20;
+    baseScore += healthyFoodBonus;
+  }
+
+  // Chain penalty (-10 points for known fast food chains)
+  let chainPenalty = 0;
+  if (isKnownChain(activity.name)) {
+    chainPenalty = -10;
+    baseScore += chainPenalty;
+  }
+
   return {
     finalScore: Math.max(0, Math.round(baseScore)),
-    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints - restaurantAffinityPoints),
+    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints - restaurantAffinityPoints - healthyFoodBonus - chainPenalty),
     affinityScore: Math.round(affinityPoints),
     genreAffinityScore: Math.round(genreAffinityPoints),
     restaurantAffinityScore: Math.round(restaurantAffinityPoints),
+    healthyFoodBonus: Math.round(healthyFoodBonus),
+    chainPenalty: Math.round(chainPenalty),
   };
 }
 
@@ -1842,6 +1946,53 @@ exports.discoverActivities = onCall(
     const afterGasStationFilter = allActivities.length;
     if (beforeGasStationFilter > afterGasStationFilter) {
       console.log(`⛽ Gas station filter: removed ${beforeGasStationFilter - afterGasStationFilter} places`);
+    }
+
+    // Filter out known chain restaurants and fast food
+    // These should ONLY appear if there are very few other food options (< 8 places)
+    const beforeChainFilter = allActivities.length;
+
+    // Separate chains from independent places
+    const chainPlaces = [];
+    const independentPlaces = [];
+
+    allActivities.forEach((activity) => {
+      const isChain = isKnownChain(activity.name);
+
+      // Check if this is a food/dining place
+      const isDining = activity.categories &&
+                      activity.categories.some(cat => diningCategories.includes(cat));
+
+      if (isChain && isDining) {
+        chainPlaces.push(activity);
+      } else {
+        independentPlaces.push(activity);
+      }
+    });
+
+    // Count independent food places within 50 miles
+    const independentFoodPlacesNearby = independentPlaces.filter(a => {
+      const isDining = a.categories &&
+                      a.categories.some(cat => diningCategories.includes(cat));
+      return isDining && a.distance <= 50;
+    }).length;
+
+    // Only include chains if there are fewer than 8 independent options
+    if (independentFoodPlacesNearby >= 8) {
+      allActivities = independentPlaces;
+      console.log(`🍔 Filtered out ${chainPlaces.length} chain restaurants (${independentFoodPlacesNearby} independent options available)`);
+      if (chainPlaces.length > 0) {
+        console.log(`🍔 Chains filtered: ${chainPlaces.map(c => c.name).join(', ')}`);
+      }
+    } else {
+      // Keep chains only as last resort
+      allActivities = [...independentPlaces, ...chainPlaces];
+      console.log(`🍔 Keeping ${chainPlaces.length} chain restaurants as last resort (only ${independentFoodPlacesNearby} independent options available)`);
+    }
+
+    const afterChainFilter = allActivities.length;
+    if (beforeChainFilter > afterChainFilter) {
+      console.log(`🍔 Chain filter: removed ${beforeChainFilter - afterChainFilter} places`);
     }
 
     // Calculate scores
