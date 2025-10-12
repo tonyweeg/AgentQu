@@ -11,6 +11,7 @@ export interface UserProfile {
   photoURL: string | null;
   affinities: Record<string, number>;
   musicGenreAffinities?: Record<string, number>; // Music genre preferences (0-100)
+  restaurantGenreAffinities?: Record<string, number>; // Restaurant genre preferences (0-100)
   onboarded: boolean;
   createdAt: number;
   lastActive: number;
@@ -130,12 +131,40 @@ export function useAuth() {
     }
   };
 
+  const updateRestaurantGenreAffinities = async (restaurantGenreAffinities: Record<string, number>) => {
+    if (!user) return;
+
+    try {
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(
+        profileRef,
+        {
+          restaurantGenreAffinities,
+          lastActive: Date.now(),
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      if (profile) {
+        setProfile({
+          ...profile,
+          restaurantGenreAffinities,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating restaurant genre affinities:', error);
+      throw error;
+    }
+  };
+
   return {
     user,
     profile,
     loading,
     updateAffinities,
     updateMusicGenreAffinities,
+    updateRestaurantGenreAffinities,
     signOut: () => auth.signOut(),
   };
 }

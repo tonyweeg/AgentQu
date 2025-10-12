@@ -241,6 +241,156 @@ const MUSIC_GENRE_MAP = {
 };
 
 /**
+ * Restaurant genre map - Maps Google Places categories to our restaurant genre IDs
+ */
+const RESTAURANT_GENRE_MAP = {
+  // Indian
+  'indian': 'indian',
+  'indian restaurant': 'indian',
+  'curry': 'indian',
+  'tandoori': 'indian',
+  'biryani': 'indian',
+
+  // Thai
+  'thai': 'thai',
+  'thai restaurant': 'thai',
+  'pad thai': 'thai',
+  'tom yum': 'thai',
+
+  // Chinese
+  'chinese': 'chinese',
+  'chinese restaurant': 'chinese',
+  'dim sum': 'chinese',
+  'cantonese': 'chinese',
+  'szechuan': 'chinese',
+
+  // Japanese
+  'japanese': 'japanese',
+  'japanese restaurant': 'japanese',
+  'sushi': 'japanese',
+  'sushi bar': 'japanese',
+  'ramen': 'japanese',
+  'izakaya': 'japanese',
+
+  // Mexican
+  'mexican': 'mexican',
+  'mexican restaurant': 'mexican',
+  'taco': 'mexican',
+  'burrito': 'mexican',
+  'tex-mex': 'mexican',
+
+  // Italian
+  'italian': 'italian',
+  'italian restaurant': 'italian',
+  'pasta': 'italian',
+  'pizza': 'pizza',
+  'pizzeria': 'pizza',
+  'trattoria': 'italian',
+
+  // Mediterranean
+  'mediterranean': 'mediterranean',
+  'mediterranean restaurant': 'mediterranean',
+  'greek': 'mediterranean',
+  'greek restaurant': 'mediterranean',
+  'middle eastern': 'mediterranean',
+  'lebanese': 'mediterranean',
+  'turkish': 'mediterranean',
+
+  // Vietnamese
+  'vietnamese': 'vietnamese',
+  'vietnamese restaurant': 'vietnamese',
+  'pho': 'vietnamese',
+  'banh mi': 'vietnamese',
+
+  // Korean
+  'korean': 'korean',
+  'korean restaurant': 'korean',
+  'korean bbq': 'korean',
+  'kimchi': 'korean',
+  'bibimbap': 'korean',
+
+  // French
+  'french': 'french',
+  'french restaurant': 'french',
+  'bistro': 'french',
+  'brasserie': 'french',
+  'creperie': 'french',
+
+  // American & Western
+  'american': 'american',
+  'american restaurant': 'american',
+  'burger': 'american',
+  'grill': 'american',
+  'hamburger': 'american',
+  'bar': 'bar-pub',
+  'pub': 'bar-pub',
+  'tavern': 'bar-pub',
+  'brewpub': 'bar-pub',
+  'sports bar': 'bar-pub',
+  'diner': 'diner',
+  'comfort food': 'diner',
+  'home cooking': 'diner',
+  'barbecue': 'bbq-southern',
+  'bbq': 'bbq-southern',
+  'southern': 'bbq-southern',
+  'smokehouse': 'bbq-southern',
+
+  // Specialty
+  'seafood': 'seafood',
+  'seafood restaurant': 'seafood',
+  'fish': 'seafood',
+  'oyster bar': 'seafood',
+  'crab house': 'seafood',
+  'lobster': 'seafood',
+  'steakhouse': 'steakhouse',
+  'steak house': 'steakhouse',
+  'steak': 'steakhouse',
+  'chophouse': 'steakhouse',
+  'prime rib': 'steakhouse',
+
+  // Meal Types & Occasions
+  'breakfast': 'breakfast-brunch',
+  'breakfast restaurant': 'breakfast-brunch',
+  'brunch': 'breakfast-brunch',
+  'brunch restaurant': 'breakfast-brunch',
+  'pancake': 'breakfast-brunch',
+  'waffle': 'breakfast-brunch',
+  'eggs': 'breakfast-brunch',
+  'coffee': 'coffee-cafe',
+  'coffee shop': 'coffee-cafe',
+  'cafe': 'coffee-cafe',
+  'espresso': 'coffee-cafe',
+  'coffeehouse': 'coffee-cafe',
+  'bakery': 'bakery-dessert',
+  'dessert': 'bakery-dessert',
+  'dessert shop': 'bakery-dessert',
+  'pastry': 'bakery-dessert',
+  'ice cream': 'bakery-dessert',
+  'sweets': 'bakery-dessert',
+
+  // Vibe & Style
+  'local': 'local-independent',
+  'independent': 'local-independent',
+  'family-owned': 'local-independent',
+  'mom and pop': 'local-independent',
+  'chain': 'chain-corporate',
+  'franchise': 'chain-corporate',
+  'food truck': 'offgrid-casual',
+  'street food': 'offgrid-casual',
+  'food cart': 'offgrid-casual',
+  'outdoor seating': 'offgrid-casual',
+  'casual dining': 'offgrid-casual',
+  'fine dining': 'fine-dining',
+  'upscale': 'fine-dining',
+  'elegant': 'fine-dining',
+  'gourmet': 'fine-dining',
+  'fast food': 'fast-food',
+  'quick service': 'fast-food',
+  'drive-through': 'fast-food',
+  'drive-thru': 'fast-food',
+};
+
+/**
  * Calculate music genre affinity score for an event
  * Returns score 0-100, or null if not a music event
  */
@@ -276,9 +426,47 @@ function calculateMusicGenreAffinityScore(musicGenres, musicGenreAffinities) {
 const MUSIC_GENRE_FILTER_THRESHOLD = 20;
 
 /**
+ * Calculate restaurant genre affinity score for a restaurant
+ * Returns score 0-100, or null if not a restaurant or no match
+ */
+function calculateRestaurantGenreAffinityScore(restaurantCategories, restaurantGenreAffinities) {
+  // If no category data or no user affinities, return neutral
+  if (!restaurantCategories || restaurantCategories.length === 0 || !restaurantGenreAffinities) {
+    return null; // Not applicable
+  }
+
+  let totalScore = 0;
+  let matchCount = 0;
+
+  // Map Google Places categories to our genre IDs and get affinity scores
+  const categoriesLower = restaurantCategories.map(c => (c || '').toLowerCase());
+
+  // Check each category against our restaurant genre map
+  categoriesLower.forEach((category) => {
+    const genreId = RESTAURANT_GENRE_MAP[category];
+    if (genreId && restaurantGenreAffinities[genreId] !== undefined) {
+      totalScore += restaurantGenreAffinities[genreId];
+      matchCount++;
+    }
+  });
+
+  // If no matches found, return neutral score
+  if (matchCount === 0) return 50;
+
+  // Return average affinity score
+  return Math.round(totalScore / matchCount);
+}
+
+/**
+ * Filter threshold for restaurant genres (configurable)
+ * Restaurants with genre affinity below this score will be filtered out
+ */
+const RESTAURANT_GENRE_FILTER_THRESHOLD = 20;
+
+/**
  * Calculate final composite score
  */
-function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGenreAffinities) {
+function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGenreAffinities, restaurantGenreAffinities) {
   let baseScore = 100;
 
   // Distance factor (0-30 points)
@@ -327,11 +515,23 @@ function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGe
     }
   }
 
+  // Restaurant genre affinity bonus for dining places (0-15 points)
+  let restaurantAffinityPoints = 0;
+  if (activity.categories && restaurantGenreAffinities) {
+    const restaurantScore = calculateRestaurantGenreAffinityScore(activity.categories, restaurantGenreAffinities);
+    if (restaurantScore !== null) {
+      // Convert 0-100 score to 0-15 points bonus (slightly less than music for balance)
+      restaurantAffinityPoints = (restaurantScore / 100) * 15;
+      baseScore += restaurantAffinityPoints;
+    }
+  }
+
   return {
     finalScore: Math.max(0, Math.round(baseScore)),
-    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints),
+    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints - restaurantAffinityPoints),
     affinityScore: Math.round(affinityPoints),
     genreAffinityScore: Math.round(genreAffinityPoints),
+    restaurantAffinityScore: Math.round(restaurantAffinityPoints),
   };
 }
 
@@ -1244,6 +1444,8 @@ async function saveActivitiesAndCache(activities, geohashKey, radius, affinitySi
         activity.location.lat,
         activity.location.lng,
         userAffinities,
+        musicGenreAffinities,
+        restaurantGenreAffinities,
       );
       return {
         activityId: activity.activityId,
@@ -1304,6 +1506,8 @@ async function personalizeCachedResults(cachedData, userAffinities) {
         activity.location.lat,
         activity.location.lng,
         userAffinities,
+        musicGenreAffinities,
+        restaurantGenreAffinities,
       );
 
       return {
@@ -1357,11 +1561,13 @@ exports.discoverActivities = onCall(
     // Get user affinities
     let userAffinities = null;
     let musicGenreAffinities = null;
+    let restaurantGenreAffinities = null;
     if (userId) {
       const userDoc = await db.collection("users").doc(userId).get();
       if (userDoc.exists) {
         userAffinities = userDoc.data().affinities;
         musicGenreAffinities = userDoc.data().musicGenreAffinities || null;
+        restaurantGenreAffinities = userDoc.data().restaurantGenreAffinities || null;
       }
     }
 
@@ -1481,9 +1687,30 @@ exports.discoverActivities = onCall(
       console.log(`🎵 After genre filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
     }
 
+    // Filter restaurants by restaurant genre affinity
+    if (restaurantGenreAffinities) {
+      const beforeRestaurantFilter = allActivities.length;
+      allActivities = allActivities.filter((activity) => {
+        // Only filter restaurants/dining places (check if has restaurant categories)
+        if (activity.categories && activity.categories.length > 0) {
+          const restaurantScore = calculateRestaurantGenreAffinityScore(activity.categories, restaurantGenreAffinities);
+          if (restaurantScore !== null && restaurantScore < RESTAURANT_GENRE_FILTER_THRESHOLD) {
+            console.log(`🍽️ Filtered out restaurant: ${activity.name} (restaurant score: ${restaurantScore}, categories: ${activity.categories.join(', ')})`);
+            return false; // Filter out
+          }
+        }
+        return true; // Keep
+      });
+      const afterRestaurantFilter = allActivities.length;
+      if (beforeRestaurantFilter > afterRestaurantFilter) {
+        console.log(`🍽️ Restaurant genre filter: removed ${beforeRestaurantFilter - afterRestaurantFilter} places with low affinity`);
+      }
+      console.log(`🍽️ After restaurant filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+    }
+
     // Calculate scores
     allActivities = allActivities.map((activity) => {
-      const scores = calculateFinalScore(activity, lat, lng, userAffinities, musicGenreAffinities);
+      const scores = calculateFinalScore(activity, lat, lng, userAffinities, musicGenreAffinities, restaurantGenreAffinities);
       return {
         ...activity,
         score: scores.finalScore,

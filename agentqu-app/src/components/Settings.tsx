@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
+import ActivityInterestsPanel from './ActivityInterestsPanel';
 import MusicGenresPanel from './MusicGenresPanel';
+import RestaurantGenresPanel from './RestaurantGenresPanel';
 
 interface SettingsProps {
   onClose: () => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ onClose }) => {
-  const { profile, updateAffinities, updateMusicGenreAffinities } = useAuth();
+  const { profile, updateAffinities, updateMusicGenreAffinities, updateRestaurantGenreAffinities } = useAuth();
   const [affinities, setAffinities] = useState<Record<string, number>>(profile?.affinities || {});
   const [saving, setSaving] = useState(false);
 
@@ -48,13 +49,6 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     }
   };
 
-  const getAffinityLevel = (value: number) => {
-    if (value === 0) return 'Not interested';
-    if (value <= 3) return 'Casual';
-    if (value <= 6) return 'Interested';
-    return 'Very interested';
-  };
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -72,50 +66,19 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Affinity Categories */}
+        {/* Settings Panels */}
         <div className="p-6 space-y-6">
-          <div>
-            <h3 className="text-lg font-bold text-navy-text mb-2">Your Interests</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Adjust the sliders to tell us what you're interested in. This helps us find better activities for you!
-            </p>
-          </div>
+          {/* Activity Interests Panel */}
+          <ActivityInterestsPanel
+            affinities={affinities}
+            onChange={handleSliderChange}
+          />
 
-          <div className="space-y-4">
-            {AFFINITY_CATEGORIES.map(category => {
-              const value = affinities[category.id] || 0;
-              return (
-                <div key={category.id} className="bg-gray-50 rounded-xl p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{category.emoji}</span>
-                      <div>
-                        <h4 className="font-medium text-navy-text capitalize">
-                          {category.name}
-                        </h4>
-                        <p className="text-xs text-gray-600">{category.description}</p>
-                      </div>
-                    </div>
-                    <span className="text-sm font-medium text-ocean-bright">
-                      {getAffinityLevel(value)}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="9"
-                    value={value}
-                    onChange={(e) => handleSliderChange(category.id, parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-ocean-bright"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Not interested</span>
-                    <span>Very interested</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          {/* Restaurant Genres Panel */}
+          <RestaurantGenresPanel
+            initialAffinities={profile?.restaurantGenreAffinities}
+            onSave={updateRestaurantGenreAffinities}
+          />
 
           {/* Music Genres Panel */}
           <MusicGenresPanel
