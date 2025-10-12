@@ -211,11 +211,21 @@ function MapUpdater({ center, compact }: { center: [number, number], compact: bo
 }
 
 // Component to auto-zoom to fit all activity markers or EV stations
-function AutoZoomToMarkers({ items, userLocation }: { items: any[], userLocation: Location }) {
+function AutoZoomToMarkers({ items, userLocation, evMode }: { items: any[], userLocation: Location, evMode: boolean }) {
   const map = useMap();
+  const [hasZoomed, setHasZoomed] = useState(false);
+  const [lastMode, setLastMode] = useState(evMode);
 
   useEffect(() => {
-    if (!items || items.length === 0) {
+    // Reset hasZoomed when mode changes
+    if (lastMode !== evMode) {
+      setHasZoomed(false);
+      setLastMode(evMode);
+      return;
+    }
+
+    // Only auto-zoom once per mode to prevent zoom loop
+    if (hasZoomed || !items || items.length === 0) {
       return;
     }
 
@@ -249,8 +259,9 @@ function AutoZoomToMarkers({ items, userLocation }: { items: any[], userLocation
     // Fit bounds with padding
     setTimeout(() => {
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+      setHasZoomed(true);
     }, 200);
-  }, [items, userLocation, map]);
+  }, [items, userLocation, map, hasZoomed, evMode, lastMode]);
 
   return null;
 }
@@ -297,7 +308,7 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
         touchZoom={!compact}
       >
         <MapUpdater center={center} compact={compact} />
-        {!compact && <AutoZoomToMarkers items={evMode ? evStations : activities} userLocation={userLocation} />}
+        {!compact && <AutoZoomToMarkers items={evMode ? evStations : activities} userLocation={userLocation} evMode={evMode} />}
         {!compact && <MapDragHandler onLocationChange={onLocationChange} />}
 
         {/* Map tiles */}
