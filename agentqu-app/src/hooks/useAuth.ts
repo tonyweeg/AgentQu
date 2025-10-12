@@ -12,6 +12,7 @@ export interface UserProfile {
   affinities: Record<string, number>;
   musicGenreAffinities?: Record<string, number>; // Music genre preferences (0-100)
   restaurantGenreAffinities?: Record<string, number>; // Restaurant genre preferences (0-100)
+  isEV?: boolean; // Electric vehicle owner (unlocks eco-friendly visuals + supercharger locations)
   onboarded: boolean;
   createdAt: number;
   lastActive: number;
@@ -158,6 +159,33 @@ export function useAuth() {
     }
   };
 
+  const updateEVStatus = async (isEV: boolean) => {
+    if (!user) return;
+
+    try {
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(
+        profileRef,
+        {
+          isEV,
+          lastActive: Date.now(),
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      if (profile) {
+        setProfile({
+          ...profile,
+          isEV,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating EV status:', error);
+      throw error;
+    }
+  };
+
   return {
     user,
     profile,
@@ -165,6 +193,7 @@ export function useAuth() {
     updateAffinities,
     updateMusicGenreAffinities,
     updateRestaurantGenreAffinities,
+    updateEVStatus,
     signOut: () => auth.signOut(),
   };
 }

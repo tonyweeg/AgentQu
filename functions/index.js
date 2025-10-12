@@ -1372,6 +1372,81 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
   }
 }
 
+/**
+ * Fetch EV charging stations from Google Places API (New)
+ */
+async function fetchEVChargingStations(lat, lng, radius = 10) {
+  const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+
+  if (!GOOGLE_PLACES_API_KEY) {
+    console.warn("⚡ EV CHARGING: Google Places API key not configured");
+    return [];
+  }
+
+  try {
+    const radiusMeters = radius * 1609; // miles to meters
+
+    console.log(`⚡ EV CHARGING: Searching charging stations within ${radius} miles of ${lat},${lng}`);
+
+    // Use Places API (New) - nearbysearch endpoint for EV charging stations
+    const response = await axios.post(
+      `https://places.googleapis.com/v1/places:searchNearby`,
+      {
+        includedTypes: ["electric_vehicle_charging_station"],
+        maxResultCount: 20,
+        locationRestriction: {
+          circle: {
+            center: {
+              latitude: lat,
+              longitude: lng
+            },
+            radius: radiusMeters
+          }
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.rating,places.currentOpeningHours,places.id'
+        }
+      }
+    );
+
+    console.log(`⚡ EV CHARGING: Found ${response.data.places?.length || 0} charging stations`);
+
+    if (!response.data.places || response.data.places.length === 0) {
+      return [];
+    }
+
+    return response.data.places.map((place) => {
+      const placeLat = place.location.latitude;
+      const placeLng = place.location.longitude;
+      const distance = calculateDistance(lat, lng, placeLat, placeLng);
+
+      return {
+        id: place.id,
+        name: place.displayName?.text || place.displayName || 'Charging Station',
+        address: place.formattedAddress || '',
+        distance: distance,
+        location: {
+          lat: placeLat,
+          lng: placeLng
+        },
+        rating: place.rating || null,
+        openNow: place.currentOpeningHours?.openNow || false
+      };
+    });
+  } catch (error) {
+    console.error("⚡ EV CHARGING: Error fetching charging stations:", error.message);
+    if (error.response) {
+      console.error("⚡ EV CHARGING: API response status:", error.response.status);
+      console.error("⚡ EV CHARGING: API response data:", JSON.stringify(error.response.data));
+    }
+    return [];
+  }
+}
+
 // ============================================================================
 // CACHING FUNCTIONS
 // ============================================================================
@@ -1558,16 +1633,18 @@ exports.discoverActivities = onCall(
   const startTime = Date.now();
 
   try {
-    // Get user affinities
+    // Get user affinities and EV status
     let userAffinities = null;
     let musicGenreAffinities = null;
     let restaurantGenreAffinities = null;
+    let isEVOwner = false;
     if (userId) {
       const userDoc = await db.collection("users").doc(userId).get();
       if (userDoc.exists) {
         userAffinities = userDoc.data().affinities;
         musicGenreAffinities = userDoc.data().musicGenreAffinities || null;
         restaurantGenreAffinities = userDoc.data().restaurantGenreAffinities || null;
+        isEVOwner = userDoc.data().isEV || false;
       }
     }
 
@@ -1655,6 +1732,14 @@ exports.discoverActivities = onCall(
     let allActivities = [...googlePlaces, ...ticketmasterEvents, ...redditBuzz];
 
     console.log(`✅ Fetched ${googlePlaces.length} from Places, ${ticketmasterEvents.length} from Ticketmaster, ${redditBuzz.length} from Reddit`);
+
+    // Fetch EV charging stations if user is an EV owner
+    let chargingStations = [];
+    if (isEVOwner) {
+      console.log('⚡ User is EV owner - fetching charging stations');
+      chargingStations = await fetchEVChargingStations(lat, lng, radius);
+      console.log(`⚡ EV CHARGING: Returning ${chargingStations.length} charging stations to frontend`);
+    }
 
     // Calculate distances
     allActivities = allActivities.map((activity) => ({
@@ -1753,6 +1838,7 @@ exports.discoverActivities = onCall(
     return {
       success: true,
       activities: results,
+      chargingStations: chargingStations, // EV charging stations for EV owners
       metadata: {
         totalFound: results.length,
         queryTimeMs: Date.now() - startTime,
@@ -1761,8 +1847,10 @@ exports.discoverActivities = onCall(
           google_places: googlePlaces.length,
           ticketmaster: ticketmasterEvents.length,
           reddit: redditBuzz.length,
+          charging_stations: chargingStations.length,
         },
         userLocation: {lat, lng},
+        isEVOwner: isEVOwner, // Include EV owner status in metadata
       },
     };
   } catch (error) {

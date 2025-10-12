@@ -21,6 +21,7 @@ export function useDiscovery({
   key = 0
 }: UseDiscoveryOptions) {
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [chargingStations, setChargingStations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [metadata, setMetadata] = useState<any>(null);
@@ -63,8 +64,10 @@ export function useDiscovery({
 
       if (data.success) {
         console.log(`🔍 AGENTQU_DEBUG: Got ${data.activities?.length || 0} activities`);
+        console.log(`⚡ EV CHARGING: Got ${data.chargingStations?.length || 0} charging stations`);
         console.log('🔍 AGENTQU_DEBUG: Metadata:', JSON.stringify(data.metadata, null, 2));
         setActivities(data.activities || []);
+        setChargingStations(data.chargingStations || []);
         setMetadata(data.metadata);
       } else {
         console.error('🔍 AGENTQU_DEBUG: Discovery failed - no success flag');
@@ -77,6 +80,7 @@ export function useDiscovery({
 
       // If Cloud Function fails, show empty state
       setActivities([]);
+      setChargingStations([]);
     } finally {
       setLoading(false);
     }
@@ -88,6 +92,7 @@ export function useDiscovery({
 
   return {
     activities,
+    chargingStations,
     loading,
     error,
     metadata,

@@ -23,6 +23,7 @@ import ContactUs from './components/ContactUs';
 import BiomeRenderer from './biomes/core/BiomeRenderer';
 import LocalFlavorColumn from './components/LocalFlavorColumn';
 import TwitterVibeModal from './components/TwitterVibeModal';
+import EVPanel from './components/EVPanel';
 import { DiscoveryFilters } from './lib/types';
 
 function App() {
@@ -73,7 +74,7 @@ function App() {
   const { city, state } = useReverseGeocode(activeLocation);
 
   // Fetch activities (only when user is onboarded)
-  const { activities, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery({
+  const { activities, chargingStations, loading: activitiesLoading, error: activitiesError, metadata } = useDiscovery({
     location: profile?.onboarded ? activeLocation : null,
     userId: user?.uid || null,
     filters,
@@ -1527,6 +1528,14 @@ function App() {
           </>
         )}
       </main>
+
+      {/* EV Charging Panel - Fixed Right Side */}
+      {profile?.isEV && activeLocation && (
+        <EVPanel
+          stations={chargingStations}
+          userLocation={activeLocation}
+        />
+      )}
 
       {/* Settings Modal */}
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}

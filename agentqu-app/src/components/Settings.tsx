@@ -9,8 +9,9 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ onClose }) => {
-  const { profile, updateAffinities, updateMusicGenreAffinities, updateRestaurantGenreAffinities } = useAuth();
+  const { profile, updateAffinities, updateMusicGenreAffinities, updateRestaurantGenreAffinities, updateEVStatus } = useAuth();
   const [affinities, setAffinities] = useState<Record<string, number>>(profile?.affinities || {});
+  const [isEV, setIsEV] = useState<boolean>(profile?.isEV || false);
   const [saving, setSaving] = useState(false);
 
   // Update local state when profile changes (after reload)
@@ -19,7 +20,10 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
       console.log('📊 Loading saved affinities:', profile.affinities);
       setAffinities(profile.affinities);
     }
-  }, [profile?.affinities]);
+    if (profile?.isEV !== undefined) {
+      setIsEV(profile.isEV);
+    }
+  }, [profile?.affinities, profile?.isEV]);
 
   const handleSliderChange = (category: string, value: number) => {
     setAffinities(prev => ({
@@ -32,8 +36,15 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     setSaving(true);
     try {
       console.log('💾 Saving affinities:', affinities);
-      await updateAffinities(affinities);
-      console.log('✅ Affinities saved successfully');
+      console.log('🔋 Saving EV status:', isEV);
+
+      // Save both affinities and EV status
+      await Promise.all([
+        updateAffinities(affinities),
+        updateEVStatus(isEV)
+      ]);
+
+      console.log('✅ Settings saved successfully');
 
       // Close modal and trigger page refresh to show new results
       onClose();
@@ -43,7 +54,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
         window.location.reload();
       }, 500);
     } catch (error) {
-      console.error('❌ Error saving affinities:', error);
+      console.error('❌ Error saving settings:', error);
       alert('Failed to save settings. Please try again.');
       setSaving(false);
     }
@@ -85,6 +96,32 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
             initialAffinities={profile?.musicGenreAffinities}
             onSave={updateMusicGenreAffinities}
           />
+
+          {/* EV Owner Checkbox */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-4xl">⚡</span>
+                <div>
+                  <h3 className="text-lg font-bold text-navy-text flex items-center gap-2">
+                    Electric Vehicle Owner
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Unlock eco-friendly visuals 🌞🌳🐦 + supercharger locations
+                  </p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isEV}
+                  onChange={(e) => setIsEV(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-green-600"></div>
+              </label>
+            </div>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4 border-t">
