@@ -202,8 +202,10 @@ function MapUpdater({ center, compact }: { center: [number, number], compact: bo
     // Force map to recalculate size
     setTimeout(() => {
       map.invalidateSize();
-      // For compact mode, just use setView for perfect centering
-      map.setView(center, compact ? 12 : 14);
+      // Only use setView in compact mode - in full mode, AutoZoomToMarkers handles it
+      if (compact) {
+        map.setView(center, 12);
+      }
     }, 100);
   }, [center, map, compact]);
 
