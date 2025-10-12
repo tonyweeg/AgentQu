@@ -1320,6 +1320,7 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         address: place.formattedAddress, // Top-level for easy access
         categories,
         primaryCategory: categories[0] || place.types?.[0] || "venue",
+        placeTypes: place.types || [], // Preserve raw Google Places types for filtering
         images, // Add images array for frontend
         rating: place.rating || null, // Top-level rating
         reviewCount: place.userRatingCount || 0, // Top-level review count
@@ -1791,6 +1792,56 @@ exports.discoverActivities = onCall(
         console.log(`🍽️ Restaurant genre filter: removed ${beforeRestaurantFilter - afterRestaurantFilter} places with low affinity`);
       }
       console.log(`🍽️ After restaurant filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+    }
+
+    // Filter out gas stations and convenience stores from dining results
+    // These should ONLY appear if there are very few other food options (< 5 places)
+    const beforeGasStationFilter = allActivities.length;
+    const diningCategories = ['dining', 'restaurants', 'coffee', 'cafes', 'food_trucks'];
+
+    // Separate gas stations from other places
+    const gasStations = [];
+    const nonGasStations = [];
+
+    allActivities.forEach((activity) => {
+      const placeTypes = activity.placeTypes || [];
+      const isGasStation = placeTypes.includes('gas_station') ||
+                          placeTypes.includes('convenience_store');
+
+      // Check if this is a food/dining place
+      const isDining = activity.categories &&
+                      activity.categories.some(cat => diningCategories.includes(cat));
+
+      if (isGasStation && isDining) {
+        gasStations.push(activity);
+      } else {
+        nonGasStations.push(activity);
+      }
+    });
+
+    // Count non-gas-station food places within 50 miles
+    const foodPlacesNearby = nonGasStations.filter(a => {
+      const isDining = a.categories &&
+                      a.categories.some(cat => diningCategories.includes(cat));
+      return isDining && a.distance <= 50;
+    }).length;
+
+    // Only include gas stations if there are fewer than 5 other food options
+    if (foodPlacesNearby >= 5) {
+      allActivities = nonGasStations;
+      console.log(`⛽ Filtered out ${gasStations.length} gas stations/convenience stores (${foodPlacesNearby} better food options available)`);
+      if (gasStations.length > 0) {
+        console.log(`⛽ Gas stations filtered: ${gasStations.map(g => g.name).join(', ')}`);
+      }
+    } else {
+      // Keep gas stations only as last resort
+      allActivities = [...nonGasStations, ...gasStations];
+      console.log(`⛽ Keeping ${gasStations.length} gas stations as last resort (only ${foodPlacesNearby} food options available)`);
+    }
+
+    const afterGasStationFilter = allActivities.length;
+    if (beforeGasStationFilter > afterGasStationFilter) {
+      console.log(`⛽ Gas station filter: removed ${beforeGasStationFilter - afterGasStationFilter} places`);
     }
 
     // Calculate scores
