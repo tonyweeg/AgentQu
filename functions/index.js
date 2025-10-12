@@ -1728,6 +1728,7 @@ exports.discoverActivities = onCall(
     userId,
     enablePlaces = true,
     enableCustomSearch = true,
+    showFastFood = false,
     bypassCache = false
   } = request.data;
 
@@ -1900,99 +1901,110 @@ exports.discoverActivities = onCall(
 
     // Filter out gas stations and convenience stores from dining results
     // These should ONLY appear if there are very few other food options (< 5 places)
-    const beforeGasStationFilter = allActivities.length;
-    const diningCategories = ['dining', 'restaurants', 'coffee', 'cafes', 'food_trucks'];
+    // SKIP if showFastFood is true (user wants all the calories!)
+    if (!showFastFood) {
+      const beforeGasStationFilter = allActivities.length;
+      const diningCategories = ['dining', 'restaurants', 'coffee', 'cafes', 'food_trucks'];
 
-    // Separate gas stations from other places
-    const gasStations = [];
-    const nonGasStations = [];
+      // Separate gas stations from other places
+      const gasStations = [];
+      const nonGasStations = [];
 
-    allActivities.forEach((activity) => {
-      const placeTypes = activity.placeTypes || [];
-      const isGasStation = placeTypes.includes('gas_station') ||
-                          placeTypes.includes('convenience_store');
+      allActivities.forEach((activity) => {
+        const placeTypes = activity.placeTypes || [];
+        const isGasStation = placeTypes.includes('gas_station') ||
+                            placeTypes.includes('convenience_store');
 
-      // Check if this is a food/dining place
-      const isDining = activity.categories &&
-                      activity.categories.some(cat => diningCategories.includes(cat));
+        // Check if this is a food/dining place
+        const isDining = activity.categories &&
+                        activity.categories.some(cat => diningCategories.includes(cat));
 
-      if (isGasStation && isDining) {
-        gasStations.push(activity);
+        if (isGasStation && isDining) {
+          gasStations.push(activity);
+        } else {
+          nonGasStations.push(activity);
+        }
+      });
+
+      // Count non-gas-station food places within 50 miles
+      const foodPlacesNearby = nonGasStations.filter(a => {
+        const isDining = a.categories &&
+                        a.categories.some(cat => diningCategories.includes(cat));
+        return isDining && a.distance <= 50;
+      }).length;
+
+      // Only include gas stations if there are fewer than 5 other food options
+      if (foodPlacesNearby >= 5) {
+        allActivities = nonGasStations;
+        console.log(`⛽ Filtered out ${gasStations.length} gas stations/convenience stores (${foodPlacesNearby} better food options available)`);
+        if (gasStations.length > 0) {
+          console.log(`⛽ Gas stations filtered: ${gasStations.map(g => g.name).join(', ')}`);
+        }
       } else {
-        nonGasStations.push(activity);
+        // Keep gas stations only as last resort
+        allActivities = [...nonGasStations, ...gasStations];
+        console.log(`⛽ Keeping ${gasStations.length} gas stations as last resort (only ${foodPlacesNearby} food options available)`);
       }
-    });
 
-    // Count non-gas-station food places within 50 miles
-    const foodPlacesNearby = nonGasStations.filter(a => {
-      const isDining = a.categories &&
-                      a.categories.some(cat => diningCategories.includes(cat));
-      return isDining && a.distance <= 50;
-    }).length;
-
-    // Only include gas stations if there are fewer than 5 other food options
-    if (foodPlacesNearby >= 5) {
-      allActivities = nonGasStations;
-      console.log(`⛽ Filtered out ${gasStations.length} gas stations/convenience stores (${foodPlacesNearby} better food options available)`);
-      if (gasStations.length > 0) {
-        console.log(`⛽ Gas stations filtered: ${gasStations.map(g => g.name).join(', ')}`);
+      const afterGasStationFilter = allActivities.length;
+      if (beforeGasStationFilter > afterGasStationFilter) {
+        console.log(`⛽ Gas station filter: removed ${beforeGasStationFilter - afterGasStationFilter} places`);
       }
     } else {
-      // Keep gas stations only as last resort
-      allActivities = [...nonGasStations, ...gasStations];
-      console.log(`⛽ Keeping ${gasStations.length} gas stations as last resort (only ${foodPlacesNearby} food options available)`);
-    }
-
-    const afterGasStationFilter = allActivities.length;
-    if (beforeGasStationFilter > afterGasStationFilter) {
-      console.log(`⛽ Gas station filter: removed ${beforeGasStationFilter - afterGasStationFilter} places`);
+      console.log(`🍔 FAST FOOD MODE: Skipping gas station filter - showing ALL locations!`);
     }
 
     // Filter out known chain restaurants and fast food
     // These should ONLY appear if there are very few other food options (< 8 places)
-    const beforeChainFilter = allActivities.length;
+    // SKIP if showFastFood is true (user wants all the calories!)
+    if (!showFastFood) {
+      const beforeChainFilter = allActivities.length;
+      const diningCategories = ['dining', 'restaurants', 'coffee', 'cafes', 'food_trucks'];
 
-    // Separate chains from independent places
-    const chainPlaces = [];
-    const independentPlaces = [];
+      // Separate chains from independent places
+      const chainPlaces = [];
+      const independentPlaces = [];
 
-    allActivities.forEach((activity) => {
-      const isChain = isKnownChain(activity.name);
+      allActivities.forEach((activity) => {
+        const isChain = isKnownChain(activity.name);
 
-      // Check if this is a food/dining place
-      const isDining = activity.categories &&
-                      activity.categories.some(cat => diningCategories.includes(cat));
+        // Check if this is a food/dining place
+        const isDining = activity.categories &&
+                        activity.categories.some(cat => diningCategories.includes(cat));
 
-      if (isChain && isDining) {
-        chainPlaces.push(activity);
+        if (isChain && isDining) {
+          chainPlaces.push(activity);
+        } else {
+          independentPlaces.push(activity);
+        }
+      });
+
+      // Count independent food places within 50 miles
+      const independentFoodPlacesNearby = independentPlaces.filter(a => {
+        const isDining = a.categories &&
+                        a.categories.some(cat => diningCategories.includes(cat));
+        return isDining && a.distance <= 50;
+      }).length;
+
+      // Only include chains if there are fewer than 8 independent options
+      if (independentFoodPlacesNearby >= 8) {
+        allActivities = independentPlaces;
+        console.log(`🍔 Filtered out ${chainPlaces.length} chain restaurants (${independentFoodPlacesNearby} independent options available)`);
+        if (chainPlaces.length > 0) {
+          console.log(`🍔 Chains filtered: ${chainPlaces.map(c => c.name).join(', ')}`);
+        }
       } else {
-        independentPlaces.push(activity);
+        // Keep chains only as last resort
+        allActivities = [...independentPlaces, ...chainPlaces];
+        console.log(`🍔 Keeping ${chainPlaces.length} chain restaurants as last resort (only ${independentFoodPlacesNearby} independent options available)`);
       }
-    });
 
-    // Count independent food places within 50 miles
-    const independentFoodPlacesNearby = independentPlaces.filter(a => {
-      const isDining = a.categories &&
-                      a.categories.some(cat => diningCategories.includes(cat));
-      return isDining && a.distance <= 50;
-    }).length;
-
-    // Only include chains if there are fewer than 8 independent options
-    if (independentFoodPlacesNearby >= 8) {
-      allActivities = independentPlaces;
-      console.log(`🍔 Filtered out ${chainPlaces.length} chain restaurants (${independentFoodPlacesNearby} independent options available)`);
-      if (chainPlaces.length > 0) {
-        console.log(`🍔 Chains filtered: ${chainPlaces.map(c => c.name).join(', ')}`);
+      const afterChainFilter = allActivities.length;
+      if (beforeChainFilter > afterChainFilter) {
+        console.log(`🍔 Chain filter: removed ${beforeChainFilter - afterChainFilter} places`);
       }
     } else {
-      // Keep chains only as last resort
-      allActivities = [...independentPlaces, ...chainPlaces];
-      console.log(`🍔 Keeping ${chainPlaces.length} chain restaurants as last resort (only ${independentFoodPlacesNearby} independent options available)`);
-    }
-
-    const afterChainFilter = allActivities.length;
-    if (beforeChainFilter > afterChainFilter) {
-      console.log(`🍔 Chain filter: removed ${beforeChainFilter - afterChainFilter} places`);
+      console.log(`🍔 FAST FOOD MODE: Skipping chain filter - showing ALL chains and fast food!`);
     }
 
     // Calculate scores

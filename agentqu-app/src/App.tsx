@@ -61,6 +61,7 @@ function App() {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [showDetailTray, setShowDetailTray] = useState(false);
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
+  const [showFastFood, setShowFastFood] = useState(false); // Toggle for "Give me all the calories!"
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -84,6 +85,7 @@ function App() {
     filters,
     enablePlaces,
     enableCustomSearch,
+    showFastFood,
     key: refreshKey
   });
 
@@ -904,6 +906,25 @@ function App() {
                       <span className="text-xs bg-white/30 px-1.5 py-0.5 rounded-full">
                         {chargingStations.length}
                       </span>
+                    </button>
+                  )}
+
+                  {/* Fast Food Toggle - Show when viewing food/dining category */}
+                  {(selectedCategory === 'food_and_dining' || selectedCategory === 'all') && (
+                    <button
+                      onClick={() => {
+                        setShowFastFood(!showFastFood);
+                        setRefreshKey(prev => prev + 1);
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-all border backdrop-blur-sm ${
+                        showFastFood
+                          ? 'bg-red-600 text-white shadow-md border-red-700'
+                          : 'bg-white/80 text-gray-700 hover:bg-red-50 border-gray-200'
+                      }`}
+                      title={showFastFood ? 'Hide chains & fast food' : 'Show chains & fast food'}
+                    >
+                      <span className="text-base">🍔</span>
+                      <span className="whitespace-nowrap">Give me all the calories!</span>
                     </button>
                   )}
                 </div>

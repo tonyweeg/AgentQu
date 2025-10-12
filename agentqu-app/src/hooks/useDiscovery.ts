@@ -9,6 +9,7 @@ interface UseDiscoveryOptions {
   filters?: DiscoveryFilters;
   enablePlaces?: boolean;
   enableCustomSearch?: boolean;
+  showFastFood?: boolean;
   key?: number;
 }
 
@@ -18,6 +19,7 @@ export function useDiscovery({
   filters = {},
   enablePlaces = true,
   enableCustomSearch = true,
+  showFastFood = false,
   key = 0
 }: UseDiscoveryOptions) {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -43,6 +45,7 @@ export function useDiscovery({
         userId: userId || null,
         enablePlaces,
         enableCustomSearch,
+        showFastFood,
         bypassCache: key > 0,
       });
 
@@ -54,6 +57,7 @@ export function useDiscovery({
         filters,
         enablePlaces,
         enableCustomSearch,
+        showFastFood,
         bypassCache: key > 0,
       });
 
@@ -84,7 +88,7 @@ export function useDiscovery({
     } finally {
       setLoading(false);
     }
-  }, [location, userId, filters, enablePlaces, enableCustomSearch, key]);
+  }, [location, userId, filters, enablePlaces, enableCustomSearch, showFastFood, key]);
 
   useEffect(() => {
     fetchActivities();
