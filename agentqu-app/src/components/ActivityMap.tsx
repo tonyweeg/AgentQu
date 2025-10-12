@@ -215,17 +215,35 @@ function AutoZoomToMarkers({ items, userLocation, evMode }: { items: any[], user
   const map = useMap();
   const [hasZoomed, setHasZoomed] = useState(false);
   const [lastMode, setLastMode] = useState(evMode);
+  const [userInteracted, setUserInteracted] = useState(false);
+
+  // Listen for user zoom/pan interactions
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      console.log('🗺️ MAP_DEBUG: User manually interacted with map, disabling auto-zoom');
+      setUserInteracted(true);
+    };
+
+    map.on('zoomend', handleUserInteraction);
+    map.on('moveend', handleUserInteraction);
+
+    return () => {
+      map.off('zoomend', handleUserInteraction);
+      map.off('moveend', handleUserInteraction);
+    };
+  }, [map]);
 
   useEffect(() => {
-    // Reset hasZoomed when mode changes
+    // Reset when mode changes
     if (lastMode !== evMode) {
       setHasZoomed(false);
+      setUserInteracted(false);
       setLastMode(evMode);
       return;
     }
 
-    // Only auto-zoom once per mode to prevent zoom loop
-    if (hasZoomed || !items || items.length === 0) {
+    // Don't auto-zoom if user has manually interacted or already zoomed
+    if (hasZoomed || userInteracted || !items || items.length === 0) {
       return;
     }
 
@@ -261,7 +279,7 @@ function AutoZoomToMarkers({ items, userLocation, evMode }: { items: any[], user
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
       setHasZoomed(true);
     }, 200);
-  }, [items, userLocation, map, hasZoomed, evMode, lastMode]);
+  }, [items, userLocation, map, hasZoomed, evMode, lastMode, userInteracted]);
 
   return null;
 }
