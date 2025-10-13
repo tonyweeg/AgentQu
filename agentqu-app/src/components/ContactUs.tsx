@@ -62,7 +62,7 @@ const ContactUs: React.FC = () => {
         <img
           src="/agent-q-robot-banner.png"
           alt="Agent Q Robot"
-          className="w-full max-w-4xl h-auto opacity-[0.08] dark:opacity-[0.05] object-contain"
+          className="w-full max-w-5xl h-auto opacity-20 dark:opacity-15 object-contain"
         />
       </div>
 
