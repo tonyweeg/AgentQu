@@ -227,8 +227,19 @@ function App() {
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
-    setCanScrollLeft(scrollLeft > 0);
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5); // -5 for small buffer
+    const canLeft = scrollLeft > 0;
+    const canRight = scrollLeft < scrollWidth - clientWidth - 5; // -5 for small buffer
+
+    console.log('🔍 SCROLL CHECK:', {
+      scrollLeft,
+      scrollWidth,
+      clientWidth,
+      canScrollLeft: canLeft,
+      canScrollRight: canRight
+    });
+
+    setCanScrollLeft(canLeft);
+    setCanScrollRight(canRight);
   };
 
   // Attach scroll listener to controls container
@@ -239,6 +250,11 @@ function App() {
     // Check initial state
     checkScrollPosition();
 
+    // Safari mobile needs a delayed check after layout completes
+    const safariDelayCheck = setTimeout(() => {
+      checkScrollPosition();
+    }, 100);
+
     // Listen for scroll events
     container.addEventListener('scroll', checkScrollPosition);
 
@@ -246,10 +262,16 @@ function App() {
     window.addEventListener('resize', checkScrollPosition);
 
     return () => {
+      clearTimeout(safariDelayCheck);
       container.removeEventListener('scroll', checkScrollPosition);
       window.removeEventListener('resize', checkScrollPosition);
     };
   }, []);
+
+  // Re-check scroll position when activities load or view changes
+  useEffect(() => {
+    checkScrollPosition();
+  }, [activities.length, viewMode]);
 
   // Fetch nearby towns when location and city are available
   useEffect(() => {
@@ -1264,14 +1286,15 @@ function App() {
             </div>
 
             {/* Scroll indicator - Single arrow that switches sides based on scroll position */}
+            {/* Only show on mobile (< 640px) */}
             {canScrollRight ? (
               /* Right arrow - shows by default at start, indicates can scroll right to see more */
-              <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 sm:hidden">
+              <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 block sm:hidden z-10">
                 <span className="text-ocean-bright text-base animate-pulse font-bold">→</span>
               </div>
             ) : canScrollLeft ? (
               /* Left arrow - shows when scrolled to end, indicates can scroll back left */
-              <div className="absolute -left-4 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 to-transparent pointer-events-none flex items-center justify-start pl-4 sm:hidden">
+              <div className="absolute -left-4 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 to-transparent pointer-events-none flex items-center justify-start pl-4 block sm:hidden z-10">
                 <span className="text-ocean-bright text-base animate-pulse font-bold">←</span>
               </div>
             ) : null}
