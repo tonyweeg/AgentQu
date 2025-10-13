@@ -70,12 +70,12 @@ const ContactUs: React.FC = () => {
             style={{
               backgroundImage: 'url(/agent-q-robot-banner.png)',
               backgroundSize: 'auto 150%',
-              backgroundPosition: 'calc(50% - 200px) calc(50% + 50px)',
+              backgroundPosition: 'calc(50% - 200px) calc(50% + 25px)',
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {/* Gradient fade on right edge - 75px fade to transparent */}
-            <div className="absolute inset-y-0 right-0 w-[75px] bg-gradient-to-r from-transparent to-white/100 dark:to-gray-900/100 rounded-r-3xl pointer-events-none"></div>
+            {/* Gradient fade on right edge - wider and stronger to actually fade the image */}
+            <div className="absolute inset-y-0 right-0 w-[150px] bg-gradient-to-r from-transparent via-white/80 to-white dark:from-transparent dark:via-gray-900/80 dark:to-gray-900 rounded-r-3xl pointer-events-none"></div>
 
             {/* Content - right aligned with text shadow for readability */}
             <div className="relative z-10 flex flex-col items-end text-right">
