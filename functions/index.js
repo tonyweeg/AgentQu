@@ -23,6 +23,8 @@ const googleSearchApiKey = defineString("GOOGLE_SEARCH_API_KEY");
 const googleSearchEngineId = defineString("GOOGLE_SEARCH_ENGINE_ID");
 const googleGeocodingApiKey = defineString("GOOGLE_GEOCODING_API_KEY");
 const openWeatherApiKey = defineString("OPENWEATHER_API_KEY");
+const eventbritePrivateToken = defineString("EVENTBRITE_PRIVATE_TOKEN");
+const ticketmasterApiKey = defineString("TICKETMASTER_API_KEY");
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -152,9 +154,424 @@ function calculateAffinityScore(activityCategories, userAffinities) {
 }
 
 /**
+ * Music Genre Affinity Mapping
+ * Maps Ticketmaster genre names to our genre IDs
+ */
+const MUSIC_GENRE_MAP = {
+  // Rock & Alternative
+  'rock': 'rock',
+  'classic rock': 'rock',
+  'hard rock': 'rock',
+  'alternative': 'alternative',
+  'alternative rock': 'alternative',
+  'indie rock': 'alternative',
+  'metal': 'metal',
+  'heavy metal': 'metal',
+  'metalcore': 'metal',
+
+  // Pop & Electronic
+  'pop': 'pop',
+  'dance pop': 'pop',
+  'electro pop': 'pop',
+  'dance/electronic': 'dance-electronic',
+  'edm': 'dance-electronic',
+  'house': 'dance-electronic',
+  'techno': 'dance-electronic',
+  'electronic': 'dance-electronic',
+
+  // Hip Hop & Rap
+  'hip-hop/rap': 'hip-hop-rap',
+  'rap': 'hip-hop-rap',
+  'hip hop': 'hip-hop-rap',
+  'french rap': 'hip-hop-rap',
+
+  // R&B & Soul
+  'r&b': 'r-and-b',
+  'soul': 'r-and-b',
+  'funk': 'r-and-b',
+  'neo-soul': 'r-and-b',
+
+  // Country & Folk
+  'country': 'country',
+  'bluegrass': 'country',
+  'country folk': 'country',
+  'americana': 'country',
+  'folk': 'folk',
+  'singer-songwriter': 'folk',
+  'acoustic': 'folk',
+
+  // Jazz & Blues
+  'jazz': 'jazz',
+  'swing': 'jazz',
+  'bebop': 'jazz',
+  'jazz fusion': 'jazz',
+  'blues': 'blues',
+  'blues rock': 'blues',
+
+  // Classical & Opera
+  'classical': 'classical',
+  'orchestral': 'classical',
+  'chamber music': 'classical',
+  'symphony': 'classical',
+  'opera': 'opera',
+  'operetta': 'opera',
+
+  // Latin & World
+  'latin': 'latin',
+  'reggaeton': 'latin',
+  'salsa': 'latin',
+  'latin pop': 'latin',
+  'world': 'world',
+  'world music': 'world',
+  'international': 'world',
+  'reggae': 'reggae',
+  'ska': 'reggae',
+  'caribbean': 'reggae',
+
+  // Special Categories
+  'oldies & classics': 'oldies-classics',
+  'classic hits': 'oldies-classics',
+  'retro': 'oldies-classics',
+  'christian': 'christian-gospel',
+  'gospel': 'christian-gospel',
+  'contemporary christian': 'christian-gospel',
+  'other': 'other',
+  'undefined': 'other',
+  'miscellaneous': 'other',
+};
+
+/**
+ * Restaurant genre map - Maps Google Places categories to our restaurant genre IDs
+ */
+const RESTAURANT_GENRE_MAP = {
+  // Indian
+  'indian': 'indian',
+  'indian restaurant': 'indian',
+  'curry': 'indian',
+  'tandoori': 'indian',
+  'biryani': 'indian',
+
+  // Thai
+  'thai': 'thai',
+  'thai restaurant': 'thai',
+  'pad thai': 'thai',
+  'tom yum': 'thai',
+
+  // Chinese
+  'chinese': 'chinese',
+  'chinese restaurant': 'chinese',
+  'dim sum': 'chinese',
+  'cantonese': 'chinese',
+  'szechuan': 'chinese',
+
+  // Japanese
+  'japanese': 'japanese',
+  'japanese restaurant': 'japanese',
+  'sushi': 'japanese',
+  'sushi bar': 'japanese',
+  'ramen': 'japanese',
+  'izakaya': 'japanese',
+
+  // Mexican
+  'mexican': 'mexican',
+  'mexican restaurant': 'mexican',
+  'taco': 'mexican',
+  'burrito': 'mexican',
+  'tex-mex': 'mexican',
+
+  // Italian
+  'italian': 'italian',
+  'italian restaurant': 'italian',
+  'pasta': 'italian',
+  'pizza': 'pizza',
+  'pizzeria': 'pizza',
+  'trattoria': 'italian',
+
+  // Mediterranean
+  'mediterranean': 'mediterranean',
+  'mediterranean restaurant': 'mediterranean',
+  'greek': 'mediterranean',
+  'greek restaurant': 'mediterranean',
+  'middle eastern': 'mediterranean',
+  'lebanese': 'mediterranean',
+  'turkish': 'mediterranean',
+
+  // Vietnamese
+  'vietnamese': 'vietnamese',
+  'vietnamese restaurant': 'vietnamese',
+  'pho': 'vietnamese',
+  'banh mi': 'vietnamese',
+
+  // Korean
+  'korean': 'korean',
+  'korean restaurant': 'korean',
+  'korean bbq': 'korean',
+  'kimchi': 'korean',
+  'bibimbap': 'korean',
+
+  // French
+  'french': 'french',
+  'french restaurant': 'french',
+  'bistro': 'french',
+  'brasserie': 'french',
+  'creperie': 'french',
+
+  // American & Western
+  'american': 'american',
+  'american restaurant': 'american',
+  'burger': 'american',
+  'grill': 'american',
+  'hamburger': 'american',
+  'bar': 'bar-pub',
+  'pub': 'bar-pub',
+  'tavern': 'bar-pub',
+  'brewpub': 'bar-pub',
+  'sports bar': 'bar-pub',
+  'diner': 'diner',
+  'comfort food': 'diner',
+  'home cooking': 'diner',
+  'barbecue': 'bbq-southern',
+  'bbq': 'bbq-southern',
+  'southern': 'bbq-southern',
+  'smokehouse': 'bbq-southern',
+
+  // Specialty
+  'seafood': 'seafood',
+  'seafood restaurant': 'seafood',
+  'fish': 'seafood',
+  'oyster bar': 'seafood',
+  'crab house': 'seafood',
+  'lobster': 'seafood',
+  'steakhouse': 'steakhouse',
+  'steak house': 'steakhouse',
+  'steak': 'steakhouse',
+  'chophouse': 'steakhouse',
+  'prime rib': 'steakhouse',
+
+  // Meal Types & Occasions
+  'breakfast': 'breakfast-brunch',
+  'breakfast restaurant': 'breakfast-brunch',
+  'brunch': 'breakfast-brunch',
+  'brunch restaurant': 'breakfast-brunch',
+  'pancake': 'breakfast-brunch',
+  'waffle': 'breakfast-brunch',
+  'eggs': 'breakfast-brunch',
+  'coffee': 'coffee-cafe',
+  'coffee shop': 'coffee-cafe',
+  'cafe': 'coffee-cafe',
+  'espresso': 'coffee-cafe',
+  'coffeehouse': 'coffee-cafe',
+  'bakery': 'bakery-dessert',
+  'dessert': 'bakery-dessert',
+  'dessert shop': 'bakery-dessert',
+  'pastry': 'bakery-dessert',
+  'ice cream': 'bakery-dessert',
+  'sweets': 'bakery-dessert',
+
+  // Vibe & Style
+  'local': 'local-independent',
+  'independent': 'local-independent',
+  'family-owned': 'local-independent',
+  'mom and pop': 'local-independent',
+  'chain': 'chain-corporate',
+  'franchise': 'chain-corporate',
+  'food truck': 'offgrid-casual',
+  'street food': 'offgrid-casual',
+  'food cart': 'offgrid-casual',
+  'outdoor seating': 'offgrid-casual',
+  'casual dining': 'offgrid-casual',
+  'fine dining': 'fine-dining',
+  'upscale': 'fine-dining',
+  'elegant': 'fine-dining',
+  'gourmet': 'fine-dining',
+  'fast food': 'fast-food',
+  'quick service': 'fast-food',
+  'drive-through': 'fast-food',
+  'drive-thru': 'fast-food',
+};
+
+/**
+ * Known chain restaurants and convenience stores to filter out
+ * These should only appear as last resort (similar to gas stations)
+ */
+const KNOWN_CHAINS = [
+  // Fast Food Chains
+  'mcdonalds', "mcdonald's", 'burger king', 'wendy\'s', 'wendys',
+  'taco bell', 'kfc', 'popeyes', 'chick-fil-a', 'chick fil a',
+  'sonic', 'dairy queen', 'arby\'s', 'arbys', 'carl\'s jr', 'carls jr',
+  'hardee\'s', 'hardees', 'jack in the box', 'white castle',
+  'five guys', 'in-n-out', 'shake shack', 'whataburger',
+
+  // Pizza Chains
+  'pizza hut', 'dominos', 'domino\'s', 'papa john\'s', 'papa johns',
+  'little caesars', 'papa murphy\'s', 'marco\'s pizza',
+
+  // Sandwich/Sub Chains
+  'subway', 'jimmy john\'s', 'jimmy johns', 'jersey mike\'s',
+  'firehouse subs', 'quiznos', 'blimpie', 'potbelly',
+
+  // Coffee Chains (corporate, not local)
+  'starbucks', 'dunkin', 'dunkin donuts', 'tim hortons',
+
+  // Convenience Stores
+  'wawa', '7-eleven', '7 eleven', 'circle k', 'sheetz',
+  'cumberland farms', 'speedway', 'pilot', 'flying j',
+  'love\'s', 'loves', 'ta petro', 'am/pm', 'ampm',
+
+  // Casual Dining Chains
+  'applebee\'s', 'applebees', 'chili\'s', 'chilis', 'tgi friday\'s',
+  'red lobster', 'olive garden', 'outback steakhouse',
+  'texas roadhouse', 'longhorn steakhouse', 'cracker barrel',
+  'denny\'s', 'dennys', 'ihop', 'waffle house', 'bob evans',
+  'panera bread', 'panera', 'chipotle', 'qdoba', 'moe\'s southwest',
+
+  // Other Chains
+  'panda express', 'pei wei', 'noodles & company',
+  'buffalo wild wings', 'wingstop', 'hooters',
+  'golden corral', 'cici\'s pizza', 'cicis pizza',
+
+  // Big Box Stores (last resort only)
+  'walmart', 'target', 'costco', 'sam\'s club', 'sams club',
+  'bj\'s wholesale', 'bjs wholesale'
+];
+
+/**
+ * Healthy food place types and keywords to prioritize
+ */
+const HEALTHY_FOOD_INDICATORS = [
+  // Place types
+  'smoothie', 'juice', 'juice bar', 'health food',
+  'organic', 'vegan', 'vegetarian', 'salad',
+  'whole foods', 'natural foods', 'farm to table',
+  'farmers market', 'produce', 'fresh market',
+
+  // Meal types
+  'acai', 'poke', 'poke bowl', 'grain bowl',
+  'mediterranean', 'middle eastern',
+
+  // Shop types
+  'bagel', 'bagel shop', 'deli', 'sandwich shop',
+  'smoothie bowl', 'fresh juice'
+];
+
+/**
+ * Check if a place is a known chain
+ */
+function isKnownChain(placeName) {
+  const nameLower = (placeName || '').toLowerCase();
+  return KNOWN_CHAINS.some(chain => nameLower.includes(chain));
+}
+
+/**
+ * Check if a place is a big box store (Walmart, Target, etc.)
+ * These should only appear as last resort
+ */
+function isBigBoxStore(placeName) {
+  const nameLower = (placeName || '').toLowerCase();
+  const bigBoxStores = [
+    'walmart', 'target', 'costco', 'sam\'s club', 'sams club',
+    'bj\'s wholesale', 'bjs wholesale'
+  ];
+  return bigBoxStores.some(store => nameLower.includes(store));
+}
+
+/**
+ * Check if a place is a healthy food option
+ */
+function isHealthyFood(placeName, placeTypes = []) {
+  const nameLower = (placeName || '').toLowerCase();
+  const typesLower = placeTypes.map(t => (t || '').toLowerCase());
+
+  // Check name
+  const nameMatch = HEALTHY_FOOD_INDICATORS.some(indicator =>
+    nameLower.includes(indicator)
+  );
+
+  // Check types
+  const typeMatch = HEALTHY_FOOD_INDICATORS.some(indicator =>
+    typesLower.some(type => type.includes(indicator))
+  );
+
+  return nameMatch || typeMatch;
+}
+
+/**
+ * Calculate music genre affinity score for an event
+ * Returns score 0-100, or null if not a music event
+ */
+function calculateMusicGenreAffinityScore(musicGenres, musicGenreAffinities) {
+  // If no genre data or no user affinities, return neutral
+  if (!musicGenres || musicGenres.length === 0 || !musicGenreAffinities) {
+    return null; // Not applicable
+  }
+
+  let totalScore = 0;
+  let matchCount = 0;
+
+  // Map Ticketmaster genres to our genre IDs and get affinity scores
+  musicGenres.forEach((tmGenre) => {
+    const genreId = MUSIC_GENRE_MAP[tmGenre.toLowerCase()];
+    if (genreId && musicGenreAffinities[genreId] !== undefined) {
+      totalScore += musicGenreAffinities[genreId];
+      matchCount++;
+    }
+  });
+
+  // If no matches found, return neutral score
+  if (matchCount === 0) return 50;
+
+  // Return average affinity score
+  return Math.round(totalScore / matchCount);
+}
+
+/**
+ * Filter threshold for music genres (configurable)
+ * Events with genre affinity below this score will be filtered out
+ */
+const MUSIC_GENRE_FILTER_THRESHOLD = 20;
+
+/**
+ * Calculate restaurant genre affinity score for a restaurant
+ * Returns score 0-100, or null if not a restaurant or no match
+ */
+function calculateRestaurantGenreAffinityScore(restaurantCategories, restaurantGenreAffinities) {
+  // If no category data or no user affinities, return neutral
+  if (!restaurantCategories || restaurantCategories.length === 0 || !restaurantGenreAffinities) {
+    return null; // Not applicable
+  }
+
+  let totalScore = 0;
+  let matchCount = 0;
+
+  // Map Google Places categories to our genre IDs and get affinity scores
+  const categoriesLower = restaurantCategories.map(c => (c || '').toLowerCase());
+
+  // Check each category against our restaurant genre map
+  categoriesLower.forEach((category) => {
+    const genreId = RESTAURANT_GENRE_MAP[category];
+    if (genreId && restaurantGenreAffinities[genreId] !== undefined) {
+      totalScore += restaurantGenreAffinities[genreId];
+      matchCount++;
+    }
+  });
+
+  // If no matches found, return neutral score
+  if (matchCount === 0) return 50;
+
+  // Return average affinity score
+  return Math.round(totalScore / matchCount);
+}
+
+/**
+ * Filter threshold for restaurant genres (configurable)
+ * Restaurants with genre affinity below this score will be filtered out
+ */
+const RESTAURANT_GENRE_FILTER_THRESHOLD = 20;
+
+/**
  * Calculate final composite score
  */
-function calculateFinalScore(activity, userLat, userLng, userAffinities) {
+function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGenreAffinities, restaurantGenreAffinities) {
   let baseScore = 100;
 
   // Distance factor (0-30 points)
@@ -187,21 +604,138 @@ function calculateFinalScore(activity, userLat, userLng, userAffinities) {
     baseScore += Math.min(15, activity.ratings.voteScore);
   }
 
-  // Affinity factor (0-40 points) - BIGGEST WEIGHT
+  // Category affinity factor (0-40 points) - BIGGEST WEIGHT
   const affinityScore = calculateAffinityScore(activity.categories, userAffinities);
   const affinityPoints = affinityScore * 40;
   baseScore += affinityPoints;
 
+  // Music genre affinity bonus for events (0-20 points)
+  let genreAffinityPoints = 0;
+  if (activity.type === 'event' && activity.musicGenres && musicGenreAffinities) {
+    const genreScore = calculateMusicGenreAffinityScore(activity.musicGenres, musicGenreAffinities);
+    if (genreScore !== null) {
+      // Convert 0-100 score to 0-20 points bonus
+      genreAffinityPoints = (genreScore / 100) * 20;
+      baseScore += genreAffinityPoints;
+    }
+  }
+
+  // Restaurant genre affinity bonus for dining places (0-15 points)
+  let restaurantAffinityPoints = 0;
+  if (activity.categories && restaurantGenreAffinities) {
+    const restaurantScore = calculateRestaurantGenreAffinityScore(activity.categories, restaurantGenreAffinities);
+    if (restaurantScore !== null) {
+      // Convert 0-100 score to 0-15 points bonus (slightly less than music for balance)
+      restaurantAffinityPoints = (restaurantScore / 100) * 15;
+      baseScore += restaurantAffinityPoints;
+    }
+  }
+
+  // Healthy food bonus (20 points for smoothie bars, juice bars, bagel shops, etc.)
+  let healthyFoodBonus = 0;
+  if (isHealthyFood(activity.name, activity.placeTypes || [])) {
+    healthyFoodBonus = 20;
+    baseScore += healthyFoodBonus;
+  }
+
+  // Chain penalty (-10 points for known fast food chains)
+  let chainPenalty = 0;
+  if (isKnownChain(activity.name)) {
+    chainPenalty = -10;
+    baseScore += chainPenalty;
+  }
+
+  // Big box store penalty (-40 points for Walmart, Target, etc. - last resort only)
+  let bigBoxPenalty = 0;
+  if (isBigBoxStore(activity.name)) {
+    bigBoxPenalty = -40;
+    baseScore += bigBoxPenalty;
+    console.log(`🏪 Big box penalty applied to ${activity.name}: ${bigBoxPenalty} points`);
+  }
+
   return {
     finalScore: Math.max(0, Math.round(baseScore)),
-    baseScore: Math.round(baseScore - affinityPoints),
+    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints - restaurantAffinityPoints - healthyFoodBonus - chainPenalty - bigBoxPenalty),
     affinityScore: Math.round(affinityPoints),
+    genreAffinityScore: Math.round(genreAffinityPoints),
+    restaurantAffinityScore: Math.round(restaurantAffinityPoints),
+    healthyFoodBonus: Math.round(healthyFoodBonus),
+    chainPenalty: Math.round(chainPenalty),
+    bigBoxPenalty: Math.round(bigBoxPenalty),
   };
 }
 
 // ============================================================================
 // API FETCHING FUNCTIONS
 // ============================================================================
+
+/**
+ * Fetch results from Google Custom Search with specific text query
+ */
+async function fetchGoogleSearchWithQuery(lat, lng, city = null, textQuery) {
+  const GOOGLE_SEARCH_API_KEY = googleSearchApiKey.value();
+  const GOOGLE_SEARCH_ENGINE_ID = googleSearchEngineId.value();
+
+  if (!GOOGLE_SEARCH_API_KEY || !GOOGLE_SEARCH_ENGINE_ID) {
+    console.warn("🔍 SEARCH API: Not configured");
+    return [];
+  }
+
+  if (!textQuery) {
+    console.warn("🔍 SEARCH API: No text query provided");
+    return [];
+  }
+
+  try {
+    // Add city name to search query if available
+    const searchQuery = city ? `${textQuery} in ${city}` : textQuery;
+
+    console.log(`🔍 CUSTOM SEARCH: Searching for: "${searchQuery}"`);
+
+    const response = await axios.get(`https://www.googleapis.com/customsearch/v1`, {
+      params: {
+        key: GOOGLE_SEARCH_API_KEY,
+        cx: GOOGLE_SEARCH_ENGINE_ID,
+        q: searchQuery,
+        num: 10,
+      },
+    });
+
+    console.log(`🔍 CUSTOM SEARCH: Got ${response.data.items?.length || 0} results`);
+
+    if (!response.data.items) return [];
+
+    // Map results to activities
+    return response.data.items.map((item, index) => {
+      return {
+        id: `custom_search_${Date.now()}_${index}`,
+        activityId: `custom_search_${Date.now()}_${index}`,
+        name: item.title,
+        description: item.snippet,
+        url: item.link,
+        type: 'permanent',
+        categories: ['other'],
+        primaryCategory: 'other',
+        location: {
+          lat: lat, // Approximate location
+          lng: lng,
+          address: city || 'Unknown location',
+        },
+        details: {
+          description: item.snippet,
+          url: item.link,
+        },
+        images: item.pagemap?.cse_image?.map(img => img.src).slice(0, 3) || [],
+      };
+    });
+  } catch (error) {
+    console.error(`🔍 CUSTOM SEARCH ERROR: ${error.message}`);
+    if (error.response) {
+      console.error('🔍 CUSTOM SEARCH Response:', error.response.data);
+    }
+    return [];
+  }
+}
 
 /**
  * Fetch activities from Google Custom Search
@@ -235,11 +769,11 @@ async function fetchGoogleSearch(lat, lng, city = null) {
       return [];
     }
 
-    // Multiple search queries for better coverage
+    // Multiple search queries for immediate/actionable events (next 3 days)
     const queries = [
-      `events ${city} this week`,
-      `events site:facebook.com ${city}`,
-      `things to do ${city}`,
+      `events ${city} today tonight this weekend`,
+      `events site:facebook.com ${city} today this weekend`,
+      `things to do ${city} this weekend`,
     ];
 
     const allResults = [];
@@ -254,6 +788,7 @@ async function fetchGoogleSearch(lat, lng, city = null) {
             cx: GOOGLE_SEARCH_ENGINE_ID,
             q: searchQuery,
             num: 10,
+            dateRestrict: 'd30', // Only results from past 30 days (fresh event listings)
           },
         });
 
@@ -396,47 +931,674 @@ async function fetchGoogleSearch(lat, lng, city = null) {
 }
 
 /**
+ * Fetch events from Eventbrite API
+ */
+async function fetchEventbriteEvents(lat, lng, radius = 10, city = null) {
+  const EVENTBRITE_TOKEN = eventbritePrivateToken.value();
+
+  if (!EVENTBRITE_TOKEN) {
+    console.warn("🎟️ EVENTBRITE: Not configured");
+    return [];
+  }
+
+  try {
+    const radiusKm = radius * 1.60934; // Convert miles to km
+
+    console.log(`🎟️ EVENTBRITE: Searching events within ${radius} miles (${radiusKm}km) of ${lat},${lng}`);
+
+    const response = await axios.get(`https://www.eventbriteapi.com/v3/events/search`, {
+      params: {
+        'location.latitude': lat,
+        'location.longitude': lng,
+        'location.within': `${radiusKm}km`,
+        'expand': 'venue,organizer,ticket_availability',
+        'page_size': 50,
+      },
+      headers: {
+        'Authorization': `Bearer ${EVENTBRITE_TOKEN}`,
+      },
+    });
+
+    console.log(`🎟️ EVENTBRITE: Got ${response.data.events?.length || 0} events`);
+
+    if (!response.data.events || response.data.events.length === 0) {
+      return [];
+    }
+
+    return response.data.events.map((event) => {
+      const eventLat = event.venue?.latitude ? parseFloat(event.venue.latitude) : lat;
+      const eventLng = event.venue?.longitude ? parseFloat(event.venue.longitude) : lng;
+
+      // Extract event date/time
+      const startDate = event.start?.local || event.start?.utc;
+      const endDate = event.end?.local || event.end?.utc;
+
+      // Get high-quality image
+      const imageUrl = event.logo?.original?.url || event.logo?.url || null;
+
+      // Extract venue info
+      const venueName = event.venue?.name || 'Venue TBA';
+      const venueAddress = event.venue?.address?.localized_address_display ||
+                          event.venue?.address?.address_1 || '';
+
+      // Check if free
+      const isFree = event.is_free ||
+                    (event.ticket_availability?.minimum_ticket_price?.major_value === 0);
+
+      // Build description
+      const description = event.description?.text || event.summary ||
+                         `${event.name.text} at ${venueName}`;
+
+      return {
+        activityId: `eventbrite_${event.id}`,
+        name: event.name.text,
+        type: "event",
+        location: {
+          lat: eventLat,
+          lng: eventLng,
+          geohash: geohash.encode(eventLat, eventLng, 7),
+          geohashPrecise: geohash.encode(eventLat, eventLng, 9),
+          address: venueAddress || city || 'Location TBA',
+        },
+        categories: ["events", "activities"],
+        primaryCategory: "event",
+        details: {
+          description: description,
+          shortDescription: description.substring(0, 200),
+          imageUrl: imageUrl,
+          website: event.url,
+          eventDate: startDate,
+          eventEndDate: endDate,
+          venue: venueName,
+          venueAddress: venueAddress,
+          organizerName: event.organizer?.name,
+          capacity: event.capacity,
+          priceLevel: isFree ? 0 : (event.ticket_availability?.minimum_ticket_price?.major_value > 50 ? 3 : 2),
+        },
+        expiration: {
+          type: "date",
+          expiresAt: new Date(endDate || startDate).getTime() || Date.now() + 86400000,
+          lastVerified: Date.now(),
+          isActive: true,
+        },
+        ratings: {
+          googleRating: null,
+          agentQuRating: null,
+          totalReviews: 0,
+          totalVotes: 0,
+          upvotes: 0,
+          downvotes: 0,
+          voteScore: 0,
+        },
+        searchMetadata: {
+          firstSeen: Date.now(),
+          lastSearched: Date.now(),
+          searchCount: 1,
+          source: "eventbrite",
+          sourceId: event.id,
+        },
+        openNow: true,
+      };
+    }).filter((activity) => activity.name);
+  } catch (error) {
+    console.error("🎟️ EVENTBRITE: Error fetching events:", error.message);
+    if (error.response) {
+      console.error(`🎟️ EVENTBRITE: Status ${error.response.status}:`, error.response.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Affiliate Tracking Configuration
+ *
+ * To monetize event ticket sales, sign up for affiliate programs:
+ * - Ticketmaster: https://ticketmaster.com/partners
+ * - StubHub: https://stubhub.com/affiliates
+ * - SeatGeek: https://seatgeek.com/partners
+ *
+ * Add your affiliate IDs to .env:
+ * TICKETMASTER_AFFILIATE_ID=your_id_here
+ * STUBHUB_AFFILIATE_ID=your_id_here
+ * SEATGEEK_AFFILIATE_ID=your_id_here
+ */
+function addAffiliateTracking(url, platform) {
+  // TODO: Add your affiliate IDs to .env and uncomment the tracking logic below
+
+  // For now, return the URL as-is (may have default tracking from API)
+  // The Ticketmaster Discovery API returns URLs with affiliate tracking by default
+  return url;
+
+  /* UNCOMMENT WHEN YOU HAVE AFFILIATE IDs:
+
+  const affiliateIds = {
+    ticketmaster: process.env.TICKETMASTER_AFFILIATE_ID || null,
+    stubhub: process.env.STUBHUB_AFFILIATE_ID || null,
+    seatgeek: process.env.SEATGEEK_AFFILIATE_ID || null,
+  };
+
+  if (!affiliateIds[platform]) {
+    console.warn(`⚠️ No affiliate ID configured for ${platform}`);
+    return url;
+  }
+
+  // Add affiliate tracking based on platform
+  switch (platform) {
+    case 'ticketmaster':
+      // Ticketmaster affiliate link format
+      return `https://ticketmaster.evyy.net/c/${affiliateIds.ticketmaster}?u=${encodeURIComponent(url)}`;
+
+    case 'stubhub':
+      // StubHub affiliate link format
+      return `${url}${url.includes('?') ? '&' : '?'}affiliateId=${affiliateIds.stubhub}`;
+
+    case 'seatgeek':
+      // SeatGeek affiliate link format
+      return `${url}${url.includes('?') ? '&' : '?'}aid=${affiliateIds.seatgeek}`;
+
+    default:
+      return url;
+  }
+  */
+}
+
+/**
+ * Fetch events from Ticketmaster Discovery API
+ */
+async function fetchTicketmasterEvents(lat, lng, radius = 10, city = null) {
+  const TICKETMASTER_API_KEY = ticketmasterApiKey.value();
+
+  if (!TICKETMASTER_API_KEY) {
+    console.warn("🎫 TICKETMASTER: Not configured");
+    return [];
+  }
+
+  try {
+    const radiusMiles = radius; // Ticketmaster uses miles directly
+
+    console.log(`🎫 TICKETMASTER: Searching events within ${radiusMiles} miles of ${lat},${lng}`);
+
+    // Get current date in ISO format for filtering future events only
+    // Ticketmaster requires YYYY-MM-DDTHH:mm:ssZ (no milliseconds)
+    const now = new Date();
+    const startDateTime = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+    // Filter to next 3 days for immediate/actionable events
+    const threeDaysFromNow = new Date(now);
+    threeDaysFromNow.setDate(now.getDate() + 3);
+    const endDateTime = threeDaysFromNow.toISOString().replace(/\.\d{3}Z$/, 'Z');
+
+    console.log(`🎫 TICKETMASTER: Searching events from ${now.toLocaleDateString()} to ${threeDaysFromNow.toLocaleDateString()}`);
+
+    const response = await axios.get(`https://app.ticketmaster.com/discovery/v2/events.json`, {
+      params: {
+        apikey: TICKETMASTER_API_KEY,
+        latlong: `${lat},${lng}`,
+        radius: radiusMiles,
+        unit: 'miles',
+        size: 50,
+        sort: 'date,asc',
+        startDateTime: startDateTime, // Now
+        endDateTime: endDateTime // Next 3 days
+      }
+    });
+
+    console.log(`🎫 TICKETMASTER: Got ${response.data._embedded?.events?.length || 0} events`);
+
+    if (!response.data._embedded?.events || response.data._embedded.events.length === 0) {
+      return [];
+    }
+
+    return response.data._embedded.events.map((event) => {
+      // Extract venue location
+      const venue = event._embedded?.venues?.[0];
+      const eventLat = venue?.location?.latitude ? parseFloat(venue.location.latitude) : lat;
+      const eventLng = venue?.location?.longitude ? parseFloat(venue.location.longitude) : lng;
+
+      // Get high-quality image
+      const images = event.images || [];
+      const imageUrl = images.find(img => img.width >= 1024)?.url || images[0]?.url || null;
+
+      // Extract event date/time
+      const startDate = event.dates?.start?.dateTime || event.dates?.start?.localDate;
+
+      // DEBUG: Log the actual date from Ticketmaster
+      if (startDate) {
+        const parsedDate = new Date(startDate);
+        console.log(`🎫 DEBUG: Event "${event.name}" - Raw date: ${startDate}, Parsed: ${parsedDate.toLocaleDateString()}, Is past? ${parsedDate < now}`);
+      }
+
+      // Check if free
+      const isFree = event.priceRanges?.[0]?.min === 0;
+      const priceMin = event.priceRanges?.[0]?.min || null;
+      const priceMax = event.priceRanges?.[0]?.max || null;
+
+      // Extract music genres from classifications
+      const classifications = event.classifications || [];
+      const musicClassification = classifications.find(c => c.segment?.name === 'Music');
+      const musicGenres = [];
+
+      if (musicClassification) {
+        if (musicClassification.genre?.name) {
+          musicGenres.push(musicClassification.genre.name);
+        }
+        if (musicClassification.subGenre?.name &&
+            musicClassification.subGenre.name !== musicClassification.genre?.name) {
+          musicGenres.push(musicClassification.subGenre.name);
+        }
+      }
+
+      return {
+        activityId: `ticketmaster_${event.id}`,
+        name: event.name,
+        type: "event",
+        // TOP-LEVEL: Frontend looks for these
+        images: imageUrl ? [imageUrl] : [], // Frontend expects array
+        website: addAffiliateTracking(event.url, 'ticketmaster'), // TOP-LEVEL for frontend
+        description: event.info || event.pleaseNote || `${event.name} at ${venue?.name || 'venue'}`,
+        address: venue?.address?.line1 || city || 'Location TBA',
+        city: venue?.city?.name || city || '',
+        state: venue?.state?.stateCode || '',
+        location: {
+          lat: eventLat,
+          lng: eventLng,
+          geohash: geohash.encode(eventLat, eventLng, 7),
+          geohashPrecise: geohash.encode(eventLat, eventLng, 9),
+          address: venue?.address?.line1 || city || 'Location TBA',
+        },
+        categories: ["events", "activities", ...(event.classifications?.[0]?.segment?.name ? [event.classifications[0].segment.name.toLowerCase()] : [])],
+        primaryCategory: "events",
+        musicGenres: musicGenres, // TOP-LEVEL: Music genre tags for filtering
+        cost: {
+          free: isFree,
+          price: priceMin,
+          priceLevel: isFree ? 0 : (priceMin > 50 ? 3 : priceMin > 25 ? 2 : 1),
+        },
+        details: {
+          description: event.info || event.pleaseNote || `${event.name} at ${venue?.name || 'venue'}`,
+          shortDescription: (event.info || event.name).substring(0, 200),
+          imageUrl: imageUrl,
+          website: addAffiliateTracking(event.url, 'ticketmaster'),
+          eventDate: startDate,
+          venue: venue?.name || 'Venue TBA',
+          venueAddress: venue?.address?.line1 || '',
+          organizerName: event.promoter?.name || event._embedded?.attractions?.[0]?.name,
+          priceLevel: isFree ? 0 : (priceMin > 50 ? 3 : priceMin > 25 ? 2 : 1),
+          priceRange: priceMin && priceMax ? `$${priceMin}-$${priceMax}` : null,
+          musicGenres: musicGenres, // Array of genre tags
+        },
+        expiration: {
+          type: "date",
+          expiresAt: new Date(startDate).getTime() || Date.now() + 86400000,
+          lastVerified: Date.now(),
+          isActive: true,
+        },
+        ratings: {
+          googleRating: null,
+          agentQuRating: null,
+          totalReviews: 0,
+          totalVotes: 0,
+          upvotes: 0,
+          downvotes: 0,
+          voteScore: 0,
+        },
+        searchMetadata: {
+          firstSeen: Date.now(),
+          lastSearched: Date.now(),
+          searchCount: 1,
+          source: "ticketmaster",
+          sourceId: event.id,
+        },
+        openNow: true,
+      };
+    }).filter((activity) => {
+      // Filter out events without names
+      if (!activity.name) return false;
+
+      // Filter out past events AND events beyond 3 days (safety check) - STRICT FILTERING
+      if (activity.details?.eventDate) {
+        const eventDate = new Date(activity.details.eventDate);
+        const nowCheck = new Date();
+        const threeDaysOut = new Date(nowCheck);
+        threeDaysOut.setDate(nowCheck.getDate() + 3);
+
+        // For localDate format (YYYY-MM-DD), compare just the dates
+        // For dateTime format, compare full timestamps
+        const isLocalDateOnly = activity.details.eventDate.length === 10; // "YYYY-MM-DD"
+
+        if (isLocalDateOnly) {
+          // Compare dates only (set time to start of day)
+          const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+          const today = new Date(nowCheck.getFullYear(), nowCheck.getMonth(), nowCheck.getDate());
+          const maxDay = new Date(threeDaysOut.getFullYear(), threeDaysOut.getMonth(), threeDaysOut.getDate());
+
+          if (eventDay < today) {
+            console.log(`🎫 FILTERED (past): "${activity.name}" - Date: ${activity.details.eventDate} is before today`);
+            return false;
+          }
+          if (eventDay > maxDay) {
+            console.log(`🎫 FILTERED (too far): "${activity.name}" - Date: ${activity.details.eventDate} is beyond 3 days`);
+            return false;
+          }
+        } else {
+          // Full timestamp comparison
+          if (eventDate < nowCheck) {
+            console.log(`🎫 FILTERED (past): "${activity.name}" - DateTime: ${activity.details.eventDate} is before now`);
+            return false;
+          }
+          if (eventDate > threeDaysOut) {
+            console.log(`🎫 FILTERED (too far): "${activity.name}" - DateTime: ${activity.details.eventDate} is beyond 3 days`);
+            return false;
+          }
+        }
+      }
+
+      return true;
+    });
+  } catch (error) {
+    console.error("🎫 TICKETMASTER: Error fetching events:", error.message);
+    if (error.response) {
+      console.error(`🎫 TICKETMASTER: Status ${error.response.status}:`, error.response.data);
+    }
+    return [];
+  }
+}
+
+/**
+ * Fetch local recommendations from Reddit
+ */
+async function fetchRedditLocalBuzz(lat, lng, city = null, state = null) {
+  if (!city) {
+    console.log('🤖 REDDIT: Skipping - no city name available');
+    return [];
+  }
+
+  try {
+    console.log(`🤖 REDDIT: Searching for local buzz in ${city}, ${state}`);
+
+    // Build subreddit search queries
+    const subredditQueries = [
+      city.toLowerCase().replace(/\s+/g, ''), // e.g., "baltimore"
+      state ? state.toLowerCase() : null, // e.g., "maryland"
+    ].filter(Boolean);
+
+    const allPosts = [];
+
+    // Search multiple subreddits
+    for (const sub of subredditQueries.slice(0, 2)) { // Limit to 2 subreddits
+      try {
+        const searchQuery = `things to do OR hidden gem OR local favorite OR must visit`;
+        const redditUrl = `https://www.reddit.com/r/${sub}/search.json?q=${encodeURIComponent(searchQuery)}&restrict_sr=1&sort=top&t=month&limit=10`;
+
+        const response = await axios.get(redditUrl, {
+          headers: {
+            'User-Agent': 'AgentQu/1.0'
+          }
+        });
+
+        if (response.data?.data?.children) {
+          allPosts.push(...response.data.data.children.map(child => child.data));
+        }
+      } catch (subError) {
+        console.log(`🤖 REDDIT: Subreddit r/${sub} failed:`, subError.message);
+      }
+    }
+
+    console.log(`🤖 REDDIT: Found ${allPosts.length} local posts`);
+
+    // Convert Reddit posts to activities
+    return allPosts.slice(0, 10).map((post, index) => ({
+      activityId: `reddit_${post.id}`,
+      name: post.title,
+      type: "event", // Treat as recommendation
+      location: {
+        lat,
+        lng,
+        geohash: geohash.encode(lat, lng, 7),
+        geohashPrecise: geohash.encode(lat, lng, 9),
+        address: `${city}, ${state}`,
+      },
+      categories: ["local_buzz", "community_rec"],
+      primaryCategory: "local_buzz",
+      details: {
+        description: post.selftext || post.title,
+        shortDescription: (post.selftext || post.title).substring(0, 200),
+        imageUrl: post.thumbnail && post.thumbnail.startsWith('http') ? post.thumbnail : null,
+        website: `https://reddit.com${post.permalink}`,
+      },
+      expiration: {
+        type: "date",
+        expiresAt: Date.now() + 86400000 * 7, // 7 days
+        lastVerified: Date.now(),
+        isActive: true,
+      },
+      ratings: {
+        googleRating: null,
+        agentQuRating: post.score / 100, // Convert Reddit score to 0-10 scale
+        totalReviews: post.num_comments,
+        totalVotes: post.ups + post.downs,
+        upvotes: post.ups,
+        downvotes: post.downs || 0,
+        voteScore: post.score,
+      },
+      searchMetadata: {
+        firstSeen: Date.now(),
+        lastSearched: Date.now(),
+        searchCount: 1,
+        source: "reddit",
+        sourceId: post.id,
+      },
+      openNow: true,
+    }));
+  } catch (error) {
+    console.error("🤖 REDDIT: Error fetching local buzz:", error.message);
+    return [];
+  }
+}
+
+/**
  * Map affinity categories to Google Place types
  */
 function affinityToPlaceTypes(affinities) {
+  // COMPLETE mapping of all frontend affinity categories to Google Place types
   const categoryMapping = {
-    'local_favorites': ['restaurant', 'cafe', 'bakery'],
-    'museums': ['museum', 'art_gallery'],
-    'hiking': ['park', 'hiking_area', 'national_park'],
-    'festivals': ['tourist_attraction', 'event_venue'],
-    'happy_hour': ['bar', 'night_club', 'wine_bar'],
-    'coffee_shops': ['cafe', 'coffee_shop'],
-    'fine_dining': ['restaurant', 'fine_dining_restaurant'],
-    'outdoor_adventure': ['park', 'campground', 'hiking_area'],
-    'live_music': ['night_club', 'live_music_venue', 'performing_arts_theater'],
-    'sports': ['stadium', 'gym', 'sports_complex'],
-    'skateparks': ['park', 'sports_complex'],
-    'art_culture': ['art_gallery', 'museum', 'cultural_center'],
-    'nightlife': ['bar', 'night_club', 'dance_club'],
-    'shopping': ['shopping_mall', 'clothing_store', 'book_store'],
-    'wellness': ['spa', 'gym', 'yoga_studio'],
-    'family_friendly': ['amusement_park', 'zoo', 'aquarium', 'park']
+    // Events & Entertainment
+    'events': ['event_venue', 'performing_arts_theater', 'convention_center', 'tourist_attraction'],
+    'nightlife': ['bar', 'night_club', 'wine_bar'],  // FIXED: removed invalid 'dance_club'
+    'festivals': ['tourist_attraction', 'event_venue', 'park'],  // FIXED: 'fairground' is not valid
+
+    // Food & Dining
+    'dining': ['restaurant', 'meal_takeaway'],  // FIXED: 'fine_dining_restaurant' is not valid
+    'coffee': ['cafe', 'coffee_shop', 'bakery'],
+    'food_trucks': ['meal_takeaway', 'restaurant'],
+    'happy_hour': ['bar', 'night_club', 'wine_bar', 'restaurant'],
+
+    // Outdoor & Nature
+    'hiking': ['park', 'hiking_area', 'national_park'],  // FIXED: removed invalid 'trail'
+    'parks': ['park', 'botanical_garden', 'playground'],  // FIXED: removed invalid 'dog_park'
+    'beaches': ['beach', 'waterfront', 'pier'],
+    'geocaching': ['park', 'tourist_attraction', 'point_of_interest'],
+    'disc_golf': ['park', 'sports_complex'],  // FIXED: 'disc_golf_course' is not valid
+    'skate_parks': ['park', 'sports_complex', 'athletic_field', 'tourist_attraction'],  // No specific skatepark type in Google Places
+    'action_sports': ['sports_complex', 'tourist_attraction', 'gym', 'park', 'amusement_park'],  // Rock climbing, zip lines, extreme sports
+
+    // Water Sports & Activities
+    'watersports': ['marina', 'beach', 'sporting_goods_store'],  // FIXED: removed invalid 'water_sports'
+    'fishing': ['marina', 'sporting_goods_store', 'store'],  // FIXED: removed invalid 'fishing_pier', 'bait_shop'
+    'boating': ['marina', 'store'],  // FIXED: removed invalid 'yacht_club', 'boat_launch'
+
+    // Sports & Fitness
+    'sports': ['stadium', 'gym', 'sports_complex', 'athletic_field'],
+    'fitness': ['gym', 'yoga_studio', 'spa', 'health'],
+
+    // Arts & Culture
+    'museums': ['museum', 'art_gallery'],  // FIXED: removed invalid 'cultural_center'
+    'movies': ['movie_theater'],  // FIXED: 'cinema' is not valid
+    'classes': ['school', 'community_center'],  // FIXED: removed invalid art_school, music_school
+
+    // Community & Social
+    'volunteering': ['community_center', 'church'],  // FIXED: removed invalid 'religious_organization', 'non_profit_organization'
+    'meetups': ['community_center', 'library', 'event_venue'],
+    'farmers_markets': ['market', 'shopping_mall'],
+
+    // Entertainment & Fun
+    'gaming': ['amusement_center', 'bowling_alley'],  // FIXED: 'arcade' is not a valid Google type
+    'live_music': ['night_club', 'performing_arts_theater'],  // FIXED: removed invalid types
+    'comedy': ['performing_arts_theater', 'night_club'],  // FIXED: removed invalid 'comedy_club'
+
+    // Shopping & Local
+    'shopping': ['shopping_mall', 'clothing_store', 'book_store', 'store'],  // FIXED: 'boutique' is not valid
+    'local_favorites': ['restaurant', 'cafe', 'bakery', 'bar'],
+
+    // Special Interests
+    'wine_tasting': ['winery', 'wine_bar', 'liquor_store', 'bar'],
+    'tours': ['tourist_attraction', 'landmark']  // FIXED: removed invalid 'travel_agency', 'visitor_center'
+    // Note: 'free_activities' is not a place type, handled by filtering on cost.free
   };
+
+  // Always include these base types regardless of affinities
+  const baseTypes = new Set(['restaurant', 'cafe', 'bar']);
 
   if (!affinities || Object.keys(affinities).length === 0) {
     // Default: broad categories
     return ['restaurant', 'cafe', 'park', 'museum', 'tourist_attraction', 'bar'];
   }
 
-  // Get top 5 affinity categories
+  // Get top 8 affinity categories (increased from 5 to be more inclusive)
   const topCategories = Object.entries(affinities)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
+    .slice(0, 8)
     .map(([cat]) => cat);
 
-  // Convert to place types
-  const placeTypes = new Set();
+  // Convert to place types, starting with base types
+  const placeTypes = new Set([...baseTypes]);
   topCategories.forEach(cat => {
     const types = categoryMapping[cat] || [];
     types.forEach(type => placeTypes.add(type));
   });
 
-  return Array.from(placeTypes).slice(0, 10); // Limit to 10 types
+  return Array.from(placeTypes).slice(0, 12); // Increased limit to 12 types
+}
+
+/**
+ * Fetch places from Google Places API using text search
+ */
+async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
+  const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+
+  if (!GOOGLE_PLACES_API_KEY) {
+    console.warn("Google Places API key not configured");
+    return [];
+  }
+
+  if (!textQuery) {
+    console.warn("No text query provided for text search");
+    return [];
+  }
+
+  try {
+    const radiusMeters = radius * 1609; // miles to meters
+
+    console.log(`🔍 TEXT SEARCH: Searching for "${textQuery}" within ${radius} miles`);
+
+    // Use Places API (New) - searchText endpoint
+    const response = await axios.post(
+      `https://places.googleapis.com/v1/places:searchText`,
+      {
+        textQuery: textQuery,
+        locationBias: {
+          circle: {
+            center: {
+              latitude: lat,
+              longitude: lng
+            },
+            radius: radiusMeters
+          }
+        },
+        maxResultCount: 20
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.editorialSummary,places.websiteUri,places.nationalPhoneNumber'
+        }
+      }
+    );
+
+    console.log(`🔍 TEXT SEARCH: Got ${response.data.places?.length || 0} results for "${textQuery}"`);
+
+    if (!response.data.places) {
+      return [];
+    }
+
+    return response.data.places.map((place) => {
+      const placeTypes = place.types || [];
+      const categories = mapPlaceTypeToCategories(placeTypes);
+
+      // Extract opening hours for today
+      const todayHours = place.currentOpeningHours?.weekdayDescriptions?.[new Date().getDay()] || null;
+      let hoursToday = null;
+      if (todayHours) {
+        // Parse "Monday: 9:00 AM – 5:00 PM" format
+        const hoursMatch = todayHours.match(/:\s*(\d+:\d+\s*[AP]M)\s*–\s*(\d+:\d+\s*[AP]M)/);
+        if (hoursMatch) {
+          hoursToday = {
+            open: hoursMatch[1],
+            close: hoursMatch[2]
+          };
+        }
+      }
+
+      const activity = {
+        id: place.id,
+        activityId: place.id,
+        name: place.displayName?.text || place.displayName || 'Unknown Place',
+        description: place.editorialSummary?.text || null,
+        location: {
+          lat: place.location?.latitude,
+          lng: place.location?.longitude,
+          address: place.formattedAddress,
+        },
+        address: place.formattedAddress,
+        type: 'permanent',
+        categories: categories,
+        primaryCategory: categories[0] || 'other',
+        placeTypes: placeTypes,
+        website: place.websiteUri || null,
+        phone: place.nationalPhoneNumber || null,
+        hoursToday: hoursToday,
+        details: {
+          description: place.editorialSummary?.text || null,
+          shortDescription: place.editorialSummary?.text?.substring(0, 200) || null,
+          priceLevel: place.priceLevel || null,
+        },
+        cost: {
+          priceLevel: place.priceLevel || 0,
+          free: place.priceLevel === 0 || !place.priceLevel,
+        },
+        rating: place.rating || null,
+        reviewCount: place.userRatingCount || 0,
+        ratings: {
+          googleRating: place.rating || null,
+        },
+        openNow: place.currentOpeningHours?.openNow || false,
+        images: place.photos?.slice(0, 3).map(photo => {
+          const photoRef = photo.name?.split('/').pop();
+          return photoRef ? `https://places.googleapis.com/v1/${photo.name}/media?key=${GOOGLE_PLACES_API_KEY}&maxHeightPx=800&maxWidthPx=800` : null;
+        }).filter(Boolean) || [],
+      };
+
+      console.log(`🔍 TEXT SEARCH: Mapped ${activity.name} - categories: ${activity.categories.join(', ')}`);
+      return activity;
+    });
+  } catch (error) {
+    console.error(`🔍 TEXT SEARCH ERROR: ${error.message}`);
+    if (error.response) {
+      console.error('🔍 TEXT SEARCH Response:', error.response.data);
+    }
+    return [];
+  }
 }
 
 /**
@@ -477,7 +1639,7 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos'
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.editorialSummary,places.currentOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.priceLevel'
         }
       }
     );
@@ -490,7 +1652,45 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
       return [];
     }
 
-    return response.data.places.map((place) => {
+    // Filter out big box stores masquerading as cafes/coffee shops
+    const filteredPlaces = response.data.places.filter((place) => {
+      const placeTypes = place.types || [];
+      const categories = mapPlaceTypeToCategories(placeTypes);
+
+      // Big box store types that shouldn't appear as cafes
+      const bigBoxTypes = [
+        'department_store',
+        'supermarket',
+        'grocery_or_supermarket',
+        'shopping_mall',
+        'convenience_store',
+        'gas_station',
+        'home_goods_store',
+        'hardware_store',
+        'furniture_store',
+        'clothing_store',
+        'electronics_store',
+        'pharmacy',
+        'drugstore'
+      ];
+
+      // Check if this is a big box store
+      const isBigBoxStore = placeTypes.some(type => bigBoxTypes.includes(type));
+
+      // Check if it's categorized as cafe/coffee
+      const isCafe = categories.includes('coffee') || categories.includes('cafes') ||
+                     placeTypes.includes('cafe') || placeTypes.includes('coffee_shop');
+
+      // Exclude big box stores from cafe results
+      if (isBigBoxStore && isCafe) {
+        console.log(`🚫 Excluding ${place.displayName?.text || place.displayName} - big box store with cafe`);
+        return false;
+      }
+
+      return true;
+    });
+
+    return filteredPlaces.map((place) => {
       const placeLat = place.location.latitude;
       const placeLng = place.location.longitude;
       const categories = mapPlaceTypeToCategories(place.types || []);
@@ -502,10 +1702,25 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
           )
         : [];
 
+      // Extract opening hours for today
+      const todayHours = place.currentOpeningHours?.weekdayDescriptions?.[new Date().getDay()] || null;
+      let hoursToday = null;
+      if (todayHours) {
+        // Parse "Monday: 9:00 AM – 5:00 PM" format
+        const hoursMatch = todayHours.match(/:\s*(\d+:\d+\s*[AP]M)\s*–\s*(\d+:\d+\s*[AP]M)/);
+        if (hoursMatch) {
+          hoursToday = {
+            open: hoursMatch[1],
+            close: hoursMatch[2]
+          };
+        }
+      }
+
       return {
         activityId: `place_${place.id}`,
         name: place.displayName?.text || place.displayName || 'Unknown Place',
         type: "permanent",
+        description: place.editorialSummary?.text || null, // Add description from editorial summary
         location: {
           lat: placeLat,
           lng: placeLng,
@@ -517,18 +1732,22 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         address: place.formattedAddress, // Top-level for easy access
         categories,
         primaryCategory: categories[0] || place.types?.[0] || "venue",
+        placeTypes: place.types || [], // Preserve raw Google Places types for filtering
         images, // Add images array for frontend
         rating: place.rating || null, // Top-level rating
         reviewCount: place.userRatingCount || 0, // Top-level review count
+        website: place.websiteUri || null, // Add website
+        phone: place.nationalPhoneNumber || null, // Add phone
+        hoursToday: hoursToday, // Add today's hours
         cost: {
-          free: false,
-          priceLevel: null,
+          free: place.priceLevel === 0 || !place.priceLevel,
+          priceLevel: place.priceLevel || null,
         },
         details: {
-          description: place.formattedAddress,
-          shortDescription: place.formattedAddress,
+          description: place.editorialSummary?.text || null,
+          shortDescription: place.editorialSummary?.text?.substring(0, 200) || null,
           imageUrl: images[0] || null, // Keep for backward compatibility
-          priceLevel: null,
+          priceLevel: place.priceLevel || null,
         },
         schedule: {
           isOpen24Hours: false,
@@ -564,6 +1783,81 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
     if (error.response) {
       console.error("Places API response status:", error.response.status);
       console.error("Places API response data:", JSON.stringify(error.response.data));
+    }
+    return [];
+  }
+}
+
+/**
+ * Fetch EV charging stations from Google Places API (New)
+ */
+async function fetchEVChargingStations(lat, lng, radius = 10) {
+  const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+
+  if (!GOOGLE_PLACES_API_KEY) {
+    console.warn("⚡ EV CHARGING: Google Places API key not configured");
+    return [];
+  }
+
+  try {
+    const radiusMeters = radius * 1609; // miles to meters
+
+    console.log(`⚡ EV CHARGING: Searching charging stations within ${radius} miles of ${lat},${lng}`);
+
+    // Use Places API (New) - nearbysearch endpoint for EV charging stations
+    const response = await axios.post(
+      `https://places.googleapis.com/v1/places:searchNearby`,
+      {
+        includedTypes: ["electric_vehicle_charging_station"],
+        maxResultCount: 20,
+        locationRestriction: {
+          circle: {
+            center: {
+              latitude: lat,
+              longitude: lng
+            },
+            radius: radiusMeters
+          }
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.rating,places.currentOpeningHours,places.id'
+        }
+      }
+    );
+
+    console.log(`⚡ EV CHARGING: Found ${response.data.places?.length || 0} charging stations`);
+
+    if (!response.data.places || response.data.places.length === 0) {
+      return [];
+    }
+
+    return response.data.places.map((place) => {
+      const placeLat = place.location.latitude;
+      const placeLng = place.location.longitude;
+      const distance = calculateDistance(lat, lng, placeLat, placeLng);
+
+      return {
+        id: place.id,
+        name: place.displayName?.text || place.displayName || 'Charging Station',
+        address: place.formattedAddress || '',
+        distance: distance,
+        location: {
+          lat: placeLat,
+          lng: placeLng
+        },
+        rating: place.rating || null,
+        openNow: place.currentOpeningHours?.openNow || false
+      };
+    });
+  } catch (error) {
+    console.error("⚡ EV CHARGING: Error fetching charging stations:", error.message);
+    if (error.response) {
+      console.error("⚡ EV CHARGING: API response status:", error.response.status);
+      console.error("⚡ EV CHARGING: API response data:", JSON.stringify(error.response.data));
     }
     return [];
   }
@@ -641,6 +1935,8 @@ async function saveActivitiesAndCache(activities, geohashKey, radius, affinitySi
         activity.location.lat,
         activity.location.lng,
         userAffinities,
+        musicGenreAffinities,
+        restaurantGenreAffinities,
       );
       return {
         activityId: activity.activityId,
@@ -701,6 +1997,8 @@ async function personalizeCachedResults(cachedData, userAffinities) {
         activity.location.lat,
         activity.location.lng,
         userAffinities,
+        musicGenreAffinities,
+        restaurantGenreAffinities,
       );
 
       return {
@@ -741,6 +2039,8 @@ exports.discoverActivities = onCall(
     userId,
     enablePlaces = true,
     enableCustomSearch = true,
+    showFastFood = false,
+    textSearch = null,
     bypassCache = false
   } = request.data;
 
@@ -751,12 +2051,18 @@ exports.discoverActivities = onCall(
   const startTime = Date.now();
 
   try {
-    // Get user affinities
+    // Get user affinities and EV status
     let userAffinities = null;
+    let musicGenreAffinities = null;
+    let restaurantGenreAffinities = null;
+    let isEVOwner = false;
     if (userId) {
       const userDoc = await db.collection("users").doc(userId).get();
       if (userDoc.exists) {
         userAffinities = userDoc.data().affinities;
+        musicGenreAffinities = userDoc.data().musicGenreAffinities || null;
+        restaurantGenreAffinities = userDoc.data().restaurantGenreAffinities || null;
+        isEVOwner = userDoc.data().isEV || false;
       }
     }
 
@@ -814,25 +2120,55 @@ exports.discoverActivities = onCall(
       }
     }
 
-    // Fetch from enabled sources only
+    // Extract city and state from cityName for Reddit
+    const cityOnly = cityName ? cityName.split(',')[0].trim() : null;
+    const stateOnly = cityName ? cityName.split(',')[1]?.trim() : null;
+
+    // Fetch from all enabled sources in parallel
     const fetchPromises = [];
-    if (enableCustomSearch) {
-      fetchPromises.push(fetchGoogleSearch(lat, lng, cityName));
-    } else {
-      fetchPromises.push(Promise.resolve([]));
-    }
 
-    if (enablePlaces) {
+    // Google Places (permanent locations)
+    if (textSearch) {
+      // Use text search when query is provided
+      console.log(`🔍 Using text search for: "${textSearch}"`);
+      fetchPromises.push(fetchGooglePlacesTextSearch(lat, lng, radius, textSearch));
+
+      // Also search Google Custom Search for the text query
+      console.log(`🔍 Adding Google Custom Search for: "${textSearch}"`);
+      fetchPromises.push(fetchGoogleSearchWithQuery(lat, lng, cityName, textSearch));
+    } else if (enablePlaces) {
+      // Use regular affinity-based search
       fetchPromises.push(fetchGooglePlaces(lat, lng, radius, userAffinities));
+      fetchPromises.push(Promise.resolve([])); // Placeholder for Custom Search
+    } else {
+      fetchPromises.push(Promise.resolve([]));
+      fetchPromises.push(Promise.resolve([]));
+    }
+
+    // Ticketmaster Events (only if events enabled and NOT doing text search)
+    // NOTE: Get your affiliate ID from https://ticketmaster.com/partners
+    if (enableCustomSearch && !textSearch) {
+      fetchPromises.push(fetchTicketmasterEvents(lat, lng, radius, cityName));
     } else {
       fetchPromises.push(Promise.resolve([]));
     }
 
-    const [googleSearch, googlePlaces] = await Promise.all(fetchPromises);
+    // Reddit (local community buzz)
+    fetchPromises.push(fetchRedditLocalBuzz(lat, lng, cityOnly, stateOnly));
 
-    let allActivities = [...googleSearch, ...googlePlaces];
+    const [googlePlaces, customSearch, ticketmasterEvents, redditBuzz] = await Promise.all(fetchPromises);
 
-    console.log(`✅ Fetched ${googleSearch.length} from Custom Search, ${googlePlaces.length} from Places API`);
+    let allActivities = [...googlePlaces, ...customSearch, ...ticketmasterEvents, ...redditBuzz];
+
+    console.log(`✅ Fetched ${googlePlaces.length} from Places, ${customSearch.length} from Custom Search, ${ticketmasterEvents.length} from Ticketmaster, ${redditBuzz.length} from Reddit`);
+
+    // Fetch EV charging stations if user is an EV owner
+    let chargingStations = [];
+    if (isEVOwner) {
+      console.log('⚡ User is EV owner - fetching charging stations');
+      chargingStations = await fetchEVChargingStations(lat, lng, radius);
+      console.log(`⚡ EV CHARGING: Returning ${chargingStations.length} charging stations to frontend`);
+    }
 
     // Calculate distances
     allActivities = allActivities.map((activity) => ({
@@ -842,39 +2178,259 @@ exports.discoverActivities = onCall(
 
     // Filter by radius
     allActivities = allActivities.filter((a) => a.distance <= radius);
+    console.log(`📏 After radius filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+
+    // Filter events by music genre affinity
+    if (musicGenreAffinities) {
+      const beforeGenreFilter = allActivities.length;
+      allActivities = allActivities.filter((activity) => {
+        // Only filter music events
+        if (activity.type === 'event' && activity.musicGenres && activity.musicGenres.length > 0) {
+          const genreScore = calculateMusicGenreAffinityScore(activity.musicGenres, musicGenreAffinities);
+          if (genreScore !== null && genreScore < MUSIC_GENRE_FILTER_THRESHOLD) {
+            console.log(`🎵 Filtered out event: ${activity.name} (genre score: ${genreScore}, genres: ${activity.musicGenres.join(', ')})`);
+            return false; // Filter out
+          }
+        }
+        return true; // Keep
+      });
+      const afterGenreFilter = allActivities.length;
+      if (beforeGenreFilter > afterGenreFilter) {
+        console.log(`🎵 Music genre filter: removed ${beforeGenreFilter - afterGenreFilter} events with low affinity`);
+      }
+      console.log(`🎵 After genre filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+    }
+
+    // Filter restaurants by restaurant genre affinity
+    if (restaurantGenreAffinities) {
+      const beforeRestaurantFilter = allActivities.length;
+      allActivities = allActivities.filter((activity) => {
+        // Only filter restaurants/dining places (check if has restaurant categories)
+        if (activity.categories && activity.categories.length > 0) {
+          const restaurantScore = calculateRestaurantGenreAffinityScore(activity.categories, restaurantGenreAffinities);
+          if (restaurantScore !== null && restaurantScore < RESTAURANT_GENRE_FILTER_THRESHOLD) {
+            console.log(`🍽️ Filtered out restaurant: ${activity.name} (restaurant score: ${restaurantScore}, categories: ${activity.categories.join(', ')})`);
+            return false; // Filter out
+          }
+        }
+        return true; // Keep
+      });
+      const afterRestaurantFilter = allActivities.length;
+      if (beforeRestaurantFilter > afterRestaurantFilter) {
+        console.log(`🍽️ Restaurant genre filter: removed ${beforeRestaurantFilter - afterRestaurantFilter} places with low affinity`);
+      }
+      console.log(`🍽️ After restaurant filter: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+    }
+
+    // Filter out gas stations and convenience stores from dining results
+    // These should ONLY appear if there are very few other food options (< 5 places)
+    // SKIP if showFastFood is true (user wants all the calories!)
+    if (!showFastFood) {
+      const beforeGasStationFilter = allActivities.length;
+      const diningCategories = ['dining', 'restaurants', 'coffee', 'cafes', 'food_trucks'];
+
+      // Separate gas stations from other places
+      const gasStations = [];
+      const nonGasStations = [];
+
+      allActivities.forEach((activity) => {
+        const placeTypes = activity.placeTypes || [];
+        const isGasStation = placeTypes.includes('gas_station') ||
+                            placeTypes.includes('convenience_store');
+
+        // Check if this is a food/dining place
+        const isDining = activity.categories &&
+                        activity.categories.some(cat => diningCategories.includes(cat));
+
+        if (isGasStation && isDining) {
+          gasStations.push(activity);
+        } else {
+          nonGasStations.push(activity);
+        }
+      });
+
+      // Count non-gas-station food places within 50 miles
+      const foodPlacesNearby = nonGasStations.filter(a => {
+        const isDining = a.categories &&
+                        a.categories.some(cat => diningCategories.includes(cat));
+        return isDining && a.distance <= 50;
+      }).length;
+
+      // Only include gas stations if there are fewer than 5 other food options
+      if (foodPlacesNearby >= 5) {
+        allActivities = nonGasStations;
+        console.log(`⛽ Filtered out ${gasStations.length} gas stations/convenience stores (${foodPlacesNearby} better food options available)`);
+        if (gasStations.length > 0) {
+          console.log(`⛽ Gas stations filtered: ${gasStations.map(g => g.name).join(', ')}`);
+        }
+      } else {
+        // Keep gas stations only as last resort
+        allActivities = [...nonGasStations, ...gasStations];
+        console.log(`⛽ Keeping ${gasStations.length} gas stations as last resort (only ${foodPlacesNearby} food options available)`);
+      }
+
+      const afterGasStationFilter = allActivities.length;
+      if (beforeGasStationFilter > afterGasStationFilter) {
+        console.log(`⛽ Gas station filter: removed ${beforeGasStationFilter - afterGasStationFilter} places`);
+      }
+    } else {
+      console.log(`🍔 FAST FOOD MODE: Skipping gas station filter - showing ALL locations!`);
+    }
+
+    // Filter out known chain restaurants and fast food
+    // These should ONLY appear if there are very few other food options (< 8 places)
+    // SKIP if showFastFood is true (user wants all the calories!)
+    if (!showFastFood) {
+      const beforeChainFilter = allActivities.length;
+      const diningCategories = ['dining', 'restaurants', 'coffee', 'cafes', 'food_trucks'];
+
+      // Separate chains from independent places
+      const chainPlaces = [];
+      const independentPlaces = [];
+
+      allActivities.forEach((activity) => {
+        const isChain = isKnownChain(activity.name);
+
+        // Check if this is a food/dining place
+        const isDining = activity.categories &&
+                        activity.categories.some(cat => diningCategories.includes(cat));
+
+        if (isChain && isDining) {
+          chainPlaces.push(activity);
+        } else {
+          independentPlaces.push(activity);
+        }
+      });
+
+      // Count independent food places within 50 miles
+      const independentFoodPlacesNearby = independentPlaces.filter(a => {
+        const isDining = a.categories &&
+                        a.categories.some(cat => diningCategories.includes(cat));
+        return isDining && a.distance <= 50;
+      }).length;
+
+      // Only include chains if there are fewer than 8 independent options
+      if (independentFoodPlacesNearby >= 8) {
+        allActivities = independentPlaces;
+        console.log(`🍔 Filtered out ${chainPlaces.length} chain restaurants (${independentFoodPlacesNearby} independent options available)`);
+        if (chainPlaces.length > 0) {
+          console.log(`🍔 Chains filtered: ${chainPlaces.map(c => c.name).join(', ')}`);
+        }
+      } else {
+        // Keep chains only as last resort
+        allActivities = [...independentPlaces, ...chainPlaces];
+        console.log(`🍔 Keeping ${chainPlaces.length} chain restaurants as last resort (only ${independentFoodPlacesNearby} independent options available)`);
+      }
+
+      const afterChainFilter = allActivities.length;
+      if (beforeChainFilter > afterChainFilter) {
+        console.log(`🍔 Chain filter: removed ${beforeChainFilter - afterChainFilter} places`);
+      }
+    } else {
+      console.log(`🍔 FAST FOOD MODE: Skipping chain filter - showing ALL chains and fast food!`);
+    }
+
+    // Filter out big box stores (Walmart, Target, etc.) - EXTREME last resort only
+    // These should ONLY appear if there are VERY few other options (< 3 places)
+    // SKIP if showFastFood is true (user wants all the calories!)
+    if (!showFastFood) {
+      const beforeBigBoxFilter = allActivities.length;
+
+      // Separate big box stores from everything else
+      const bigBoxStores = [];
+      const nonBigBoxPlaces = [];
+
+      allActivities.forEach((activity) => {
+        if (isBigBoxStore(activity.name)) {
+          bigBoxStores.push(activity);
+        } else {
+          nonBigBoxPlaces.push(activity);
+        }
+      });
+
+      // Count all non-big-box places within 50 miles
+      const otherPlacesNearby = nonBigBoxPlaces.filter(a => a.distance <= 50).length;
+
+      // Only include big box stores if there are fewer than 3 other options
+      // This makes them EXTREME last resort for truly desperate areas
+      if (otherPlacesNearby >= 3) {
+        allActivities = nonBigBoxPlaces;
+        console.log(`🏪 Filtered out ${bigBoxStores.length} big box stores (${otherPlacesNearby} better options available)`);
+        if (bigBoxStores.length > 0) {
+          console.log(`🏪 Big box stores filtered: ${bigBoxStores.map(b => b.name).join(', ')}`);
+        }
+      } else {
+        // Keep big box stores only as EXTREME last resort
+        allActivities = [...nonBigBoxPlaces, ...bigBoxStores];
+        console.log(`🏪 Keeping ${bigBoxStores.length} big box stores as EXTREME last resort (only ${otherPlacesNearby} options available - desperate area!)`);
+      }
+
+      const afterBigBoxFilter = allActivities.length;
+      if (beforeBigBoxFilter > afterBigBoxFilter) {
+        console.log(`🏪 Big box filter: removed ${beforeBigBoxFilter - afterBigBoxFilter} places`);
+      }
+    } else {
+      console.log(`🍔 FAST FOOD MODE: Skipping big box filter - showing Walmart, Target, etc.!`);
+    }
 
     // Calculate scores
     allActivities = allActivities.map((activity) => {
-      const scores = calculateFinalScore(activity, lat, lng, userAffinities);
+      const scores = calculateFinalScore(activity, lat, lng, userAffinities, musicGenreAffinities, restaurantGenreAffinities);
       return {
         ...activity,
         score: scores.finalScore,
         baseScore: scores.baseScore,
         affinityScore: scores.affinityScore,
+        genreAffinityScore: scores.genreAffinityScore,
       };
     });
 
-    // Sort by score
-    allActivities.sort((a, b) => b.score - a.score);
+    // Sort by type first (events at top), then by score
+    allActivities.sort((a, b) => {
+      // Events always come first
+      if (a.type === 'event' && b.type !== 'event') return -1;
+      if (a.type !== 'event' && b.type === 'event') return 1;
+
+      // Within same type, sort by score
+      return b.score - a.score;
+    });
 
     // CACHE DISABLED FOR DEVELOPMENT - Skip saving to cache
     console.log("🚧 CACHE DISABLED - skipping cache write");
     // await saveActivitiesAndCache(allActivities, geohashKey, radius, affinitySignature, userAffinities);
 
-    const results = allActivities.slice(0, 50);
+    console.log(`📊 Before slice: ${allActivities.length} total (${allActivities.filter(a => a.type === 'permanent').length} places, ${allActivities.filter(a => a.type === 'event').length} events)`);
+
+    // Separate events and places to ensure balanced results
+    const events = allActivities.filter(a => a.type === 'event');
+    const places = allActivities.filter(a => a.type === 'permanent');
+
+    // Take top 30 events and top 30 places (frontend shows top 3 per genre, so 30 events is plenty)
+    const topEvents = events.slice(0, 30);
+    const topPlaces = places.slice(0, 30);
+
+    // Combine: events first, then places
+    const results = [...topEvents, ...topPlaces];
+
+    console.log(`📊 After balanced slice: ${results.length} total (${topPlaces.length} places, ${topEvents.length} events)`);
+    console.log(`✅ Balanced results: ${topEvents.length} events + ${topPlaces.length} places`);
 
     return {
       success: true,
       activities: results,
+      chargingStations: chargingStations, // EV charging stations for EV owners
       metadata: {
         totalFound: results.length,
         queryTimeMs: Date.now() - startTime,
         cacheHit: false,
         sources: {
-          google_search: googleSearch.length,
           google_places: googlePlaces.length,
+          ticketmaster: ticketmasterEvents.length,
+          reddit: redditBuzz.length,
+          charging_stations: chargingStations.length,
         },
         userLocation: {lat, lng},
+        isEVOwner: isEVOwner, // Include EV owner status in metadata
       },
     };
   } catch (error) {
@@ -2560,5 +4116,619 @@ exports.scoreThereThenActivities = onCall(async (request) => {
   } catch (error) {
     console.error("Error scoring There-Then activities:", error);
     throw new Error(`Failed to score activities: ${error.message}`);
+  }
+});
+
+// ============================================================================
+// TWITTER/X INTEGRATION
+// ============================================================================
+
+/**
+ * Calculate simple vibe summary from events
+ * Analyzes event content and engagement to determine local mood/energy
+ */
+function calculateSimpleVibe(events) {
+  if (!events || events.length === 0) {
+    return {
+      mood: "quiet",
+      energy: "low",
+      description: "Not much happening right now. Check back later for local events!",
+      topThemes: [],
+      eventCount: 0,
+    };
+  }
+
+  // Analyze keywords to determine themes
+  const allText = events.map(e => e.text.toLowerCase()).join(" ");
+
+  const themes = {
+    music: ["concert", "music", "band", "show", "live music", "festival"].some(k => allText.includes(k)),
+    food: ["food", "restaurant", "dining", "chef", "culinary"].some(k => allText.includes(k)),
+    arts: ["art", "gallery", "exhibit", "museum", "theater"].some(k => allText.includes(k)),
+    sports: ["game", "sports", "team", "match", "tournament"].some(k => allText.includes(k)),
+    nightlife: ["bar", "club", "party", "drinks", "nightlife"].some(k => allText.includes(k)),
+    family: ["family", "kids", "children", "festival", "fair"].some(k => allText.includes(k)),
+  };
+
+  const topThemes = Object.entries(themes)
+    .filter(([_, active]) => active)
+    .map(([theme, _]) => theme);
+
+  // Calculate energy level based on engagement
+  const avgLikes = events.reduce((sum, e) => sum + e.engagement.likes, 0) / events.length;
+  const energy = avgLikes > 50 ? "high" : avgLikes > 20 ? "medium" : "low";
+
+  // Determine mood based on themes
+  let mood = "mixed";
+  if (themes.music && themes.nightlife) mood = "lively";
+  else if (themes.arts && themes.food) mood = "cultured";
+  else if (themes.family) mood = "family-friendly";
+  else if (themes.sports) mood = "energetic";
+  else if (events.length > 10) mood = "buzzing";
+  else if (events.length > 5) mood = "active";
+  else mood = "calm";
+
+  // Generate description
+  const descriptions = {
+    "lively": "The scene is lively with music and nightlife! Lots happening tonight.",
+    "cultured": "Arts and dining scene is active. Great time to explore cultural offerings.",
+    "family-friendly": "Family-friendly events happening. Perfect for all ages!",
+    "energetic": "Sports and competitive energy in the air. Game on!",
+    "buzzing": `${events.length} events happening! The area is buzzing with activity.`,
+    "active": "Several events happening around you. Good time to get out!",
+    "calm": "A few low-key events happening. Relaxed vibe in the area.",
+    "mixed": `${events.length} diverse events happening. Something for everyone!`,
+  };
+
+  return {
+    mood,
+    energy,
+    description: descriptions[mood],
+    topThemes: topThemes.slice(0, 3),
+    eventCount: events.length,
+  };
+}
+
+/**
+ * Search Twitter/X for local content based on location and user affinities
+ *
+ * Returns both event tweets and general local buzz
+ */
+exports.searchTwitter = onCall(async (request) => {
+  try {
+    const { lat, lng, radius = 10, affinities = {}, userId, cityName, stateName } = request.data;
+
+    console.log(`🐦 TWITTER SEARCH: lat=${lat}, lng=${lng}, radius=${radius}mi, city=${cityName}, state=${stateName}`);
+
+    if (!lat || !lng) {
+      throw new Error("Location (lat, lng) is required");
+    }
+
+    // Get top affinity categories (lowered threshold to 10 for wider search)
+    const topCategories = Object.entries(affinities)
+      .filter(([_, rating]) => rating >= 10)
+      .sort(([_, a], [__, b]) => b - a)
+      .slice(0, 5)
+      .map(([category, _]) => category);
+
+    console.log(`🐦 Top affinity categories (>= 10):`, topCategories);
+
+    // Build search query with affinity hashtags + general local hashtags
+    let hashtags = topCategories.map(cat => `#${cat.replace(/_/g, '')}`).join(" OR ");
+
+    // If no affinities, add general local/community hashtags
+    if (!hashtags) {
+      hashtags = "#local OR #community OR #downtown OR #smalltown OR #visitmaryland OR #maryland";
+      console.log(`🐦 No user affinities >= 10, using general local hashtags`);
+    }
+
+    const eventKeywords = "(event OR festival OR concert OR exhibit OR fair OR market OR show OR happening OR tonight OR weekend)";
+
+    // Twitter API v2 Recent Search endpoint
+    const searchUrl = "https://api.twitter.com/2/tweets/search/recent";
+
+    const allTweets = [];
+
+    // Rate limit tracking
+    let rateLimitInfo = {
+      limit: null,
+      remaining: null,
+      reset: null,
+      resetTime: null,
+    };
+
+    // Search 1: Events with hashtags (now always runs)
+    if (true) {
+      try {
+        console.log(`🐦 Searching for events with hashtags: ${hashtags}`);
+        const eventResponse = await axios.get(searchUrl, {
+          headers: {
+            "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          },
+          params: {
+            query: `${eventKeywords} (${hashtags}) -is:retweet -is:reply`,
+            max_results: 20,
+            "tweet.fields": "created_at,public_metrics,entities,geo",
+            "expansions": "author_id,geo.place_id",
+            "user.fields": "username,name,profile_image_url",
+            "place.fields": "full_name,geo,place_type",
+          },
+        });
+
+        // Capture rate limit info from headers
+        const headers = eventResponse.headers;
+        rateLimitInfo = {
+          limit: parseInt(headers['x-rate-limit-limit']) || null,
+          remaining: parseInt(headers['x-rate-limit-remaining']) || null,
+          reset: parseInt(headers['x-rate-limit-reset']) || null,
+          resetTime: headers['x-rate-limit-reset'] ? new Date(parseInt(headers['x-rate-limit-reset']) * 1000).toISOString() : null,
+        };
+
+        console.log(`🐦 RATE LIMIT: ${rateLimitInfo.remaining}/${rateLimitInfo.limit} remaining, resets at ${rateLimitInfo.resetTime}`);
+
+        if (eventResponse.data?.data) {
+          allTweets.push(...eventResponse.data.data.map(tweet => ({
+            ...tweet,
+            searchType: 'event',
+            includes: eventResponse.data.includes,
+          })));
+          console.log(`🐦 Found ${eventResponse.data.data.length} event tweets`);
+        }
+      } catch (error) {
+        console.error(`🐦 Event search failed:`, error.message);
+      }
+    }
+
+    // Search 2: General local content near location (tighter radius for truly local content)
+    try {
+      // Use the original radius for stricter geographic filtering
+      const expandedRadius = radius; // Changed from radius * 2 to just radius
+      const radiusKm = expandedRadius * 1.60934; // miles to km
+      console.log(`🐦 Searching near ${lat},${lng} within ${radiusKm}km (${expandedRadius}mi strict)`);
+
+      // Add location-specific search terms
+      const localQuery = `point_radius:[${lng} ${lat} ${radiusKm}km] -is:retweet -is:reply`;
+
+      const localResponse = await axios.get(searchUrl, {
+        headers: {
+          "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+        },
+        params: {
+          query: localQuery,
+          max_results: 50,  // Increased from 30 to 50
+          "tweet.fields": "created_at,public_metrics,entities,geo",
+          "expansions": "author_id,geo.place_id",
+          "user.fields": "username,name,profile_image_url",
+          "place.fields": "full_name,geo,place_type",
+        },
+      });
+
+      if (localResponse.data?.data) {
+        allTweets.push(...localResponse.data.data.map(tweet => ({
+          ...tweet,
+          searchType: 'local',
+          includes: localResponse.data.includes,
+        })));
+        console.log(`🐦 Found ${localResponse.data.data.length} local tweets`);
+      }
+    } catch (error) {
+      console.error(`🐦 Local search failed:`, error.message);
+    }
+
+    // Search 3: City/State name mentions (catch tweets without location data)
+    // Only run if we have city or state information
+    if (cityName || stateName) {
+      try {
+        let locationQuery = "";
+
+        if (cityName && stateName) {
+          // Search for both city and state
+          locationQuery = `("${cityName}" OR "${stateName}") -is:retweet -is:reply`;
+        } else if (stateName) {
+          // Just state
+          locationQuery = `"${stateName}" -is:retweet -is:reply`;
+        } else if (cityName) {
+          // Just city (less reliable without state context)
+          locationQuery = `"${cityName}" -is:retweet -is:reply`;
+        }
+
+        console.log(`🐦 Searching for location mentions: ${locationQuery}`);
+
+        const regionResponse = await axios.get(searchUrl, {
+          headers: {
+            "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+          },
+          params: {
+            query: locationQuery,
+            max_results: 20,
+            "tweet.fields": "created_at,public_metrics,entities,geo",
+            "expansions": "author_id,geo.place_id",
+            "user.fields": "username,name,profile_image_url",
+            "place.fields": "full_name,geo,place_type",
+          },
+        });
+
+        if (regionResponse.data?.data) {
+          allTweets.push(...regionResponse.data.data.map(tweet => ({
+            ...tweet,
+            searchType: 'local',
+            includes: regionResponse.data.includes,
+          })));
+          console.log(`🐦 Found ${regionResponse.data.data.length} location name tweets`);
+        }
+      } catch (error) {
+        console.error(`🐦 Location name search failed:`, error.message);
+      }
+    } else {
+      console.log(`🐦 Skipping location name search - no city/state provided`);
+    }
+
+    // Deduplicate by tweet ID
+    const uniqueTweets = Array.from(
+      new Map(allTweets.map(tweet => [tweet.id, tweet])).values()
+    );
+
+    console.log(`🐦 Total unique tweets: ${uniqueTweets.length}`);
+
+    // Helper: Check if tweet contains date/time info (likely an event)
+    const hasDateInfo = (text) => {
+      if (!text) return false;
+      const lower = text.toLowerCase();
+      
+      const datePatterns = [
+        /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2}/i,
+        /\b\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?/,
+        /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i,
+        /\b(today|tomorrow|tonight|this\s+(week|weekend|month))/i,
+        /\b\d{1,2}(st|nd|rd|th)\s+(of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i,
+      ];
+      
+      const timePatterns = [
+        /\b\d{1,2}:\d{2}\s*(am|pm|AM|PM)?/,
+        /\b(at|from|starting|begins)\s+\d{1,2}/i,
+      ];
+      
+      return datePatterns.some(p => p.test(text)) || timePatterns.some(p => p.test(text));
+    };
+
+    // Structure tweets
+    const structuredTweets = uniqueTweets.map(tweet => {
+      const author = tweet.includes?.users?.find(u => u.id === tweet.author_id) || {};
+      const place = tweet.includes?.places?.find(p => p.id === tweet.geo?.place_id) || {};
+      
+      const isEvent = tweet.searchType === 'event' || hasDateInfo(tweet.text);
+      
+      return {
+        id: tweet.id,
+        text: tweet.text,
+        createdAt: tweet.created_at,
+        url: `https://twitter.com/${author.username}/status/${tweet.id}`,
+        author: {
+          username: author.username,
+          name: author.name,
+          avatar: author.profile_image_url,
+        },
+        engagement: {
+          likes: tweet.public_metrics?.like_count || 0,
+          retweets: tweet.public_metrics?.retweet_count || 0,
+          replies: tweet.public_metrics?.reply_count || 0,
+        },
+        location: place.full_name || null,
+        isEvent,
+        hashtags: tweet.entities?.hashtags?.map(h => h.tag) || [],
+        searchType: tweet.searchType,
+      };
+    });
+
+    // Separate events from general content
+    const events = structuredTweets.filter(t => t.isEvent);
+    const buzz = structuredTweets.filter(t => !t.isEvent);
+
+    console.log(`🐦 Structured: ${events.length} events, ${buzz.length} buzz tweets`);
+
+    // Calculate simple vibe summary
+    const vibeSummary = calculateSimpleVibe(events);
+
+    return {
+      success: true,
+      events,
+      buzz,
+      total: structuredTweets.length,
+      location: { lat, lng, radius },
+      affinityCategories: topCategories,
+      rateLimit: rateLimitInfo,
+      vibe: vibeSummary,
+    };
+
+  } catch (error) {
+    console.error("🐦 Twitter search error:", error);
+    throw new Error(`Twitter search failed: ${error.message}`);
+  }
+});
+
+// ============================================================================
+// VIBEINDEX CALCULATION
+// ============================================================================
+
+/**
+ * VibeIndex Categories and Keywords
+ */
+const VIBE_CATEGORIES = {
+  artsy: {
+    name: "🎨 Artsy",
+    keywords: ["art", "gallery", "exhibit", "mural", "artist", "creative", "painting", "sculpture"],
+    hashtags: ["art", "artsy", "gallery", "streetart", "artistsontwitter", "creative"],
+  },
+  musicScene: {
+    name: "🎵 Music Scene",
+    keywords: ["concert", "band", "music", "live music", "show", "festival", "gig", "venue"],
+    hashtags: ["livemusic", "concert", "musicfestival", "localmusic", "band"],
+  },
+  businessHub: {
+    name: "🏢 Business Hub",
+    keywords: ["startup", "business", "entrepreneur", "corporate", "tech", "innovation", "company"],
+    hashtags: ["startup", "entrepreneur", "business", "innovation", "tech"],
+  },
+  sportsCulture: {
+    name: "⚽ Sports Culture",
+    keywords: ["game", "team", "sports", "athletic", "fitness", "championship", "tournament"],
+    hashtags: ["sports", "fitness", "athletics", "gameon", "championship"],
+  },
+  cultureEvents: {
+    name: "🎭 Culture & Events",
+    keywords: ["festival", "event", "cultural", "community", "celebration", "tradition"],
+    hashtags: ["festival", "culturalevent", "community", "celebration"],
+  },
+  quirkyFunky: {
+    name: "🌈 Quirky/Funky",
+    keywords: ["weird", "quirky", "unique", "funky", "alternative", "odd", "eccentric"],
+    hashtags: ["weird", "quirky", "keepitweird", "unique", "funky"],
+  },
+  foodieScene: {
+    name: "🍽️ Foodie Scene",
+    keywords: ["foodie", "restaurant", "chef", "culinary", "food festival", "dining"],
+    hashtags: ["foodie", "restaurant", "foodporn", "chef", "dining"],
+  },
+  nightlife: {
+    name: "🌃 Nightlife",
+    keywords: ["nightlife", "bar", "club", "party", "drinks", "happy hour"],
+    hashtags: ["nightlife", "bars", "club", "drinks", "party"],
+  },
+};
+
+/**
+ * Calculate VibeIndex score for a category
+ * @param {Array} tweets - Tweets to analyze
+ * @param {Object} category - Category definition with keywords/hashtags
+ * @param {number} population - City population for normalization
+ * @returns {Object} Score breakdown
+ */
+function calculateCategoryScore(tweets, category, population) {
+  if (tweets.length === 0) {
+    return {
+      score: 0,
+      tweetCount: 0,
+      uniqueUsers: 0,
+      avgEngagement: 0,
+    };
+  }
+
+  // Volume Score (0-30): Normalized by population
+  const volumeScore = Math.min(30, (tweets.length / (population / 1000)) * 10);
+
+  // Engagement Score (0-30): Average engagement per tweet
+  const totalEngagement = tweets.reduce((sum, tweet) => {
+    const likes = tweet.public_metrics?.like_count || 0;
+    const retweets = tweet.public_metrics?.retweet_count || 0;
+    const replies = tweet.public_metrics?.reply_count || 0;
+    return sum + likes + retweets + replies;
+  }, 0);
+  const avgEngagement = tweets.length > 0 ? totalEngagement / tweets.length : 0;
+  const engagementScore = Math.min(30, (avgEngagement / 5) * 5);
+
+  // Diversity Score (0-20): Unique users
+  const uniqueUsers = new Set(tweets.map(t => t.author_id)).size;
+  const diversityScore = Math.min(20, uniqueUsers / 10);
+
+  // Recency Score (0-10): Time decay
+  const now = new Date();
+  let recencyScore = 0;
+  tweets.forEach(tweet => {
+    const tweetDate = new Date(tweet.created_at);
+    const daysAgo = (now - tweetDate) / (1000 * 60 * 60 * 24);
+    if (daysAgo <= 7) recencyScore += 10 / tweets.length;
+    else if (daysAgo <= 14) recencyScore += 7 / tweets.length;
+    else if (daysAgo <= 21) recencyScore += 4 / tweets.length;
+    else if (daysAgo <= 30) recencyScore += 2 / tweets.length;
+  });
+  recencyScore = Math.min(10, recencyScore);
+
+  // Event Density Score (0-10): Tweets with date/time patterns
+  const eventRegex = /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{1,2}\/\d{1,2}|\d{1,2}:\d{2}|at \d|pm|am)\b/i;
+  const eventTweets = tweets.filter(t => eventRegex.test(t.text)).length;
+  const eventScore = Math.min(10, eventTweets / 2);
+
+  const finalScore = Math.round(volumeScore + engagementScore + diversityScore + recencyScore + eventScore);
+
+  return {
+    score: finalScore,
+    tweetCount: tweets.length,
+    uniqueUsers,
+    avgEngagement: Math.round(avgEngagement * 10) / 10,
+  };
+}
+
+/**
+ * Filter tweets by category keywords and hashtags
+ */
+function filterTweetsByCategory(tweets, category) {
+  return tweets.filter(tweet => {
+    const text = tweet.text.toLowerCase();
+    const tweetHashtags = tweet.entities?.hashtags?.map(h => h.tag.toLowerCase()) || [];
+
+    // Check if tweet contains any category keywords
+    const hasKeyword = category.keywords.some(keyword => text.includes(keyword.toLowerCase()));
+
+    // Check if tweet has any category hashtags
+    const hasHashtag = category.hashtags.some(hashtag =>
+      tweetHashtags.includes(hashtag.toLowerCase())
+    );
+
+    return hasKeyword || hasHashtag;
+  });
+}
+
+/**
+ * Calculate VibeIndex for a city
+ * Cloud Function (Callable)
+ */
+exports.calculateVibeIndex = onCall(async (request) => {
+  const { cityName, state, lat, lng, radius = 15, population = 10000 } = request.data;
+
+  console.log(`🎨 VIBEINDEX: Calculating for ${cityName}, ${state}`);
+
+  try {
+    // Fetch tweets from last 30 days near the city
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const startTime = thirtyDaysAgo.toISOString();
+
+    // Search for tweets near location (broader search for all content)
+    const searchUrl = "https://api.twitter.com/2/tweets/search/recent";
+    const params = new URLSearchParams({
+      query: `point_radius:[${lng} ${lat} ${radius}mi]`,
+      max_results: 100,
+      start_time: startTime,
+      "tweet.fields": "created_at,public_metrics,entities,author_id",
+      "expansions": "author_id,geo.place_id",
+      "user.fields": "username,name,profile_image_url",
+      "place.fields": "full_name,geo",
+    });
+
+    console.log(`🎨 VIBEINDEX: Fetching tweets with query: point_radius:[${lng} ${lat} ${radius}mi]`);
+
+    const response = await fetch(`${searchUrl}?${params}`, {
+      headers: {
+        "Authorization": `Bearer ${process.env.TWITTER_BEARER_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`🎨 VIBEINDEX: Twitter API error ${response.status}: ${errorText}`);
+      throw new Error(`Twitter API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log(`🎨 VIBEINDEX: API Response:`, JSON.stringify(data).substring(0, 500));
+
+    const tweets = data.data || [];
+
+    console.log(`🎨 VIBEINDEX: Found ${tweets.length} total tweets`);
+
+    // Calculate scores for each category
+    const scores = {};
+    let totalScore = 0;
+    const trendingCategories = [];
+
+    for (const [categoryKey, categoryDef] of Object.entries(VIBE_CATEGORIES)) {
+      const categoryTweets = filterTweetsByCategory(tweets, categoryDef);
+      const categoryScore = calculateCategoryScore(categoryTweets, categoryDef, population);
+
+      scores[categoryKey] = {
+        ...categoryScore,
+        name: categoryDef.name,
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+      };
+
+      totalScore += categoryScore.score;
+      if (categoryScore.score >= 60) {
+        trendingCategories.push({ key: categoryKey, name: categoryDef.name, score: categoryScore.score });
+      }
+
+      console.log(`🎨 ${categoryDef.name}: ${categoryScore.score} pts (${categoryScore.tweetCount} tweets)`);
+    }
+
+    // Sort trending categories by score
+    trendingCategories.sort((a, b) => b.score - a.score);
+    const topTrending = trendingCategories.slice(0, 2).map(c => c.key);
+
+    const overallVibeScore = Math.round(totalScore / Object.keys(VIBE_CATEGORIES).length);
+
+    // Store in Firestore
+    const cityId = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+    const vibeDoc = {
+      cityId,
+      cityName,
+      state,
+      country: "US",
+      location: {
+        lat,
+        lng,
+        geohash: geohash.encode(lat, lng, 6),
+      },
+      population,
+      scores,
+      overallVibeScore,
+      trendingCategories: topTrending,
+      calculatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      nextUpdate: admin.firestore.Timestamp.fromDate(new Date(Date.now() + 24 * 60 * 60 * 1000)),
+    };
+
+    await admin.firestore().collection("vibeScores").doc(cityId).set(vibeDoc);
+
+    console.log(`🎨 VIBEINDEX: Overall score ${overallVibeScore}, trending: ${topTrending.join(", ")}`);
+
+    return {
+      success: true,
+      cityId,
+      cityName,
+      state,
+      overallVibeScore,
+      scores,
+      trendingCategories: topTrending,
+      totalTweets: tweets.length,
+    };
+
+  } catch (error) {
+    console.error("🎨 VibeIndex calculation error:", error);
+    throw new Error(`VibeIndex calculation failed: ${error.message}`);
+  }
+});
+
+/**
+ * Get VibeIndex scores for a city
+ * Cloud Function (Callable)
+ */
+exports.getVibeIndex = onCall(async (request) => {
+  const { cityId, cityName, state } = request.data;
+
+  try {
+    let docId = cityId;
+    if (!docId && cityName && state) {
+      docId = `${cityName.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}`;
+    }
+
+    if (!docId) {
+      throw new Error("Either cityId or (cityName + state) required");
+    }
+
+    const doc = await admin.firestore().collection("vibeScores").doc(docId).get();
+
+    if (!doc.exists) {
+      return {
+        success: false,
+        error: "City not found in VibeIndex database",
+      };
+    }
+
+    return {
+      success: true,
+      ...doc.data(),
+    };
+
+  } catch (error) {
+    console.error("🎨 Get VibeIndex error:", error);
+    throw new Error(`Get VibeIndex failed: ${error.message}`);
   }
 });

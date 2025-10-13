@@ -30,6 +30,7 @@ export interface Activity {
   // Categories
   categories: string[];
   primaryCategory: string;
+  musicGenres?: string[]; // Music genre tags for filtering (events only)
 
   // Accessibility
   accessibility?: {
@@ -72,6 +73,24 @@ export interface Activity {
   // Media
   images?: string[];
   website?: string;
+
+  // Additional details (backend format)
+  details?: {
+    description?: string;
+    shortDescription?: string;
+    imageUrl?: string;
+    website?: string;
+    // Event-specific fields
+    eventDate?: string;
+    eventEndDate?: string;
+    venue?: string;
+    venueAddress?: string;
+    organizerName?: string;
+    capacity?: number;
+    priceLevel?: number;
+    priceRange?: string;
+    musicGenres?: string[]; // Music genre tags
+  };
 }
 
 export interface DiscoveryFilters {
@@ -94,6 +113,7 @@ export interface DiscoveryResult {
 export interface UserPreferences {
   maxDistance: number;
   favoriteCategories: string[];
+  musicGenreAffinities?: Record<string, number>; // Music genre ID -> rating (0-100)
   accessibilityNeeds?: {
     requiresWheelchair?: boolean;
     mobilityLevel?: 'easy' | 'moderate' | 'difficult';

@@ -103,6 +103,13 @@ export const AFFINITY_CATEGORIES: AffinityCategory[] = [
     description: 'Skateparks, BMX, roller skating, skating spots',
     subcategories: ['skate_parks', 'skateboarding', 'bmx', 'roller_skating'],
   },
+  {
+    id: 'action_sports',
+    name: 'Action Sports!',
+    emoji: '🤘',
+    description: 'Rock climbing, zip lines, parkour, BMX, extreme sports, adrenaline rushes',
+    subcategories: ['rock_climbing', 'zip_line', 'parkour', 'extreme_sports', 'bungee', 'motocross'],
+  },
 
   // Water Sports & Activities
   {

@@ -1,530 +1,162 @@
-# AgentQu - AI-Powered Activity Discovery Platform
+# AgentQu - AI Activity Discovery Platform
 
-## 🎯 Project Overview
-
-**AgentQu** is a personalized activity discovery platform that uses Google Places API and Custom Search to find activities, events, and experiences tailored to each user's preferences. Built with React, Firebase, and TypeScript.
-
-**Live URL:** https://agentqu-platform.web.app
-**Tech Stack:** React + TypeScript + Firebase (Functions, Firestore, Hosting, Auth)
-**Current Version:** v0.2 (Affinity-Based Ranking + Temporal Event Search)
+**Live:** https://agentqu-platform.web.app
+**Stack:** React + TypeScript + Firebase (Functions, Firestore, Hosting, Auth)
+**Version:** v0.3 (Twitter/X Integration + VibeIndex)
 
 ---
 
-## 🏗️ Architecture & Design Philosophy
+## 🎯 Core Architecture
 
-### Core Principles
-1. **Mobile-First Progressive Web App** - Touch-optimized, offline-capable, installable
-2. **Personalization Through Affinity** - User preferences drive all discovery (28+ categories)
-3. **Real-Time + Cached** - Smart caching with Firestore, geohash-indexed
-4. **Production-Ready Always** - Every commit is deployable, tested, and documented
-5. **Object-Oriented Design** - Clean separation of concerns, SOLID principles
+**Principles:**
+1. Mobile-first PWA (touch-optimized, installable)
+2. Affinity-based personalization (28+ categories, 0-100 scale)
+3. Smart caching (Firestore + geohash indexing)
+4. Production-ready always (test in browser console first)
 
-### Development Methodology: **DISCUSS → DESIGN → PLAN → IMPLEMENT → TEST → CHECKPOINT → REPEAT**
-
-```
-1. DISCUSS & DESIGN
-   └─ Frontend Design (UX/UI, components, state management)
-   └─ Backend Design (data models, API structure, Firebase functions)
-   └─ Plan Wiring (how frontend calls backend, data flow)
-
-2. PLAN & TEST CRITERIA
-   └─ Write test plan (what to test, success criteria)
-   └─ Define checkpoints (where we can safely stop/resume)
-
-3. IMPLEMENT
-   └─ Build incrementally (small, testable units)
-   └─ Test each piece before moving forward
-
-4. TEST & VALIDATE
-   └─ Browser console testing (fastest)
-   └─ API endpoint testing with curl
-   └─ User acceptance testing
-
-5. CHECKPOINT & DOCUMENT
-   └─ Commit working code with detailed message
-   └─ Update WHERE-WE-LEFT-OFF.md
-   └─ Deploy to production
-   └─ Push to GitHub
-
-6. REPEAT
-   └─ Ready for next feature
-```
+**Workflow:** Design → Plan → Implement → Test → Deploy → Commit → Repeat
 
 ---
 
-## 📁 Project Structure
+## 📁 Key Files
 
 ```
 AgentQu/
-├── agentqu-app/              # React Frontend
-│   ├── src/
-│   │   ├── components/       # UI Components (ActivityCard, Settings, Map, etc.)
-│   │   ├── hooks/            # Custom hooks (useAuth, useLocation, useDiscovery)
-│   │   ├── lib/              # Types, utilities, affinity categories
-│   │   └── App.tsx           # Main application shell
-│   ├── public/               # Static assets (logo, favicon)
-│   └── build/                # Production build (deployed to Firebase Hosting)
-│
-├── functions/                # Firebase Cloud Functions (Backend)
-│   ├── index.js              # Main functions file (discovery, reviews, votes)
-│   └── .env                  # Environment variables (API keys) [NOT COMMITTED]
-│
-├── .claude/                  # Claude Code configuration
-│   ├── CLAUDE.md             # This file - project knowledge base
-│   └── settings.local.json   # Local Claude settings
-│
-├── docs/                     # Documentation
-│   ├── WHERE-WE-LEFT-OFF.md  # Current status & next steps
-│   └── FIRESTORE-SCHEMA.md   # Database schema reference
-│
-├── firebase.json             # Firebase hosting & functions config
-└── firestore.rules           # Database security rules
+├── agentqu-app/src/
+│   ├── components/      # ActivityCard, Settings, Map, LocalFlavorColumn
+│   ├── hooks/           # useAuth, useLocation, useDiscovery, useTwitter
+│   ├── lib/             # types.ts, affinityCategories.ts
+│   └── App.tsx          # Main shell
+├── functions/index.js   # Backend: discoverActivities, searchTwitter, calculateVibeIndex
+├── docs/
+│   ├── WHERE-WE-LEFT-OFF.md
+│   └── VIBEINDEX-DESIGN.md
+└── .claude/CLAUDE.md    # This file
 ```
 
 ---
 
-## 🔑 Key Components & Data Flow
+## 🔑 Core Systems
 
-### Frontend Architecture
+### Frontend Components
+- **App.tsx** - View management (list/map/twitter), auth, location
+- **ActivityCard.tsx** - Activity display with share button
+- **LocalFlavorColumn.tsx** - Twitter/X integration (70/30 split layout)
+- **Settings.tsx** - Affinity sliders (28+ categories)
 
-**React Components:**
-- `App.tsx` - Main shell, manages view state (list/map), handles auth
-- `ActivityCard.tsx` - Displays single activity with image, rating, categories
-- `ActivityDetails.tsx` - Full-screen modal with complete activity info
-- `Settings.tsx` - Affinity preference sliders (28+ categories, 0-100 scale)
-- `ActivityMap.tsx` - Leaflet map showing activities with markers
-- `OnboardingScreen.tsx` - New user setup (affinity preferences)
-- `AuthScreen.tsx` - Google OAuth login/signup
+### Backend Functions
+- **discoverActivities** - Places API + Custom Search → scored, ranked activities
+- **searchTwitter** - 3-strategy Twitter search (affinity hashtags, geographic, location name)
+- **calculateVibeIndex** - 8-category vibe scoring (Volume + Engagement + Diversity + Recency + Events)
 
-**Custom Hooks:**
-- `useAuth()` - Firebase Auth, user profile management, affinity updates
-- `useLocation()` - Geolocation API, location permissions
-- `useDiscovery()` - Calls backend to fetch activities, manages loading state
-
-**State Management:**
-- React hooks (useState, useEffect, useCallback)
-- No Redux/Context - simple prop passing
-- User affinities stored in Firestore (`users/{uid}`)
-- Activities cached in Firestore (`activities` collection)
-
-### Backend Architecture (Firebase Functions)
-
-**Main Functions:**
-1. `discoverActivities(lat, lng, radius, userId)` - **CORE FUNCTION**
-   - Fetches from Google Places API (New) - permanent venues
-   - Fetches from Google Custom Search API - events in next 3 days
-   - Calculates affinity-based scores (0-200 points)
-   - Caches results in Firestore with geohash indexing
-   - Returns ranked, personalized activity list
-
-2. `submitReview(activityId, rating, comment)` - User reviews
-3. `voteActivity(activityId, voteType)` - Upvote/downvote
-4. `clearCache()` - Admin tool to clear cached activities
-
-**Data Models:**
-
-```javascript
-// Activity (Firestore: activities/{activityId})
-{
-  activityId: string,              // Unique ID
-  name: string,                    // Display name
-  type: "permanent" | "event",     // Permanent place or time-bound event
-  location: {
-    lat: number,
-    lng: number,
-    geohash: string,               // Precision 7 for search
-    geohashPrecise: string,        // Precision 9 for exact location
-    address: string,
-    placeId: string                // Google Places ID
-  },
-  categories: string[],            // ["museums", "art_culture", "family"]
-  primaryCategory: string,         // Main category for grouping
-  details: {
-    description: string,
-    imageUrl: string,
-    website: string,
-    priceLevel: number             // 0-4 (0 = free)
-  },
-  ratings: {
-    googleRating: number,          // 0-5
-    agentQuRating: number,         // User-contributed rating
-    totalReviews: number,
-    voteScore: number              // Upvotes - downvotes
-  },
-  score: number,                   // Final calculated score (0-200+)
-  baseScore: number,               // Before affinity
-  affinityScore: number,           // User-specific affinity bonus
-  distance: number                 // Miles from user
-}
-
-// User Profile (Firestore: users/{uid})
-{
-  uid: string,
-  email: string,
-  displayName: string,
-  photoURL: string,
-  affinities: {
-    museums: 90,                   // 0-100 scale
-    sports: 60,
-    nightlife: 20,
-    // ... 28+ categories
-  },
-  onboarded: boolean,              // Completed setup?
-  createdAt: timestamp
-}
-```
-
-**Affinity-Based Scoring Algorithm:**
-
-```javascript
-// calculateFinalScore(activity, userLat, userLng, userAffinities)
-// Returns: { finalScore: number, baseScore: number, affinityPoints: number }
-
-Base Score: 100 points
-
-+ Distance Factor (0-30 points):
-  - ≤1 mi: +30
-  - ≤3 mi: +20
-  - ≤5 mi: +10
-  - ≤10 mi: +5
-  - >10 mi: -2 per mile
-
-+ Rating Factor (0-20 points):
-  - AgentQu Rating: (rating/5) * 20
-  - Google Rating: (rating/5) * 15
-
-+ Open Now Bonus: +10 points
-
-+ Free Activity Bonus: +5 points
-
-+ Popularity Factor (0-15 points):
-  - Based on vote score (upvotes - downvotes)
-
-+ AFFINITY FACTOR (0-40 points): ⭐ BIGGEST WEIGHT
-  - Matches activity categories to user affinities
-  - Average affinity of matched categories
-  - Multiplied by 40
-  - Example: Museum (90% affinity) = 36 points
-  - Example: Bar (20% affinity) = 8 points
-
-Final Score: 100 + all bonuses (typically 80-180 range)
-```
+### Custom Hooks
+- **useAuth** - Firebase Auth + user profile management
+- **useLocation** - Geolocation + reverse geocoding (city/state)
+- **useDiscovery** - Backend activity fetching
+- **useTwitter** - Dynamic Twitter search with location awareness
 
 ---
 
-## 🚀 Deployment & Environment
+## 🚀 Deployment
 
-### Firebase Configuration
+### Firebase Config
+**Project:** agentqu-platform (885682986311)
+**Region:** us-central1
 
-**Project:** agentqu-platform
-**Project Number:** 885682986311
-**Regions:** us-central1 (Functions, Firestore)
-
-**Environment Variables (Firebase Functions Config):**
+**Env Vars (functions/.env):**
 ```bash
-google.places_api_key = "AIzaSyB5woqsEw_L7iESL2Gh-m47mQ4HPemb84w"
-google.search_api_key = "AIzaSyB5woqsEw_L7iESL2Gh-m47mQ4HPemb84w"
-google.search_engine_id = "d4e4ed3d41b444bd3"
+GOOGLE_PLACES_API_KEY=AIzaSyB5woqsEw_L7iESL2Gh-m47mQ4HPemb84w
+GOOGLE_SEARCH_API_KEY=AIzaSyB5woqsEw_L7iESL2Gh-m47mQ4HPemb84w
+GOOGLE_SEARCH_ENGINE_ID=d4e4ed3d41b444bd3
+TWITTER_BEARER_TOKEN=[in functions/.env]
 ```
 
-**APIs Enabled:**
-- Places API (New) - `places.googleapis.com`
-- Places API (Old) - `maps.googleapis.com/maps/api/place` (fallback)
-- Custom Search JSON API - `customsearch.googleapis.com`
-- Firebase Authentication, Firestore, Hosting, Functions
-
-### Deployment Commands
-
+**Deploy Commands:**
 ```bash
-# Deploy Everything
-firebase deploy
-
-# Deploy Functions Only
-firebase deploy --only functions
-
-# Deploy Specific Function
-firebase deploy --only functions:discoverActivities
-
-# Deploy Hosting Only
+firebase deploy                              # Everything
+firebase deploy --only functions:searchTwitter  # Specific function
 cd agentqu-app && npm run build && cd .. && firebase deploy --only hosting
+```
 
-# Clear Cache (Admin Tool)
+**Git Workflow:**
+```bash
+git checkout -b "feature-name"
+git add -A && git commit -m "type: description"
+git push origin feature-name
+```
+
+---
+
+## 📊 Current State
+
+### ✅ Implemented
+**Core:** OAuth, geolocation, affinity-based ranking, caching, scoring
+**UI:** List/map views, activity cards, settings, onboarding, Twitter column (70/30)
+**Backend:** Places API, Custom Search, Twitter API (3 strategies), VibeIndex calculation
+**Twitter:** Dynamic location search (city/state aware), affinity-based hashtags, event detection
+
+### Twitter Search Strategies
+1. **Affinity hashtags** - User preferences (threshold: 10) + fallback general hashtags
+2. **Geographic** - point_radius search (2x user radius for wider coverage)
+3. **Location names** - Dynamic city/state mentions (e.g., "Berlin" OR "Maryland")
+
+### 🚧 Known Issues
+- Event quality from Custom Search needs improvement (consider Eventbrite/Ticketmaster)
+- Cache TTL not implemented (manual clear only)
+- Mobile performance could use virtual scrolling
+- VibeIndex frontend UI pending
+
+---
+
+## 🎯 Debugging Quick Ref
+
+**Console Emoji Prefixes:**
+- 🔍 AGENTQU_DEBUG - Frontend
+- 🎯 PLACES API - Google Places
+- 🔍 SEARCH API - Custom Search
+- 🐦 TWITTER - Twitter API
+
+**Common Fixes:**
+- Zero activities → Check API keys, clear cache, check affinity threshold
+- Wrong scores → Verify user affinities in Firestore, check category matching
+- Images broken → API key permissions, CORS, fallback to placeholder
+
+**Testing:**
+```bash
+# Always test in browser console first!
+firebase functions:log  # Backend logs
 curl https://us-central1-agentqu-platform.cloudfunctions.net/clearCache
 ```
 
-### Git Workflow
+---
 
-```bash
-# Always work on feature branches (never main directly)
-git checkout -b "v0.X-feature-name"
+## 📋 Data Models
 
-# Commit frequently with detailed messages
-git add -A
-git commit -m "feat: Description\n\nDetails...\n\n🤖 Generated with Claude Code"
+See `/docs/FIRESTORE-SCHEMA.md` for complete schema.
 
-# Push to GitHub
-git push origin v0.X-feature-name
+**Key Structures:**
+- `activities/{id}` - Activity data with scores, location (geohash), categories
+- `users/{uid}` - User profile with affinities (0-100 per category)
+- `vibeScores/{cityId}` - VibeIndex scores (8 categories, 0-100 scale)
 
-# Merge to main when stable
-git checkout main
-git merge v0.X-feature-name
-git push origin main
-```
+**Scoring Algorithm:**
+Base (100) + Distance (0-30) + Rating (0-20) + Open (10) + Free (5) + Popularity (0-15) + **Affinity (0-40)** = Final Score
 
 ---
 
-## 🧪 Testing Strategy
+## 🎯 Next Steps
 
-### Always Test in Browser Console First
-**Fastest feedback loop - use this for all debugging!**
+**Immediate:**
+- Test dynamic Twitter search with multiple cities
+- Build VibeIndex frontend display
+- Add Twitter OAuth sign-in option
 
-```javascript
-// Check what's being logged
-// Look for emoji prefixes:
-// 🔍 AGENTQU_DEBUG - Frontend logs
-// 🎯 PLACES API - Places API calls
-// 🔍 SEARCH API - Custom Search calls
-```
-
-### API Endpoint Testing
-
-```bash
-# Test discoverActivities
-curl -X POST https://us-central1-agentqu-platform.cloudfunctions.net/discoverActivities \
-  -H "Content-Type: application/json" \
-  -d '{"data": {"lat": 38.324, "lng": -75.215, "radius": 10, "userId": "test123"}}'
-
-# Clear cache
-curl https://us-central1-agentqu-platform.cloudfunctions.net/clearCache
-
-# Check Firebase logs
-firebase functions:log
-```
-
-### Success Criteria Checklist
-
-Before marking ANY task complete:
-- [ ] Code runs without errors in browser console
-- [ ] API returns expected data structure
-- [ ] Frontend displays data correctly
-- [ ] No TypeScript errors
-- [ ] Deployed to production successfully
-- [ ] Tested on mobile device (touch interactions)
-- [ ] WHERE-WE-LEFT-OFF.md updated
-- [ ] Git committed and pushed
+**v0.3 Goals:**
+- Trip planner ("There-Then" future planning)
+- Better event APIs (Eventbrite, Ticketmaster)
+- Performance optimization (virtual scrolling, lazy loading)
 
 ---
 
-## 📊 Current State (v0.2)
-
-### ✅ Implemented Features
-
-**Core Discovery:**
-- [x] Google OAuth authentication
-- [x] Geolocation-based search (1-50 mile radius)
-- [x] Affinity-based personalization (28+ categories)
-- [x] Activity ranking by score (affinity + distance + rating)
-- [x] Temporal event search (next 3 days)
-- [x] Firestore caching with geohash indexing
-- [x] Real-time activity updates
-
-**UI/UX:**
-- [x] Mobile-first responsive design
-- [x] List view with category grouping
-- [x] Map view with markers (Leaflet)
-- [x] Activity cards with images, ratings, categories
-- [x] Activity details modal (full info, website link)
-- [x] Settings page (affinity sliders)
-- [x] Onboarding flow (new users)
-- [x] Clickable logo to return home
-
-**Backend:**
-- [x] Places API (New) integration
-- [x] Custom Search API with date filtering
-- [x] Smart caching (location + affinity signature)
-- [x] Score calculation algorithm
-- [x] User profile management
-- [x] Cache clearing endpoint
-
-### 🚧 Known Issues & Limitations
-
-1. **Event Search Quality** - Custom Search results may not always be actual events
-   - Solution: Consider adding Eventbrite/Ticketmaster APIs
-
-2. **Cache Invalidation** - Cached data doesn't auto-refresh
-   - Current: Manual cache clearing
-   - Future: Add TTL (time-to-live) expiration
-
-3. **Mobile Performance** - Large activity lists can lag on older devices
-   - Future: Implement virtual scrolling/pagination
-
-4. **Offline Mode** - No offline functionality yet
-   - Future: Service worker + IndexedDB caching
-
----
-
-## 🎯 Development Best Practices
-
-### Code Quality Standards
-- **TypeScript Strict Mode** - No `any` types allowed
-- **Functional Components** - React hooks only, no class components
-- **Small Functions** - Max 50 lines per function
-- **Single Responsibility** - Each function/component does ONE thing
-- **Meaningful Names** - `calculateAffinityScore()` not `calc()`
-- **Comments for Complex Logic** - Explain WHY, not WHAT
-
-### Firebase Best Practices
-- **Batch Writes** - Use `batch.set()` for multiple documents
-- **Query Optimization** - Use geohash for location queries
-- **Security Rules** - Always validate user permissions
-- **Cost Control** - Cache aggressively, limit API calls
-- **Error Handling** - Always try/catch Firebase calls
-
-### Git Commit Message Format
-```
-type: Short summary (50 chars max)
-
-Detailed explanation of what changed and why.
-Include relevant context, API changes, etc.
-
-Changes:
-- Bullet list of specific changes
-- What files were modified
-- New features added
-
-Testing:
-- How it was tested
-- Success criteria met
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-```
-
-**Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`
-
----
-
-## 🔍 Common Debugging Patterns
-
-### Problem: Getting 0 activities
-**Check:**
-1. Browser console for API errors
-2. Firebase Functions logs: `firebase functions:log`
-3. Check if APIs are enabled in Google Cloud Console
-4. Verify API key has correct permissions
-5. Clear cache: `curl clearCache endpoint`
-
-### Problem: Wrong affinity scores
-**Check:**
-1. User profile in Firestore - are affinities saved?
-2. Activity categories - do they match affinity categories?
-3. Score calculation logs in Functions
-4. Frontend sorting logic in App.tsx
-
-### Problem: Images not loading
-**Check:**
-1. Places API photo URLs include correct API key
-2. API key has Places API enabled
-3. CORS issues (check browser console)
-4. Fallback to placeholder if no image
-
----
-
-## 📚 Key Files to Know
-
-### Must Read Before Coding
-- `functions/index.js` - Backend logic, scoring algorithm
-- `agentqu-app/src/App.tsx` - Main UI, view management
-- `agentqu-app/src/lib/affinityCategories.ts` - All 28+ categories
-- `agentqu-app/src/lib/types.ts` - TypeScript interfaces
-- `.claude/CLAUDE.md` - This file!
-
-### Generated Files (Don't Edit)
-- `agentqu-app/build/*` - Production build
-- `firebase-debug.log` - Firebase CLI logs
-- `.firebase/*` - Firebase deployment cache
-
----
-
-## 🎯 Next Steps & Roadmap
-
-### Immediate Priorities (v0.3)
-1. **Trip Planner** - "There-Then" planning for future activities
-   - Date range picker
-   - Calendar view
-   - Save/load trips
-
-2. **Better Event Quality** - Integrate dedicated event APIs
-   - Eventbrite API
-   - Ticketmaster API
-   - Filter out non-events from Custom Search
-
-3. **Performance Optimization**
-   - Virtual scrolling for activity lists
-   - Image lazy loading
-   - Bundle size reduction
-
-### Future Ideas
-- Push notifications for new events matching affinities
-- Social features (share activities, friend recommendations)
-- Activity check-ins (track what you've done)
-- Offline mode with service worker
-- Apple Maps integration (alternative to Google)
-
----
-
-## 💡 Working with Claude
-
-### How to Brief Claude
-```
-"We need to add [feature]. Here's the design:
-- Frontend: [component structure, state management]
-- Backend: [API endpoints, data models]
-- Wiring: [how frontend calls backend]
-- Test plan: [what to test, success criteria]
-
-Let's discuss this design first before implementing."
-```
-
-### Checkpoint After Each Feature
-Claude will create checkpoints in `docs/WHERE-WE-LEFT-OFF.md` after completing major work. This allows you to:
-- Resume work if connection drops
-- Review what was done
-- Understand state before next session
-
-### Always Test Before Moving On
-Never mark a task complete until:
-1. Code runs in browser without errors
-2. API returns expected data
-3. Feature works as designed
-4. Deployed to production
-5. Git committed
-
----
-
-## 🏆 Success Metrics
-
-### How We Measure Quality
-- **Zero TypeScript Errors** - Strict mode enabled
-- **Zero Console Errors** - Clean browser console
-- **< 500ms API Response** - Fast backend
-- **> 90% Uptime** - Firebase reliability
-- **Mobile-First** - Touch-optimized UI
-
-### Production Readiness Checklist
-- [x] All APIs working with correct keys
-- [x] Authentication flow complete
-- [x] Error boundaries in place
-- [x] Loading states handled
-- [x] Responsive design (mobile + desktop)
-- [x] Security rules enforced
-- [x] Git commits pushed
-- [x] Documentation updated
-
----
-
-**Last Updated:** October 8, 2025
-**Current Version:** v0.2 (Affinity-Based Ranking + Temporal Event Search)
-**Next Version:** v0.3 (Trip Planner)
-
+**Last Updated:** October 10, 2025
+**Branch:** TWEET-THAT-YOU-TWAT (Twitter integration)

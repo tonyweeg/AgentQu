@@ -53,39 +53,74 @@ const ContactUs: React.FC = () => {
   };
 
   return (
-    <div className="py-12 px-4 bg-gradient-to-br from-ocean-bright/10 to-seafoam/30 min-h-screen">
-      <div className="max-w-5xl mx-auto">
-        {/* Page Title */}
+    <div className="py-12 px-4 min-h-screen relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-blue-900/20"></div>
+
+      {/* Animated orbs for depth */}
+      <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400/30 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-400/20 rounded-full blur-3xl animate-pulse delay-500"></div>
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        {/* Page Title - Logo with Agent Q Background */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-navy-text mb-4">Get in Touch</h1>
-          <p className="text-xl text-gray-600">We'd love to hear from you! Reach out anytime.</p>
+          <div
+            className="relative w-full max-w-4xl mx-auto bg-transparent rounded-3xl px-8 py-6 border border-white/20 shadow-2xl overflow-hidden"
+            style={{
+              backgroundImage: 'url(/agent-q-robot-banner.png)',
+              backgroundSize: 'auto 150%',
+              backgroundPosition: 'calc(50% - 200px) calc(50% + 30px)',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            {/* Gradient fade on right edge - wider and stronger to actually fade the image */}
+            <div className="absolute inset-y-0 right-0 w-[150px] bg-gradient-to-r from-transparent via-white/80 to-white dark:from-transparent dark:via-gray-900/80 dark:to-gray-900 rounded-r-3xl pointer-events-none"></div>
+
+            {/* Content - right aligned with text shadow for readability */}
+            <div className="relative z-10 flex flex-col items-end text-right">
+              <img
+                src="/agentqu-logo.png"
+                alt="AgentQu"
+                className="h-20 w-auto mb-3 drop-shadow-lg"
+              />
+              <p className="text-xl text-gray-800 dark:text-gray-100 font-bold drop-shadow-lg">
+                We'd love to hear from you! ✨
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Contact Form */}
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <h2 className="text-2xl font-bold text-navy-text mb-6">Send Us a Message</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Contact Form - Ultimate Glassmorphism */}
+          <div className="bg-white/30 dark:bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 hover:shadow-3xl transition-all duration-300">
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-3">
+              <span className="text-4xl">💬</span>
+              Send Us a Message
+            </h2>
 
             {submitted ? (
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center">
-                <div className="text-5xl mb-4">✅</div>
-                <h3 className="text-xl font-bold text-green-800 mb-2">Message Sent!</h3>
-                <p className="text-green-700">We'll get back to you as soon as possible.</p>
+              <div className="bg-green-500/20 backdrop-blur-xl border-2 border-green-400/50 rounded-2xl p-8 text-center shadow-lg">
+                <div className="text-7xl mb-4 animate-bounce">✅</div>
+                <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">Message Sent!</h3>
+                <p className="text-green-600 dark:text-green-200 text-lg">We'll get back to you as soon as possible.</p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Error Message */}
                 {error && (
-                  <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">❌</span>
-                      <p className="text-red-700 font-medium">{error}</p>
+                  <div className="bg-red-500/20 backdrop-blur-xl border-2 border-red-400/50 rounded-2xl p-4 shadow-lg">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">❌</span>
+                      <p className="text-red-700 dark:text-red-300 font-medium">{error}</p>
                     </div>
                   </div>
                 )}
+
                 {/* Name */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                    <span className="text-lg">👤</span>
                     Your Name *
                   </label>
                   <input
@@ -93,14 +128,15 @@ const ContactUs: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-ocean-bright focus:outline-none"
+                    className="w-full px-5 py-3.5 bg-white/50 dark:bg-white/10 backdrop-blur-xl border-2 border-white/40 rounded-2xl focus:border-ocean-bright focus:ring-2 focus:ring-ocean-bright/30 focus:outline-none text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg transition-all"
                     placeholder="John Doe"
                   />
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                    <span className="text-lg">📧</span>
                     Email Address *
                   </label>
                   <input
@@ -108,21 +144,22 @@ const ContactUs: React.FC = () => {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-ocean-bright focus:outline-none"
+                    className="w-full px-5 py-3.5 bg-white/50 dark:bg-white/10 backdrop-blur-xl border-2 border-white/40 rounded-2xl focus:border-ocean-bright focus:ring-2 focus:ring-ocean-bright/30 focus:outline-none text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg transition-all"
                     placeholder="john@example.com"
                   />
                 </div>
 
                 {/* Subject */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                    <span className="text-lg">📋</span>
                     Subject *
                   </label>
                   <select
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-ocean-bright focus:outline-none"
+                    className="w-full px-5 py-3.5 bg-white/50 dark:bg-white/10 backdrop-blur-xl border-2 border-white/40 rounded-2xl focus:border-ocean-bright focus:ring-2 focus:ring-ocean-bright/30 focus:outline-none text-gray-800 dark:text-white shadow-lg transition-all"
                   >
                     <option value="">Select a topic...</option>
                     <option value="general">General Inquiry</option>
@@ -137,7 +174,8 @@ const ContactUs: React.FC = () => {
 
                 {/* Message */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                  <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2 flex items-center gap-2">
+                    <span className="text-lg">✍️</span>
                     Message *
                   </label>
                   <textarea
@@ -145,7 +183,7 @@ const ContactUs: React.FC = () => {
                     rows={6}
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-ocean-bright focus:outline-none resize-none"
+                    className="w-full px-5 py-3.5 bg-white/50 dark:bg-white/10 backdrop-blur-xl border-2 border-white/40 rounded-2xl focus:border-ocean-bright focus:ring-2 focus:ring-ocean-bright/30 focus:outline-none text-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-lg transition-all resize-none"
                     placeholder="Tell us what's on your mind..."
                   />
                 </div>
@@ -154,9 +192,19 @@ const ContactUs: React.FC = () => {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="w-full bg-ocean-bright hover:bg-ocean-mid text-white font-bold py-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  className="w-full bg-gradient-to-r from-ocean-bright via-purple-600 to-pink-600 hover:from-ocean-mid hover:via-purple-700 hover:to-pink-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-2xl hover:shadow-3xl hover:scale-105 transform"
                 >
-                  {sending ? '📤 Sending...' : '📬 Send Message'}
+                  {sending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="animate-spin">⏳</span>
+                      Sending...
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <span>📬</span>
+                      Send Message
+                    </span>
+                  )}
                 </button>
               </form>
             )}
@@ -164,77 +212,86 @@ const ContactUs: React.FC = () => {
 
           {/* Contact Info & Quick Links */}
           <div className="space-y-6">
-            {/* Contact Information */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold text-navy-text mb-6">Contact Information</h2>
+            {/* Contact Information - Glassmorphism */}
+            <div className="bg-white/30 dark:bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 hover:shadow-3xl transition-all duration-300">
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-3">
+                <span className="text-4xl">📞</span>
+                Contact Information
+              </h2>
 
-              <div className="space-y-4">
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl">📧</div>
+              <div className="space-y-6">
+                <div className="flex items-start gap-4 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/20 hover:border-ocean-bright/50 transition-all shadow-lg">
+                  <div className="text-4xl">📧</div>
                   <div>
-                    <h3 className="font-bold text-navy-text mb-1">Email</h3>
-                    <a href="mailto:support@agentqu.com" className="text-ocean-bright hover:text-ocean-mid font-medium">
-                      support@agentqu.com
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-1">Email</h3>
+                    <a href="mailto:hello@tonyweeg.com" className="text-ocean-bright hover:text-ocean-mid dark:text-blue-400 dark:hover:text-blue-300 font-medium text-lg">
+                      hello@tonyweeg.com
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl">🌐</div>
+                <div className="flex items-start gap-4 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/20 hover:border-ocean-bright/50 transition-all shadow-lg">
+                  <div className="text-4xl">🌐</div>
                   <div>
-                    <h3 className="font-bold text-navy-text mb-1">Website</h3>
-                    <a href="/" className="text-ocean-bright hover:text-ocean-mid font-medium">
-                      www.agentqu.com
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-1">Website</h3>
+                    <a href="https://agentqu-platform.web.app" className="text-ocean-bright hover:text-ocean-mid dark:text-blue-400 dark:hover:text-blue-300 font-medium text-lg">
+                      agentqu-platform.web.app
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl">💬</div>
+                <div className="flex items-start gap-4 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-2xl p-4 border border-white/20 hover:border-ocean-bright/50 transition-all shadow-lg">
+                  <div className="text-4xl">💬</div>
                   <div>
-                    <h3 className="font-bold text-navy-text mb-1">Support Hours</h3>
-                    <p className="text-gray-700">Monday - Friday</p>
-                    <p className="text-gray-700">9:00 AM - 6:00 PM EST</p>
+                    <h3 className="font-bold text-gray-800 dark:text-white mb-1">Support Hours</h3>
+                    <p className="text-gray-700 dark:text-gray-300">Monday - Friday</p>
+                    <p className="text-gray-700 dark:text-gray-300">9:00 AM - 6:00 PM EST</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Links */}
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold text-navy-text mb-6">Quick Links</h2>
+            {/* Quick Links - Glassmorphism */}
+            <div className="bg-white/30 dark:bg-white/10 backdrop-blur-2xl rounded-3xl border border-white/30 shadow-2xl p-8 hover:shadow-3xl transition-all duration-300">
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-3">
+                <span className="text-4xl">🔗</span>
+                Quick Links
+              </h2>
 
               <div className="space-y-3">
                 <a
                   href="/privacy"
-                  className="block p-3 bg-ocean-bright/10 hover:bg-ocean-bright/20 rounded-lg transition-colors"
+                  className="block p-4 bg-white/40 dark:bg-white/10 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-white/20 rounded-2xl transition-all border border-white/20 hover:border-ocean-bright/50 shadow-lg hover:shadow-xl group"
                 >
-                  <span className="font-medium text-navy-text">🔒 Privacy Policy</span>
+                  <span className="font-bold text-gray-800 dark:text-white flex items-center gap-3 text-lg">
+                    <span className="text-2xl group-hover:scale-110 transition-transform">🔒</span>
+                    Privacy Policy
+                  </span>
                 </a>
                 <a
                   href="/terms"
-                  className="block p-3 bg-ocean-bright/10 hover:bg-ocean-bright/20 rounded-lg transition-colors"
+                  className="block p-4 bg-white/40 dark:bg-white/10 backdrop-blur-xl hover:bg-white/60 dark:hover:bg-white/20 rounded-2xl transition-all border border-white/20 hover:border-ocean-bright/50 shadow-lg hover:shadow-xl group"
                 >
-                  <span className="font-medium text-navy-text">📄 Terms of Service</span>
-                </a>
-                <a
-                  href="/test-harness"
-                  className="block p-3 bg-ocean-bright/10 hover:bg-ocean-bright/20 rounded-lg transition-colors"
-                >
-                  <span className="font-medium text-navy-text">🧪 Test Harness</span>
+                  <span className="font-bold text-gray-800 dark:text-white flex items-center gap-3 text-lg">
+                    <span className="text-2xl group-hover:scale-110 transition-transform">📄</span>
+                    Terms of Service
+                  </span>
                 </a>
               </div>
             </div>
 
-            {/* Social Media / Future */}
-            <div className="bg-gradient-to-br from-ocean-bright to-ocean-mid text-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold mb-4">Stay Connected</h2>
-              <p className="mb-4">Follow us for updates, tips, and new features!</p>
-              <div className="flex gap-4">
-                <button className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm py-3 rounded-lg font-medium transition-colors">
+            {/* Stay Connected - Glassmorphism Card */}
+            <div className="bg-gradient-to-br from-ocean-bright/90 via-purple-600/90 to-pink-600/90 backdrop-blur-2xl text-white rounded-3xl border border-white/30 shadow-2xl p-8 hover:shadow-3xl transition-all duration-300">
+              <h2 className="text-3xl font-bold mb-4 flex items-center gap-3">
+                <span className="text-4xl">✨</span>
+                Stay Connected
+              </h2>
+              <p className="mb-6 text-lg text-white/90">Follow us for updates, tips, and new features!</p>
+              <div className="flex gap-3">
+                <button className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-xl py-3 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 transform border border-white/30">
                   Twitter
                 </button>
-                <button className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-sm py-3 rounded-lg font-medium transition-colors">
+                <button className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-xl py-3 rounded-2xl font-bold transition-all shadow-lg hover:shadow-xl hover:scale-105 transform border border-white/30">
                   Instagram
                 </button>
               </div>

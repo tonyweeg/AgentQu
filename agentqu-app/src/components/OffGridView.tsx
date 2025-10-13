@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Activity } from '../lib/types';
 import ActivityCard from './ActivityCard';
+import ActivityMap from './ActivityMap';
 
 interface OffGridViewProps {
   activities: Activity[];
   onLocationSearch?: (city: string) => void;
+  userLocation?: { lat: number; lng: number } | null;
+  viewMode: 'list' | 'map';
 }
 
 // Off-grid categories - outdoor and nature activities
@@ -21,7 +24,7 @@ const OFF_GRID_CATEGORIES = [
   'wildlife'
 ];
 
-const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch }) => {
+const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch, userLocation, viewMode }) => {
   const [citySearch, setCitySearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -56,11 +59,11 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-3xl font-bold text-navy-text flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-navy-text dark:text-white flex items-center gap-3">
               <span className="text-4xl">🏕️</span>
               <span>Off Grid</span>
             </h2>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-gray-300 mt-2">
               Discover hiking, biking, parks, and nature activities
             </p>
           </div>
@@ -90,26 +93,124 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
 
         {/* Stats */}
         <div className="flex gap-4">
-          <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
-            <div className="text-xs text-gray-600">Activities</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
+            <div className="text-2xl font-bold text-navy-text dark:text-white">{offGridActivities.length}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Activities</div>
           </div>
-          <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
-            <div className="text-xs text-gray-600">Categories</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
+            <div className="text-2xl font-bold text-navy-text dark:text-white">{Object.keys(groupedActivities).length}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Categories</div>
           </div>
         </div>
       </div>
 
-      {/* Content - Unified Grid with Filters */}
+      {/* Content - Map View or List View */}
       <div>
         {offGridActivities.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🏞️</div>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">No Off-Grid Activities Found</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">No Off-Grid Activities Found</h3>
+            <p className="text-gray-600 dark:text-gray-400">
               Try adjusting your location or search radius to find outdoor adventures nearby.
             </p>
+          </div>
+        ) : viewMode === 'map' && userLocation ? (
+          <div className="space-y-4">
+            {/* Map */}
+            <ActivityMap
+              activities={offGridActivities}
+              userLocation={userLocation}
+            />
+
+            {/* Compact Activity List below map */}
+            <div className="space-y-2">
+              {offGridActivities
+                .sort((a, b) => (b.score || 0) - (a.score || 0))
+                .slice(0, 20)
+                .map((activity) => {
+                  const category = activity.primaryCategory || 'other';
+                  const getCategoryGradient = (cat: string) => {
+                    switch (cat) {
+                      case 'hiking': return 'from-green-50 to-emerald-50 border-green-200';
+                      case 'nature_and_outdoors': return 'from-teal-50 to-green-50 border-teal-200';
+                      case 'sports_and_recreation': return 'from-blue-50 to-cyan-50 border-blue-200';
+                      case 'camping': return 'from-orange-50 to-amber-50 border-orange-200';
+                      case 'parks': return 'from-lime-50 to-green-50 border-lime-200';
+                      default: return 'from-gray-50 to-slate-50 border-gray-200';
+                    }
+                  };
+
+                  const getCategoryEmoji = (cat: string) => {
+                    const emojiMap: Record<string, string> = {
+                      hiking: '🥾', nature_and_outdoors: '🌲', sports_and_recreation: '⚽',
+                      camping: '⛺', parks: '🌳', trails: '🥾', biking: '🚴',
+                      water_sports: '🏄', adventure: '🧗', wildlife: '🦌', other: '🏞️'
+                    };
+                    return emojiMap[cat] || '🏞️';
+                  };
+
+                  const score = activity.score || 0;
+                  let stokedText = "";
+                  let stokedColor = "";
+                  if (score >= 280) {
+                    stokedText = "You'll love it";
+                    stokedColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
+                  } else if (score >= 220) {
+                    stokedText = "You'll like it";
+                    stokedColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
+                  } else if (score >= 180) {
+                    stokedText = "You should like it";
+                    stokedColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
+                  } else if (score >= 140) {
+                    stokedText = "Give it a shot!";
+                    stokedColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
+                  }
+
+                  return (
+                    <div
+                      key={activity.id || activity.activityId}
+                      className={`bg-gradient-to-r ${getCategoryGradient(category)} border rounded-lg p-4 hover:shadow-md transition-all cursor-pointer`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="text-3xl flex-shrink-0">
+                          {getCategoryEmoji(category)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-3 mb-1.5">
+                            <h4 className="font-bold text-base text-navy-text dark:text-white line-clamp-2 flex-1 leading-snug">
+                              {activity.name}
+                            </h4>
+                            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap font-medium">
+                              {activity.distance?.toFixed(1)} mi
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300 mb-2 flex-wrap">
+                            <span className="capitalize text-gray-600 dark:text-gray-400 font-medium">
+                              {category.replace(/_/g, ' ')}
+                            </span>
+                            {activity.rating && (
+                              <span className="flex items-center gap-1 font-medium">
+                                ⭐ {activity.rating.toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                          {stokedText && (
+                            <div className={`${stokedColor} text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide inline-block shadow-sm`}>
+                              {stokedText}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            {offGridActivities.length > 20 && (
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                Showing top 20 of {offGridActivities.length} activities • Switch to List view for full details
+              </p>
+            )}
           </div>
         ) : (
           <>
@@ -196,7 +297,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           selectedCategory === 'all'
                             ? 'bg-green-600 text-white shadow-md'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:border-green-600'
+                            : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-green-600 dark:hover:border-green-500'
                         }`}
                       >
                         All Places ({places.length})
@@ -210,7 +311,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
                               selectedCategory === category
                                 ? 'bg-green-600 text-white shadow-md'
-                                : 'bg-white border border-gray-300 text-gray-700 hover:border-green-600'
+                                : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-green-600 dark:hover:border-green-500'
                             }`}
                           >
                             <span>{getCategoryEmoji(category)}</span>
@@ -224,8 +325,13 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
                   {/* Places Grid - Cards */}
                   {sortedPlaces.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-                      {sortedPlaces.map((activity) => (
-                        <ActivityCard key={activity.id || activity.activityId} activity={activity} />
+                      {sortedPlaces.map((activity, index) => (
+                        <ActivityCard
+                          key={activity.id || activity.activityId}
+                          activity={activity}
+                          index={index}
+                          allActivities={sortedPlaces}
+                        />
                       ))}
                     </div>
                   )}
@@ -233,79 +339,28 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch 
                   {sortedPlaces.length === 0 && places.length > 0 && (
                     <div className="text-center py-12 mb-12">
                       <div className="text-4xl mb-3">{getCategoryEmoji(selectedCategory)}</div>
-                      <p className="text-gray-600">No {selectedCategory.replace(/_/g, ' ')} places found</p>
+                      <p className="text-gray-600 dark:text-gray-400">No {selectedCategory.replace(/_/g, ' ')} places found</p>
                     </div>
                   )}
 
-                  {/* Events Section - Compact Text List */}
+                  {/* Events Section - Card Grid */}
                   {sortedEvents.length > 0 && (
                     <div className="mt-8">
-                      <div className="flex items-center gap-3 mb-4">
-                        <h3 className="text-2xl font-bold text-navy-text">🎉 Upcoming Events</h3>
-                        <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
+                      <div className="flex items-center gap-3 mb-6">
+                        <h3 className="text-2xl font-bold text-navy-text dark:text-white">🎉 Upcoming Events</h3>
+                        <span className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200 px-3 py-1 rounded-full text-sm font-bold">
                           {sortedEvents.length}
                         </span>
                       </div>
 
-                      <div className="space-y-2">
-                        {sortedEvents.map((event) => (
-                          <div
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        {sortedEvents.map((event, index) => (
+                          <ActivityCard
                             key={event.id || event.activityId}
-                            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md hover:border-purple-300 transition-all"
-                          >
-                            <div className="flex items-start justify-between gap-4">
-                              {/* Event Info */}
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-base text-navy-text mb-1">
-                                  {event.name}
-                                </h4>
-                                <div className="flex items-center gap-3 text-sm text-gray-600 flex-wrap">
-                                  <span className="flex items-center gap-1">
-                                    📍 {event.distance?.toFixed(1)} mi
-                                  </span>
-                                  {event.rating && (
-                                    <span className="flex items-center gap-1">
-                                      ⭐ {event.rating.toFixed(1)}
-                                    </span>
-                                  )}
-                                  {event.cost?.free && (
-                                    <span className="text-green-600 font-semibold">Free</span>
-                                  )}
-                                  {event.cost?.priceLevel && !event.cost.free && (
-                                    <span className="font-medium">{'$'.repeat(event.cost.priceLevel)}</span>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Q Score Badge */}
-                              {(() => {
-                                const score = event.score || 0;
-                                let badgeText = "";
-                                let badgeColor = "";
-                                if (score >= 280) {
-                                  badgeText = "❤️ You'll love it";
-                                  badgeColor = "bg-gradient-to-r from-[#FF6B9D] via-[#FEC163] to-[#EE4E4E]";
-                                } else if (score >= 220) {
-                                  badgeText = "😊 You'll like it";
-                                  badgeColor = "bg-gradient-to-r from-[#FEC163] via-[#FF6B9D] to-[#F97171]";
-                                } else if (score >= 180) {
-                                  badgeText = "👍 You should like it";
-                                  badgeColor = "bg-gradient-to-r from-[#4FACFE] via-[#00F2FE] to-[#43E97B]";
-                                } else if (score >= 140) {
-                                  badgeText = "🎯 Give it a shot";
-                                  badgeColor = "bg-gradient-to-r from-[#667EEA] via-[#764BA2] to-[#F093FB]";
-                                }
-                                if (badgeText) {
-                                  return (
-                                    <div className={`${badgeColor} text-white px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shadow-sm`}>
-                                      {badgeText}
-                                    </div>
-                                  );
-                                }
-                                return null;
-                              })()}
-                            </div>
-                          </div>
+                            activity={event}
+                            index={index}
+                            allActivities={sortedEvents}
+                          />
                         ))}
                       </div>
                     </div>
