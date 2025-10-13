@@ -59,11 +59,11 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-3xl font-bold text-navy-text flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-navy-text dark:text-white flex items-center gap-3">
               <span className="text-4xl">🏕️</span>
               <span>Off Grid</span>
             </h2>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-600 dark:text-gray-300 mt-2">
               Discover hiking, biking, parks, and nature activities
             </p>
           </div>
@@ -93,13 +93,13 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
 
         {/* Stats */}
         <div className="flex gap-4">
-          <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-navy-text">{offGridActivities.length}</div>
-            <div className="text-xs text-gray-600">Activities</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
+            <div className="text-2xl font-bold text-navy-text dark:text-white">{offGridActivities.length}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Activities</div>
           </div>
-          <div className="bg-gray-100 rounded-lg px-4 py-2">
-            <div className="text-2xl font-bold text-navy-text">{Object.keys(groupedActivities).length}</div>
-            <div className="text-xs text-gray-600">Categories</div>
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-2">
+            <div className="text-2xl font-bold text-navy-text dark:text-white">{Object.keys(groupedActivities).length}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400">Categories</div>
           </div>
         </div>
       </div>
@@ -109,8 +109,8 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
         {offGridActivities.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🏞️</div>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">No Off-Grid Activities Found</h3>
-            <p className="text-gray-600">
+            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2">No Off-Grid Activities Found</h3>
+            <p className="text-gray-600 dark:text-gray-400">
               Try adjusting your location or search radius to find outdoor adventures nearby.
             </p>
           </div>
@@ -177,15 +177,15 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-3 mb-1.5">
-                            <h4 className="font-bold text-base text-navy-text line-clamp-2 flex-1 leading-snug">
+                            <h4 className="font-bold text-base text-navy-text dark:text-white line-clamp-2 flex-1 leading-snug">
                               {activity.name}
                             </h4>
-                            <span className="text-sm text-gray-600 whitespace-nowrap font-medium">
+                            <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap font-medium">
                               {activity.distance?.toFixed(1)} mi
                             </span>
                           </div>
-                          <div className="flex items-center gap-3 text-sm text-gray-700 mb-2 flex-wrap">
-                            <span className="capitalize text-gray-600 font-medium">
+                          <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300 mb-2 flex-wrap">
+                            <span className="capitalize text-gray-600 dark:text-gray-400 font-medium">
                               {category.replace(/_/g, ' ')}
                             </span>
                             {activity.rating && (
@@ -207,7 +207,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
             </div>
 
             {offGridActivities.length > 20 && (
-              <p className="text-center text-xs text-gray-500 mt-2">
+              <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
                 Showing top 20 of {offGridActivities.length} activities • Switch to List view for full details
               </p>
             )}
@@ -297,7 +297,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                           selectedCategory === 'all'
                             ? 'bg-green-600 text-white shadow-md'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:border-green-600'
+                            : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-green-600 dark:hover:border-green-500'
                         }`}
                       >
                         All Places ({places.length})
@@ -311,7 +311,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
                               selectedCategory === category
                                 ? 'bg-green-600 text-white shadow-md'
-                                : 'bg-white border border-gray-300 text-gray-700 hover:border-green-600'
+                                : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:border-green-600 dark:hover:border-green-500'
                             }`}
                           >
                             <span>{getCategoryEmoji(category)}</span>
@@ -339,7 +339,7 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
                   {sortedPlaces.length === 0 && places.length > 0 && (
                     <div className="text-center py-12 mb-12">
                       <div className="text-4xl mb-3">{getCategoryEmoji(selectedCategory)}</div>
-                      <p className="text-gray-600">No {selectedCategory.replace(/_/g, ' ')} places found</p>
+                      <p className="text-gray-600 dark:text-gray-400">No {selectedCategory.replace(/_/g, ' ')} places found</p>
                     </div>
                   )}
 
@@ -347,8 +347,8 @@ const OffGridView: React.FC<OffGridViewProps> = ({ activities, onLocationSearch,
                   {sortedEvents.length > 0 && (
                     <div className="mt-8">
                       <div className="flex items-center gap-3 mb-6">
-                        <h3 className="text-2xl font-bold text-white">🎉 Upcoming Events</h3>
-                        <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-bold">
+                        <h3 className="text-2xl font-bold text-navy-text dark:text-white">🎉 Upcoming Events</h3>
+                        <span className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-200 px-3 py-1 rounded-full text-sm font-bold">
                           {sortedEvents.length}
                         </span>
                       </div>
