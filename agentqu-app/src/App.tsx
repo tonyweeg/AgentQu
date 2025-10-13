@@ -1653,7 +1653,7 @@ function App() {
                                       setActiveTextSearch('');
                                       setRefreshKey(prev => prev + 1);
                                     }}
-                                    className="ml-1 text-ocean-bright hover:text-ocean-mid font-bold"
+                                    className="ml-1 bg-sky-100 hover:bg-sky-200 text-gray-800 font-bold px-2 py-0.5 rounded-full transition-colors"
                                   >
                                     ✕
                                   </button>
