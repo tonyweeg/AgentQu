@@ -481,6 +481,83 @@ function App() {
     );
   }
 
+  // Corporate pages accessible while authenticated
+  if (isPrivacyPolicy || isTermsOfService || isContactUs) {
+    return (
+      <div className="min-h-screen bg-transparent">
+        {/* Simple Header for logged-in users on corporate pages */}
+        <header className="bg-white/85 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <a href="/" className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                <img src="/agentqu-glyph.png" alt="AgentQu" className="h-8 w-8 hidden lg:block" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-black" style={{ letterSpacing: '-0.05em' }}>AgentQu</h1>
+              </a>
+
+              {/* Navigation Links */}
+              <div className="flex items-center gap-4">
+                <a href="/" className="text-sm font-medium text-gray-700 hover:text-ocean-bright transition-colors">Home</a>
+                <a href="/privacy" className="text-sm font-medium text-gray-700 hover:text-ocean-bright transition-colors">Privacy</a>
+                <a href="/terms" className="text-sm font-medium text-gray-700 hover:text-ocean-bright transition-colors">Terms</a>
+                <a href="/contact" className="text-sm font-medium text-gray-700 hover:text-ocean-bright transition-colors">Contact</a>
+                {profile.photoURL && (
+                  <img
+                    src={profile.photoURL}
+                    alt={profile.displayName || 'User'}
+                    className="w-8 h-8 rounded-full border-2 border-ocean-bright"
+                  />
+                )}
+                <button
+                  onClick={signOut}
+                  className="text-sm text-gray-600 hover:text-ocean-bright transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Corporate Page Content */}
+        {isPrivacyPolicy && <PrivacyPolicy />}
+        {isTermsOfService && <TermsOfService />}
+        {isContactUs && <ContactUs />}
+
+        {/* Footer */}
+        <footer className="bg-navy-text text-white mt-12 py-8">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+              <div>
+                <h3 className="font-bold text-xl mb-3">AgentQu</h3>
+                <p className="text-gray-300 text-sm">
+                  Discover amazing activities near you with personalized recommendations powered by AI.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg mb-3">Legal</h3>
+                <div className="space-y-2">
+                  <a href="/privacy" className="block text-gray-300 hover:text-white text-sm transition-colors">Privacy Policy</a>
+                  <a href="/terms" className="block text-gray-300 hover:text-white text-sm transition-colors">Terms of Service</a>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-bold text-lg mb-3">Get in Touch</h3>
+                <div className="space-y-2">
+                  <a href="/contact" className="block text-gray-300 hover:text-white text-sm transition-colors">Contact Us</a>
+                  <a href="mailto:support@agentqu.com" className="block text-gray-300 hover:text-white text-sm transition-colors">support@agentqu.com</a>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
+              <p>© {new Date().getFullYear()} AgentQu. All rights reserved.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
   // Location permission needed
   if (locationLoading) {
     return (
