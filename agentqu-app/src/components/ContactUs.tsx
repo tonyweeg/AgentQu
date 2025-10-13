@@ -74,14 +74,15 @@ const ContactUs: React.FC = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {/* No overlay - robot fully visible */}
+            {/* Gradient fade on right edge - 75px fade to transparent */}
+            <div className="absolute inset-y-0 right-0 w-[75px] bg-gradient-to-r from-transparent to-white/100 dark:to-gray-900/100 rounded-r-3xl pointer-events-none"></div>
 
-            {/* Content - with text shadow for readability */}
-            <div className="relative z-10">
+            {/* Content - right aligned with text shadow for readability */}
+            <div className="relative z-10 flex flex-col items-end text-right">
               <img
                 src="/agentqu-logo.png"
                 alt="AgentQu"
-                className="h-20 w-auto mx-auto mb-3 drop-shadow-lg"
+                className="h-20 w-auto mb-3 drop-shadow-lg"
               />
               <p className="text-xl text-gray-800 dark:text-gray-100 font-bold drop-shadow-lg">
                 We'd love to hear from you! ✨
@@ -223,8 +224,8 @@ const ContactUs: React.FC = () => {
                   <div className="text-4xl">📧</div>
                   <div>
                     <h3 className="font-bold text-gray-800 dark:text-white mb-1">Email</h3>
-                    <a href="mailto:tonyweeg@gmail.com" className="text-ocean-bright hover:text-ocean-mid dark:text-blue-400 dark:hover:text-blue-300 font-medium text-lg">
-                      tonyweeg@gmail.com
+                    <a href="mailto:hello@tonyweeg.com" className="text-ocean-bright hover:text-ocean-mid dark:text-blue-400 dark:hover:text-blue-300 font-medium text-lg">
+                      hello@tonyweeg.com
                     </a>
                   </div>
                 </div>
