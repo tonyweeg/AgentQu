@@ -1420,6 +1420,7 @@ function affinityToPlaceTypes(affinities) {
     'geocaching': ['park', 'tourist_attraction', 'point_of_interest'],
     'disc_golf': ['park', 'disc_golf_course'],
     'skate_parks': ['park', 'sports_complex', 'athletic_field', 'tourist_attraction'],  // No specific skatepark type in Google Places
+    'action_sports': ['sports_complex', 'tourist_attraction', 'gym', 'park', 'amusement_park'],  // Rock climbing, zip lines, extreme sports
 
     // Water Sports & Activities
     'watersports': ['marina', 'beach', 'water_sports', 'sporting_goods_store'],
