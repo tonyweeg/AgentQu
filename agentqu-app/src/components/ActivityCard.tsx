@@ -77,9 +77,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
 
   return (
     <>
-      {/* Instagram-style portrait card with 2:3 aspect ratio */}
+      {/* Mobile-optimized landscape card with 3:2 aspect ratio */}
       <div
-        className="relative rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer aspect-[2/3] group"
+        className="relative rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer aspect-[3/2] group"
         onClick={handleCardClick}
       >
         {/* Full-height image */}
@@ -140,19 +140,19 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
 
         {/* Off-Grid Icon - Bottom Left corner of image */}
         {isOffGrid && (
-          <div className="absolute bottom-20 left-3 bg-green-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full shadow-lg">
+          <div className="absolute bottom-16 left-3 bg-green-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full shadow-lg">
             <span className="text-xs font-bold">🏕️ Off-Grid</span>
           </div>
         )}
 
-        {/* Instagram-style gradient overlay at bottom */}
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
+        {/* Gradient overlay at bottom - adjusted for landscape aspect ratio */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
 
         {/* Translucent text highlights on bottom of image */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
+        <div className="absolute bottom-0 left-0 right-0 p-3 space-y-1.5">
           {/* Title with translucent background */}
-          <div className="bg-white/20 backdrop-blur-md rounded-lg px-3 py-2 inline-block">
-            <h3 className="font-bold text-white text-sm leading-tight line-clamp-2 drop-shadow-lg">
+          <div className="bg-white/20 backdrop-blur-md rounded-lg px-2.5 py-1.5 inline-block max-w-full">
+            <h3 className="font-bold text-white text-xs leading-tight line-clamp-1 drop-shadow-lg">
               {activity.name}
             </h3>
           </div>
@@ -212,15 +212,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
               }`}>
                 {hikingDifficulty.toUpperCase()}
               </div>
-            </div>
-          )}
-
-          {/* Highlights/Info Section */}
-          {highlight && (
-            <div className="bg-white/15 backdrop-blur-md rounded-lg px-3 py-1.5">
-              <p className="text-white text-[10px] leading-relaxed line-clamp-2 drop-shadow-md">
-                {highlight}
-              </p>
             </div>
           )}
         </div>
