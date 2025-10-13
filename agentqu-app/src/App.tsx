@@ -1089,26 +1089,27 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {/* Drawer Toggle Button with View Mode Toggle */}
           <div className="px-4 py-3">
-            {/* Mobile: Scrollable horizontal layout */}
-            <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
-              <div className="flex items-center gap-3 min-w-max">
-                <button
-                  onClick={() => setShowControlsDrawer(!showControlsDrawer)}
-                  className="flex items-center gap-2 hover:opacity-70 transition-opacity flex-shrink-0"
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    {activities.length} activities
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {radius} mi
-                  </span>
-                  <span className={`text-gray-400 transition-transform ${showControlsDrawer ? 'rotate-180' : ''}`}>
-                    ▼
-                  </span>
-                </button>
+            {/* Mobile: Scrollable horizontal layout with scroll indicator */}
+            <div className="relative">
+              <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
+                <div className="flex items-center gap-3 min-w-max">
+                  <button
+                    onClick={() => setShowControlsDrawer(!showControlsDrawer)}
+                    className="flex items-center gap-2 hover:opacity-70 transition-opacity flex-shrink-0"
+                  >
+                    <span className="text-sm font-medium text-gray-700">
+                      {activities.length} activities
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {radius} mi
+                    </span>
+                    <span className={`text-gray-400 transition-transform ${showControlsDrawer ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
 
-                {/* Text Search Input */}
-                <div className="flex-shrink-0 w-[280px] sm:w-[320px]">
+                  {/* Text Search Input - Smaller width */}
+                  <div className="flex-shrink-0 w-[180px] sm:w-[220px]">
                   <div className="relative">
                     <input
                       type="text"
@@ -1211,7 +1212,13 @@ function App() {
                 )}
               </div>
             </div>
+
+            {/* Scroll indicator - Shows user they can scroll */}
+            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-2 sm:hidden">
+              <span className="text-ocean-bright text-xs animate-pulse">→</span>
+            </div>
           </div>
+        </div>
 
           {/* Drawer Content - Small square map + location info + controls */}
           {showControlsDrawer && (
