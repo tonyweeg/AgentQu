@@ -341,16 +341,70 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* Description/Highlights - NOT for events */}
-              {activity.type !== 'event' && activity.description && (
+              {/* Description - NOT for events */}
+              {activity.type !== 'event' && (activity.description || activity.details?.description) && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
-                  <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
-                    <span className="text-2xl">💡</span>
-                    Highlights
+                  <h3 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                    <span className="text-2xl">📖</span>
+                    About this place
                   </h3>
                   <p className="text-white text-base leading-relaxed drop-shadow-lg">
-                    {activity.description}
+                    {activity.description || activity.details?.description}
                   </p>
+                </div>
+              )}
+
+              {/* Hours & Contact Info - NOT for events */}
+              {activity.type !== 'event' && (activity.hoursToday || activity.website) && (
+                <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4 space-y-3">
+                  <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
+                    <span className="text-2xl">ℹ️</span>
+                    Details
+                  </h3>
+
+                  {/* Hours */}
+                  {activity.hoursToday && (
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl">🕒</span>
+                      <div>
+                        <div className="text-white font-semibold text-sm">Today's Hours</div>
+                        <div className="text-white/90 text-base">
+                          {activity.hoursToday.open} - {activity.hoursToday.close}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price Level */}
+                  {(activity.cost?.priceLevel && activity.cost.priceLevel > 0) && (
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl">💰</span>
+                      <div>
+                        <div className="text-white font-semibold text-sm">Price Range</div>
+                        <div className="text-white/90 text-base">
+                          {'$'.repeat(activity.cost.priceLevel)} {activity.cost.priceLevel === 1 ? '(Budget-friendly)' : activity.cost.priceLevel === 2 ? '(Moderate)' : activity.cost.priceLevel === 3 ? '(Upscale)' : '(Fine Dining)'}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Website */}
+                  {activity.website && (
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl">🌐</span>
+                      <div className="flex-1">
+                        <div className="text-white font-semibold text-sm">Website</div>
+                        <a
+                          href={activity.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sky-300 hover:text-sky-200 text-sm underline break-all"
+                        >
+                          Visit website →
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -419,7 +473,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                 </div>
               )}
 
-              {/* Why you'll like it - NOT for events */}
+              {/* Why we think you'll like it - NOT for events */}
               {activity.type !== 'event' && score > 0 && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
                   <h3 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
@@ -443,6 +497,13 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                         reasons.push("people absolutely love it");
                       } else if (activity.rating && activity.rating >= 4.0) {
                         reasons.push("it's highly rated");
+                      }
+
+                      // Review count
+                      if (activity.reviewCount && activity.reviewCount > 1000) {
+                        reasons.push(`thousands of people have reviewed it`);
+                      } else if (activity.reviewCount && activity.reviewCount > 100) {
+                        reasons.push(`hundreds of people have reviewed it`);
                       }
 
                       // Category match reason
@@ -474,21 +535,6 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                     })()}
                   </p>
                 </div>
-              )}
-
-              {/* Website button - ONLY for non-events */}
-              {activity.type !== 'event' && activity.website && (
-                <a
-                  href={activity.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-2xl font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                  </svg>
-                  Visit Website
-                </a>
               )}
 
               {/* Additional images gallery */}
