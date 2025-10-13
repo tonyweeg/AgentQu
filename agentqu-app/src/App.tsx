@@ -1625,8 +1625,8 @@ function App() {
                             <div className="mb-6 flex flex-wrap gap-2 items-center">
                               {/* Active Text Search Indicator */}
                               {activeTextSearch && (
-                                <div className="flex items-center gap-2 bg-ocean-bright/10 border-2 border-ocean-bright px-4 py-2 rounded-full">
-                                  <span className="text-sm font-bold text-ocean-bright">🔍 Searching:</span>
+                                <div className="flex items-center gap-2 bg-sky-100 border-2 border-sky-300 px-4 py-2 rounded-full">
+                                  <span className="text-sm font-bold text-gray-800">🔍 Searching:</span>
                                   <span className="text-sm font-bold text-gray-800">"{activeTextSearch}"</span>
                                   <button
                                     onClick={() => {
@@ -1634,7 +1634,7 @@ function App() {
                                       setActiveTextSearch('');
                                       setRefreshKey(prev => prev + 1);
                                     }}
-                                    className="ml-1 bg-sky-100 hover:bg-sky-200 text-gray-800 font-bold px-2 py-0.5 rounded-full transition-colors"
+                                    className="ml-1 bg-white hover:bg-sky-200 text-gray-800 font-bold px-2 py-0.5 rounded-full transition-colors"
                                   >
                                     ✕
                                   </button>
