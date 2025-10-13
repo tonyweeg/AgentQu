@@ -1224,6 +1224,23 @@ function App() {
                       </button>
                     </div>
 
+                    {/* Off-Grid Button - Show for all users */}
+                    <button
+                      onClick={() => {
+                        setViewMode('offgrid');
+                        setShowSettings(false);
+                        setShowGeocaches(false);
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm whitespace-nowrap ${
+                        viewMode === 'offgrid'
+                          ? 'bg-green-600 text-white shadow-md border-green-700'
+                          : 'bg-white/80 text-gray-700 hover:bg-green-50 border-gray-200'
+                      }`}
+                    >
+                      <span className="text-base">🏕️</span>
+                      <span>Off-Grid</span>
+                    </button>
+
                     {/* EV Charging Button - Only show for EV owners with stations */}
                     {profile?.isEV && chargingStations && chargingStations.length > 0 && (
                       <button
