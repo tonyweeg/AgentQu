@@ -55,6 +55,35 @@ function toRad(degrees) {
 }
 
 /**
+ * Fetch image from Google Places API and convert to base64
+ * @param {Object} photo - Photo object from Places API (has 'name' property)
+ * @param {string} apiKey - Google Places API key
+ * @returns {Promise<string|null>} Base64 string or null if fetch fails
+ */
+async function fetchImageAsBase64(photo, apiKey) {
+  if (!photo || !photo.name) return null;
+
+  try {
+    // Fetch image from Places API media endpoint (cost: included in $0.017 search)
+    const imageUrl = `https://places.googleapis.com/v1/${photo.name}/media?key=${apiKey}&maxHeightPx=400&maxWidthPx=400`;
+
+    const response = await axios.get(imageUrl, {
+      responseType: 'arraybuffer',
+      timeout: 5000, // 5 second timeout
+    });
+
+    // Convert to base64
+    const base64 = Buffer.from(response.data, 'binary').toString('base64');
+    const mimeType = response.headers['content-type'] || 'image/jpeg';
+
+    return `data:${mimeType};base64,${base64}`;
+  } catch (error) {
+    console.error(`📸 Image fetch failed for ${photo.name}:`, error.message);
+    return null; // Gracefully fail - activity still works without image
+  }
+}
+
+/**
  * Map Google Place types to affinity categories
  */
 function mapPlaceTypeToCategories(types = []) {
@@ -1521,8 +1550,9 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          // OPTIMIZED: Removed 'places.photos' ($0.007 savings per search = 41% cost reduction!)
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.editorialSummary,places.websiteUri,places.nationalPhoneNumber'
+          // OPTIMIZED: Photos restored + cached as base64 strings for instant loading
+          // First user pays $0.007, all cache hits get base64 images (free + instant!)
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.editorialSummary,places.websiteUri,places.nationalPhoneNumber'
         }
       }
     );
@@ -1533,7 +1563,7 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
       return [];
     }
 
-    return response.data.places.map((place) => {
+    return await Promise.all(response.data.places.map(async (place) => {
       const placeTypes = place.types || [];
       const categories = mapPlaceTypeToCategories(placeTypes);
 
@@ -1548,6 +1578,23 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
             open: hoursMatch[1],
             close: hoursMatch[2]
           };
+        }
+      }
+
+      // OPTIMIZED: Fetch photos and cache as base64 strings for instant loading
+      const images = [];
+      if (place.photos && place.photos.length > 0) {
+        // Fetch first 3 photos and convert to base64 (in parallel for speed)
+        const photoPromises = place.photos.slice(0, 3).map(photo =>
+          fetchImageAsBase64(photo, GOOGLE_PLACES_API_KEY)
+        );
+        const base64Images = await Promise.all(photoPromises);
+
+        // Filter out any failed fetches (nulls)
+        images.push(...base64Images.filter(img => img !== null));
+
+        if (images.length > 0) {
+          console.log(`📸 TEXT SEARCH: Fetched ${images.length} images for ${place.displayName?.text} (${Math.round(images[0].length / 1024)}KB each)`);
         }
       }
 
@@ -1584,13 +1631,13 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
           googleRating: place.rating || null,
         },
         openNow: place.currentOpeningHours?.openNow || false,
-        // OPTIMIZED: No longer fetching photos (saves $0.007 per search)
-        images: [],
+        // Base64 images fetched and ready for caching
+        images: images,
       };
 
       console.log(`🔍 TEXT SEARCH: Mapped ${activity.name} - categories: ${activity.categories.join(', ')}`);
       return activity;
-    });
+    }));
   } catch (error) {
     console.error(`🔍 TEXT SEARCH ERROR: ${error.message}`);
     if (error.response) {
@@ -1638,9 +1685,9 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          // OPTIMIZED: Removed 'places.photos' ($0.007 savings per search = 41% cost reduction!)
-          // Using category emoji images as fallback
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.editorialSummary,places.currentOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.priceLevel'
+          // OPTIMIZED: Photos restored + cached as base64 strings for instant loading
+          // First user pays $0.007, all cache hits get base64 images (free + instant!)
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.editorialSummary,places.currentOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.priceLevel'
         }
       }
     );
@@ -1691,14 +1738,28 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
       return true;
     });
 
-    return filteredPlaces.map((place) => {
+    return await Promise.all(filteredPlaces.map(async (place) => {
       const placeLat = place.location.latitude;
       const placeLng = place.location.longitude;
       const categories = mapPlaceTypeToCategories(place.types || []);
 
-      // OPTIMIZED: No longer fetching photos from API (saves $0.007 per search)
-      // Using category emoji as visual identifier instead
+      // OPTIMIZED: Fetch photos and cache as base64 strings for instant loading
+      // First user pays $0.007, all cache hits get base64 images (free + instant!)
       const images = [];
+      if (place.photos && place.photos.length > 0) {
+        // Fetch first 3 photos and convert to base64 (in parallel for speed)
+        const photoPromises = place.photos.slice(0, 3).map(photo =>
+          fetchImageAsBase64(photo, GOOGLE_PLACES_API_KEY)
+        );
+        const base64Images = await Promise.all(photoPromises);
+
+        // Filter out any failed fetches (nulls)
+        images.push(...base64Images.filter(img => img !== null));
+
+        if (images.length > 0) {
+          console.log(`📸 Fetched ${images.length} images for ${place.displayName?.text} (${Math.round(images[0].length / 1024)}KB each)`);
+        }
+      }
 
       // Extract opening hours for today
       const todayHours = place.currentOpeningHours?.weekdayDescriptions?.[new Date().getDay()] || null;
@@ -1775,7 +1836,7 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         },
         openNow: place.opening_hours?.open_now || false,
       };
-    });
+    }));
   } catch (error) {
     console.error("Error fetching Google Places:", error.message);
     if (error.response) {
