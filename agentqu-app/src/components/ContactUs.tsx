@@ -57,32 +57,37 @@ const ContactUs: React.FC = () => {
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-blue-900/20"></div>
 
-      {/* Agent Q Robot - Top Left, Visible */}
-      <div className="absolute top-8 left-8 pointer-events-none z-0">
-        <img
-          src="/agent-q-robot-banner.png"
-          alt="Agent Q Robot"
-          className="w-96 h-auto opacity-60 dark:opacity-50 object-contain"
-        />
-      </div>
-
       {/* Animated orbs for depth */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400/30 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-400/20 rounded-full blur-3xl animate-pulse delay-500"></div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        {/* Page Title - Logo with Glassmorphism */}
+        {/* Page Title - Logo with Agent Q Background */}
         <div className="text-center mb-12">
-          <div className="inline-block bg-white/40 dark:bg-white/10 backdrop-blur-xl rounded-3xl px-8 py-6 border border-white/20 shadow-2xl">
-            <img
-              src="/agentqu-logo.png"
-              alt="AgentQu"
-              className="h-20 w-auto mx-auto mb-3 opacity-90"
-            />
-            <p className="text-xl text-gray-700 dark:text-gray-200 font-medium">
-              We'd love to hear from you! ✨
-            </p>
+          <div
+            className="relative w-full max-w-4xl mx-auto bg-white/40 dark:bg-white/10 backdrop-blur-xl rounded-3xl px-8 py-6 border border-white/20 shadow-2xl overflow-hidden"
+            style={{
+              backgroundImage: 'url(/agent-q-robot-banner.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          >
+            {/* Overlay to maintain glassmorphism effect */}
+            <div className="absolute inset-0 bg-white/40 dark:bg-white/10 backdrop-blur-xl rounded-3xl"></div>
+
+            {/* Content */}
+            <div className="relative z-10">
+              <img
+                src="/agentqu-logo.png"
+                alt="AgentQu"
+                className="h-20 w-auto mx-auto mb-3 opacity-90"
+              />
+              <p className="text-xl text-gray-700 dark:text-gray-200 font-medium">
+                We'd love to hear from you! ✨
+              </p>
+            </div>
           </div>
         </div>
 
