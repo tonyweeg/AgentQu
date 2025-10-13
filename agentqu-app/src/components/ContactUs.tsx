@@ -66,7 +66,7 @@ const ContactUs: React.FC = () => {
         {/* Page Title - Logo with Agent Q Background */}
         <div className="text-center mb-12">
           <div
-            className="relative w-full max-w-4xl mx-auto bg-white/40 dark:bg-white/10 backdrop-blur-xl rounded-3xl px-8 py-6 border border-white/20 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-4xl mx-auto bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-3xl px-8 py-6 border border-white/20 shadow-2xl overflow-hidden"
             style={{
               backgroundImage: 'url(/agent-q-robot-banner.png)',
               backgroundSize: 'cover',
@@ -74,8 +74,8 @@ const ContactUs: React.FC = () => {
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {/* Overlay to maintain glassmorphism effect */}
-            <div className="absolute inset-0 bg-white/40 dark:bg-white/10 backdrop-blur-xl rounded-3xl"></div>
+            {/* Light overlay to keep text readable while showing robot */}
+            <div className="absolute inset-0 bg-white/15 dark:bg-black/20 backdrop-blur-sm rounded-3xl"></div>
 
             {/* Content */}
             <div className="relative z-10">
