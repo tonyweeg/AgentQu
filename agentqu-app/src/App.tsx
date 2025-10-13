@@ -1285,12 +1285,12 @@ function App() {
               </div>
             </div>
 
-            {/* Scroll indicator - Arrow stays on right, direction flips based on scroll position */}
+            {/* Scroll indicator - Arrow stays on right, direction flips when user scrolls */}
             {/* Only show on mobile (< 640px) - shows if can scroll either direction */}
             {(canScrollRight || canScrollLeft) && (
               <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 block sm:hidden z-10">
                 <span className="text-ocean-bright text-base animate-pulse font-bold">
-                  {canScrollRight ? '→' : '←'}
+                  {canScrollLeft ? '←' : '→'}
                 </span>
               </div>
             )}
