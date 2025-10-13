@@ -1009,11 +1009,6 @@ function App() {
                     🔍
                   </button>
                 </div>
-                {activeTextSearch && (
-                  <div className="mt-1 text-xs text-ocean-bright font-medium px-2">
-                    Searching for: "{activeTextSearch}"
-                  </div>
-                )}
               </div>
 
               {/* View Mode Toggle - Pill style with text */}
@@ -1646,7 +1641,25 @@ function App() {
                         <>
                           {/* Category Filter Chips - For Places Only */}
                           {places.length > 0 && (
-                            <div className="mb-6 flex flex-wrap gap-2">
+                            <div className="mb-6 flex flex-wrap gap-2 items-center">
+                              {/* Active Text Search Indicator */}
+                              {activeTextSearch && (
+                                <div className="flex items-center gap-2 bg-ocean-bright/10 border-2 border-ocean-bright px-4 py-2 rounded-full">
+                                  <span className="text-sm font-bold text-ocean-bright">🔍 Searching:</span>
+                                  <span className="text-sm font-bold text-gray-800">"{activeTextSearch}"</span>
+                                  <button
+                                    onClick={() => {
+                                      setTextSearch('');
+                                      setActiveTextSearch('');
+                                      setRefreshKey(prev => prev + 1);
+                                    }}
+                                    className="ml-1 text-ocean-bright hover:text-ocean-mid font-bold"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              )}
+
                               <button
                                 onClick={() => setSelectedCategory('all')}
                                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
