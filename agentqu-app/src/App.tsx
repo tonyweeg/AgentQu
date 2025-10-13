@@ -1214,8 +1214,8 @@ function App() {
             </div>
 
             {/* Scroll indicator - Shows user they can scroll */}
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-2 sm:hidden">
-              <span className="text-ocean-bright text-xs animate-pulse">→</span>
+            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-1 sm:hidden">
+              <span className="text-ocean-bright text-base animate-pulse font-bold">→</span>
             </div>
           </div>
         </div>
