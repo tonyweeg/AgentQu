@@ -7,7 +7,7 @@ interface ActivityInterestsPanelProps {
 }
 
 const ActivityInterestsPanel: React.FC<ActivityInterestsPanelProps> = ({ affinities, onChange }) => {
-  const [isExpanded, setIsExpanded] = useState(true); // Expanded by default
+  const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
 
   const getAffinityLevel = (value: number) => {
     if (value === 0) return 'Not interested';
