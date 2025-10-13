@@ -1263,20 +1263,18 @@ function App() {
               </div>
             </div>
 
-            {/* Scroll indicators - Show which direction user can scroll */}
-            {/* Left scroll indicator - shows when scrolled right */}
-            {canScrollLeft && (
-              <div className="absolute -left-4 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 to-transparent pointer-events-none flex items-center justify-start pl-4 sm:hidden">
-                <span className="text-ocean-bright text-base animate-pulse font-bold">←</span>
-              </div>
-            )}
-
-            {/* Right scroll indicator - shows when can scroll more right */}
-            {canScrollRight && (
+            {/* Scroll indicator - Single arrow that switches sides based on scroll position */}
+            {canScrollRight ? (
+              /* Right arrow - shows by default at start, indicates can scroll right to see more */
               <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 sm:hidden">
                 <span className="text-ocean-bright text-base animate-pulse font-bold">→</span>
               </div>
-            )}
+            ) : canScrollLeft ? (
+              /* Left arrow - shows when scrolled to end, indicates can scroll back left */
+              <div className="absolute -left-4 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 to-transparent pointer-events-none flex items-center justify-start pl-4 sm:hidden">
+                <span className="text-ocean-bright text-base animate-pulse font-bold">←</span>
+              </div>
+            ) : null}
           </div>
         </div>
 
