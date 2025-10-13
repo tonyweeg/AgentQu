@@ -1400,23 +1400,59 @@ async function fetchRedditLocalBuzz(lat, lng, city = null, state = null) {
  * Map affinity categories to Google Place types
  */
 function affinityToPlaceTypes(affinities) {
+  // COMPLETE mapping of all frontend affinity categories to Google Place types
   const categoryMapping = {
-    'local_favorites': ['restaurant', 'cafe', 'bakery'],
-    'museums': ['museum', 'art_gallery'],
-    'hiking': ['park', 'hiking_area', 'national_park'],
-    'festivals': ['tourist_attraction', 'event_venue'],
-    'happy_hour': ['bar', 'night_club', 'wine_bar'],
-    'coffee_shops': ['cafe', 'coffee_shop'],
-    'fine_dining': ['restaurant', 'fine_dining_restaurant'],
-    'outdoor_adventure': ['park', 'campground', 'hiking_area'],
-    'live_music': ['night_club', 'live_music_venue', 'performing_arts_theater'],
-    'sports': ['stadium', 'gym', 'sports_complex'],
-    'skateparks': ['park', 'sports_complex'],
-    'art_culture': ['art_gallery', 'museum', 'cultural_center'],
-    'nightlife': ['bar', 'night_club', 'dance_club'],
-    'shopping': ['shopping_mall', 'clothing_store', 'book_store'],
-    'wellness': ['spa', 'gym', 'yoga_studio'],
-    'family_friendly': ['amusement_park', 'zoo', 'aquarium', 'park']
+    // Events & Entertainment
+    'events': ['event_venue', 'performing_arts_theater', 'convention_center', 'tourist_attraction'],
+    'nightlife': ['bar', 'night_club', 'dance_club', 'wine_bar'],
+    'festivals': ['tourist_attraction', 'event_venue', 'fairground'],
+
+    // Food & Dining
+    'dining': ['restaurant', 'fine_dining_restaurant', 'meal_takeaway'],
+    'coffee': ['cafe', 'coffee_shop', 'bakery'],
+    'food_trucks': ['meal_takeaway', 'restaurant'],
+    'happy_hour': ['bar', 'night_club', 'wine_bar', 'restaurant'],
+
+    // Outdoor & Nature
+    'hiking': ['park', 'hiking_area', 'national_park', 'trail'],
+    'parks': ['park', 'botanical_garden', 'playground', 'dog_park'],
+    'beaches': ['beach', 'waterfront', 'pier'],
+    'geocaching': ['park', 'tourist_attraction', 'point_of_interest'],
+    'disc_golf': ['park', 'disc_golf_course'],
+    'skate_parks': ['park', 'sports_complex', 'athletic_field', 'tourist_attraction'],  // No specific skatepark type in Google Places
+
+    // Water Sports & Activities
+    'watersports': ['marina', 'beach', 'water_sports', 'sporting_goods_store'],
+    'fishing': ['marina', 'fishing_pier', 'bait_shop', 'sporting_goods_store'],
+    'boating': ['marina', 'yacht_club', 'boat_launch'],
+
+    // Sports & Fitness
+    'sports': ['stadium', 'gym', 'sports_complex', 'athletic_field'],
+    'fitness': ['gym', 'yoga_studio', 'spa', 'health'],
+
+    // Arts & Culture
+    'museums': ['museum', 'art_gallery', 'cultural_center'],
+    'movies': ['movie_theater', 'cinema'],
+    'classes': ['school', 'art_school', 'music_school', 'community_center'],
+
+    // Community & Social
+    'volunteering': ['community_center', 'religious_organization', 'non_profit_organization'],
+    'meetups': ['community_center', 'library', 'event_venue'],
+    'farmers_markets': ['market', 'shopping_mall'],
+
+    // Entertainment & Fun
+    'gaming': ['amusement_center', 'bowling_alley', 'arcade'],
+    'live_music': ['night_club', 'live_music_venue', 'performing_arts_theater', 'music_venue'],
+    'comedy': ['comedy_club', 'performing_arts_theater', 'night_club'],
+
+    // Shopping & Local
+    'shopping': ['shopping_mall', 'clothing_store', 'book_store', 'boutique'],
+    'local_favorites': ['restaurant', 'cafe', 'bakery', 'bar'],
+
+    // Special Interests
+    'wine_tasting': ['winery', 'wine_bar', 'liquor_store', 'bar'],
+    'tours': ['tourist_attraction', 'travel_agency', 'visitor_center', 'landmark']
+    // Note: 'free_activities' is not a place type, handled by filtering on cost.free
   };
 
   // Always include these base types regardless of affinities
