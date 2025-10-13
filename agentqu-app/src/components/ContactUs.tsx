@@ -57,6 +57,15 @@ const ContactUs: React.FC = () => {
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-blue-900/20"></div>
 
+      {/* Agent Q Robot Background - Large, artistic, semi-transparent */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <img
+          src="/agent-q-robot-banner.png"
+          alt="Agent Q Robot"
+          className="w-full max-w-4xl h-auto opacity-[0.08] dark:opacity-[0.05] object-contain"
+        />
+      </div>
+
       {/* Animated orbs for depth */}
       <div className="absolute top-20 left-20 w-72 h-72 bg-blue-400/30 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
