@@ -57,12 +57,12 @@ const ContactUs: React.FC = () => {
       {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-blue-900/20"></div>
 
-      {/* Agent Q Robot Background - Large, artistic, semi-transparent */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* Agent Q Robot - Top Left, Visible */}
+      <div className="absolute top-8 left-8 pointer-events-none z-0">
         <img
           src="/agent-q-robot-banner.png"
           alt="Agent Q Robot"
-          className="w-full max-w-5xl h-auto opacity-20 dark:opacity-15 object-contain"
+          className="w-96 h-auto opacity-60 dark:opacity-50 object-contain"
         />
       </div>
 
