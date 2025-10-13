@@ -66,25 +66,24 @@ const ContactUs: React.FC = () => {
         {/* Page Title - Logo with Agent Q Background */}
         <div className="text-center mb-12">
           <div
-            className="relative w-full max-w-4xl mx-auto bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-3xl px-8 py-6 border border-white/20 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-4xl mx-auto bg-transparent rounded-3xl px-8 py-6 border border-white/20 shadow-2xl overflow-hidden"
             style={{
               backgroundImage: 'url(/agent-q-robot-banner.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundSize: 'auto 150%',
+              backgroundPosition: 'calc(50% - 200px) calc(50% + 50px)',
               backgroundRepeat: 'no-repeat'
             }}
           >
-            {/* Light overlay to keep text readable while showing robot */}
-            <div className="absolute inset-0 bg-white/15 dark:bg-black/20 backdrop-blur-sm rounded-3xl"></div>
+            {/* No overlay - robot fully visible */}
 
-            {/* Content */}
+            {/* Content - with text shadow for readability */}
             <div className="relative z-10">
               <img
                 src="/agentqu-logo.png"
                 alt="AgentQu"
-                className="h-20 w-auto mx-auto mb-3 opacity-90"
+                className="h-20 w-auto mx-auto mb-3 drop-shadow-lg"
               />
-              <p className="text-xl text-gray-700 dark:text-gray-200 font-medium">
+              <p className="text-xl text-gray-800 dark:text-gray-100 font-bold drop-shadow-lg">
                 We'd love to hear from you! ✨
               </p>
             </div>
