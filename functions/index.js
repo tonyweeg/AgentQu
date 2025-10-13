@@ -1404,55 +1404,55 @@ function affinityToPlaceTypes(affinities) {
   const categoryMapping = {
     // Events & Entertainment
     'events': ['event_venue', 'performing_arts_theater', 'convention_center', 'tourist_attraction'],
-    'nightlife': ['bar', 'night_club', 'dance_club', 'wine_bar'],
-    'festivals': ['tourist_attraction', 'event_venue', 'fairground'],
+    'nightlife': ['bar', 'night_club', 'wine_bar'],  // FIXED: removed invalid 'dance_club'
+    'festivals': ['tourist_attraction', 'event_venue', 'park'],  // FIXED: 'fairground' is not valid
 
     // Food & Dining
-    'dining': ['restaurant', 'fine_dining_restaurant', 'meal_takeaway'],
+    'dining': ['restaurant', 'meal_takeaway'],  // FIXED: 'fine_dining_restaurant' is not valid
     'coffee': ['cafe', 'coffee_shop', 'bakery'],
     'food_trucks': ['meal_takeaway', 'restaurant'],
     'happy_hour': ['bar', 'night_club', 'wine_bar', 'restaurant'],
 
     // Outdoor & Nature
-    'hiking': ['park', 'hiking_area', 'national_park', 'trail'],
-    'parks': ['park', 'botanical_garden', 'playground', 'dog_park'],
+    'hiking': ['park', 'hiking_area', 'national_park'],  // FIXED: removed invalid 'trail'
+    'parks': ['park', 'botanical_garden', 'playground'],  // FIXED: removed invalid 'dog_park'
     'beaches': ['beach', 'waterfront', 'pier'],
     'geocaching': ['park', 'tourist_attraction', 'point_of_interest'],
-    'disc_golf': ['park', 'disc_golf_course'],
+    'disc_golf': ['park', 'sports_complex'],  // FIXED: 'disc_golf_course' is not valid
     'skate_parks': ['park', 'sports_complex', 'athletic_field', 'tourist_attraction'],  // No specific skatepark type in Google Places
     'action_sports': ['sports_complex', 'tourist_attraction', 'gym', 'park', 'amusement_park'],  // Rock climbing, zip lines, extreme sports
 
     // Water Sports & Activities
-    'watersports': ['marina', 'beach', 'water_sports', 'sporting_goods_store'],
-    'fishing': ['marina', 'fishing_pier', 'bait_shop', 'sporting_goods_store'],
-    'boating': ['marina', 'yacht_club', 'boat_launch'],
+    'watersports': ['marina', 'beach', 'sporting_goods_store'],  // FIXED: removed invalid 'water_sports'
+    'fishing': ['marina', 'sporting_goods_store', 'store'],  // FIXED: removed invalid 'fishing_pier', 'bait_shop'
+    'boating': ['marina', 'store'],  // FIXED: removed invalid 'yacht_club', 'boat_launch'
 
     // Sports & Fitness
     'sports': ['stadium', 'gym', 'sports_complex', 'athletic_field'],
     'fitness': ['gym', 'yoga_studio', 'spa', 'health'],
 
     // Arts & Culture
-    'museums': ['museum', 'art_gallery', 'cultural_center'],
-    'movies': ['movie_theater', 'cinema'],
-    'classes': ['school', 'art_school', 'music_school', 'community_center'],
+    'museums': ['museum', 'art_gallery'],  // FIXED: removed invalid 'cultural_center'
+    'movies': ['movie_theater'],  // FIXED: 'cinema' is not valid
+    'classes': ['school', 'community_center'],  // FIXED: removed invalid art_school, music_school
 
     // Community & Social
-    'volunteering': ['community_center', 'religious_organization', 'non_profit_organization'],
+    'volunteering': ['community_center', 'church'],  // FIXED: removed invalid 'religious_organization', 'non_profit_organization'
     'meetups': ['community_center', 'library', 'event_venue'],
     'farmers_markets': ['market', 'shopping_mall'],
 
     // Entertainment & Fun
-    'gaming': ['amusement_center', 'bowling_alley', 'arcade'],
-    'live_music': ['night_club', 'live_music_venue', 'performing_arts_theater', 'music_venue'],
-    'comedy': ['comedy_club', 'performing_arts_theater', 'night_club'],
+    'gaming': ['amusement_center', 'bowling_alley'],  // FIXED: 'arcade' is not a valid Google type
+    'live_music': ['night_club', 'performing_arts_theater'],  // FIXED: removed invalid types
+    'comedy': ['performing_arts_theater', 'night_club'],  // FIXED: removed invalid 'comedy_club'
 
     // Shopping & Local
-    'shopping': ['shopping_mall', 'clothing_store', 'book_store', 'boutique'],
+    'shopping': ['shopping_mall', 'clothing_store', 'book_store', 'store'],  // FIXED: 'boutique' is not valid
     'local_favorites': ['restaurant', 'cafe', 'bakery', 'bar'],
 
     // Special Interests
     'wine_tasting': ['winery', 'wine_bar', 'liquor_store', 'bar'],
-    'tours': ['tourist_attraction', 'travel_agency', 'visitor_center', 'landmark']
+    'tours': ['tourist_attraction', 'landmark']  // FIXED: removed invalid 'travel_agency', 'visitor_center'
     // Note: 'free_activities' is not a place type, handled by filtering on cost.free
   };
 
