@@ -63,12 +63,14 @@ const ContactUs: React.FC = () => {
       <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-pink-400/20 rounded-full blur-3xl animate-pulse delay-500"></div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        {/* Page Title - Glassmorphism */}
+        {/* Page Title - Logo with Glassmorphism */}
         <div className="text-center mb-12">
           <div className="inline-block bg-white/40 dark:bg-white/10 backdrop-blur-xl rounded-3xl px-8 py-6 border border-white/20 shadow-2xl">
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-ocean-bright via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
-              Get in Touch
-            </h1>
+            <img
+              src="/agentqu-logo.png"
+              alt="AgentQu"
+              className="h-20 w-auto mx-auto mb-3 opacity-90"
+            />
             <p className="text-xl text-gray-700 dark:text-gray-200 font-medium">
               We'd love to hear from you! ✨
             </p>
