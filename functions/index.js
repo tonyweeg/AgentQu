@@ -1484,7 +1484,7 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours'
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours,places.editorialSummary,places.websiteUri,places.nationalPhoneNumber'
         }
       }
     );
@@ -1499,10 +1499,25 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
       const placeTypes = place.types || [];
       const categories = mapPlaceTypeToCategories(placeTypes);
 
+      // Extract opening hours for today
+      const todayHours = place.currentOpeningHours?.weekdayDescriptions?.[new Date().getDay()] || null;
+      let hoursToday = null;
+      if (todayHours) {
+        // Parse "Monday: 9:00 AM – 5:00 PM" format
+        const hoursMatch = todayHours.match(/:\s*(\d+:\d+\s*[AP]M)\s*–\s*(\d+:\d+\s*[AP]M)/);
+        if (hoursMatch) {
+          hoursToday = {
+            open: hoursMatch[1],
+            close: hoursMatch[2]
+          };
+        }
+      }
+
       const activity = {
         id: place.id,
         activityId: place.id,
         name: place.displayName?.text || place.displayName || 'Unknown Place',
+        description: place.editorialSummary?.text || null,
         location: {
           lat: place.location?.latitude,
           lng: place.location?.longitude,
@@ -1513,8 +1528,12 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
         categories: categories,
         primaryCategory: categories[0] || 'other',
         placeTypes: placeTypes,
+        website: place.websiteUri || null,
+        phone: place.nationalPhoneNumber || null,
+        hoursToday: hoursToday,
         details: {
-          description: null,
+          description: place.editorialSummary?.text || null,
+          shortDescription: place.editorialSummary?.text?.substring(0, 200) || null,
           priceLevel: place.priceLevel || null,
         },
         cost: {
@@ -1522,6 +1541,7 @@ async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
           free: place.priceLevel === 0 || !place.priceLevel,
         },
         rating: place.rating || null,
+        reviewCount: place.userRatingCount || 0,
         ratings: {
           googleRating: place.rating || null,
         },
@@ -1582,7 +1602,7 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         headers: {
           'Content-Type': 'application/json',
           'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
-          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos'
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.editorialSummary,places.currentOpeningHours,places.websiteUri,places.nationalPhoneNumber,places.priceLevel'
         }
       }
     );
@@ -1645,10 +1665,25 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
           )
         : [];
 
+      // Extract opening hours for today
+      const todayHours = place.currentOpeningHours?.weekdayDescriptions?.[new Date().getDay()] || null;
+      let hoursToday = null;
+      if (todayHours) {
+        // Parse "Monday: 9:00 AM – 5:00 PM" format
+        const hoursMatch = todayHours.match(/:\s*(\d+:\d+\s*[AP]M)\s*–\s*(\d+:\d+\s*[AP]M)/);
+        if (hoursMatch) {
+          hoursToday = {
+            open: hoursMatch[1],
+            close: hoursMatch[2]
+          };
+        }
+      }
+
       return {
         activityId: `place_${place.id}`,
         name: place.displayName?.text || place.displayName || 'Unknown Place',
         type: "permanent",
+        description: place.editorialSummary?.text || null, // Add description from editorial summary
         location: {
           lat: placeLat,
           lng: placeLng,
@@ -1664,15 +1699,18 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
         images, // Add images array for frontend
         rating: place.rating || null, // Top-level rating
         reviewCount: place.userRatingCount || 0, // Top-level review count
+        website: place.websiteUri || null, // Add website
+        phone: place.nationalPhoneNumber || null, // Add phone
+        hoursToday: hoursToday, // Add today's hours
         cost: {
-          free: false,
-          priceLevel: null,
+          free: place.priceLevel === 0 || !place.priceLevel,
+          priceLevel: place.priceLevel || null,
         },
         details: {
-          description: place.formattedAddress,
-          shortDescription: place.formattedAddress,
+          description: place.editorialSummary?.text || null,
+          shortDescription: place.editorialSummary?.text?.substring(0, 200) || null,
           imageUrl: images[0] || null, // Keep for backward compatibility
-          priceLevel: null,
+          priceLevel: place.priceLevel || null,
         },
         schedule: {
           isOpen24Hours: false,

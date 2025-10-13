@@ -157,7 +157,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
             )}
 
             {/* Content section - bottom half with translucent pills */}
-            <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4 pb-32">
+            <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4 pb-32 max-h-[70vh] overflow-y-auto">
               {/* EVENT LAYOUT - Cleaner, more concise */}
               {activity.type === 'event' ? (
                 <>
