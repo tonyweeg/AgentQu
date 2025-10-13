@@ -1088,125 +1088,128 @@ function App() {
       <div className="bg-white/85 backdrop-blur-sm border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto">
           {/* Drawer Toggle Button with View Mode Toggle */}
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3 flex-1">
-              <button
-                onClick={() => setShowControlsDrawer(!showControlsDrawer)}
-                className="flex items-center gap-2 hover:opacity-70 transition-opacity"
-              >
-                <span className="text-sm font-medium text-gray-700">
-                  {activities.length} activities
-                </span>
-                <span className="text-xs text-gray-500">
-                  {radius} mi
-                </span>
-                <span className={`text-gray-400 transition-transform ${showControlsDrawer ? 'rotate-180' : ''}`}>
-                  ▼
-                </span>
-              </button>
+          <div className="px-4 py-3">
+            {/* Mobile: Scrollable horizontal layout */}
+            <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
+              <div className="flex items-center gap-3 min-w-max">
+                <button
+                  onClick={() => setShowControlsDrawer(!showControlsDrawer)}
+                  className="flex items-center gap-2 hover:opacity-70 transition-opacity flex-shrink-0"
+                >
+                  <span className="text-sm font-medium text-gray-700">
+                    {activities.length} activities
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {radius} mi
+                  </span>
+                  <span className={`text-gray-400 transition-transform ${showControlsDrawer ? 'rotate-180' : ''}`}>
+                    ▼
+                  </span>
+                </button>
 
-              {/* Text Search Input */}
-              <div className="flex-1 max-w-md">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={textSearch}
-                    onChange={(e) => setTextSearch(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && textSearch.trim()) {
-                        setActiveTextSearch(textSearch.trim());
-                        setRefreshKey(prev => prev + 1);
-                      }
-                    }}
-                    placeholder="Search for specific places... (e.g., mexican restaurants)"
-                    className="w-full h-[42px] px-4 pr-20 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-ocean-bright focus:border-transparent"
-                  />
-                  {textSearch && (
-                    <button
-                      onClick={() => {
-                        setTextSearch('');
-                        setActiveTextSearch('');
-                        setRefreshKey(prev => prev + 1);
-                      }}
-                      className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
-                    >
-                      ✕
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (textSearch.trim()) {
-                        setActiveTextSearch(textSearch.trim());
-                        setRefreshKey(prev => prev + 1);
-                      }
-                    }}
-                    disabled={!textSearch.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-ocean-bright text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-ocean-mid transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    🔍
-                  </button>
-                </div>
-              </div>
-
-              {/* View Mode Toggle - Pill style with text */}
-              {(viewMode === 'list' || viewMode === 'map' || viewMode === 'offgrid') && (
-                <div className="flex items-center gap-2">
-                  <div className="flex bg-white/80 backdrop-blur-sm rounded-full p-1 border border-gray-200 shadow-sm">
-                    <button
-                      onClick={() => {
-                        if (viewMode === 'offgrid') {
-                          setOffgridViewMode('list');
-                        } else {
-                          setViewMode('list');
+                {/* Text Search Input */}
+                <div className="flex-shrink-0 w-[280px] sm:w-[320px]">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={textSearch}
+                      onChange={(e) => setTextSearch(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && textSearch.trim()) {
+                          setActiveTextSearch(textSearch.trim());
+                          setRefreshKey(prev => prev + 1);
                         }
                       }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        (viewMode === 'list') || (viewMode === 'offgrid' && offgridViewMode === 'list')
-                          ? 'bg-ocean-bright text-white shadow-md'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
-                    >
-                      <span className="text-base">📋</span>
-                      <span>List</span>
-                    </button>
+                      placeholder="Search places..."
+                      className="w-full h-[42px] px-4 pr-20 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-ocean-bright focus:border-transparent"
+                    />
+                    {textSearch && (
+                      <button
+                        onClick={() => {
+                          setTextSearch('');
+                          setActiveTextSearch('');
+                          setRefreshKey(prev => prev + 1);
+                        }}
+                        className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+                      >
+                        ✕
+                      </button>
+                    )}
                     <button
                       onClick={() => {
-                        if (viewMode === 'offgrid') {
-                          setOffgridViewMode('map');
-                        } else {
-                          setViewMode('map');
+                        if (textSearch.trim()) {
+                          setActiveTextSearch(textSearch.trim());
+                          setRefreshKey(prev => prev + 1);
                         }
                       }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        (viewMode === 'map') || (viewMode === 'offgrid' && offgridViewMode === 'map')
-                          ? 'bg-ocean-bright text-white shadow-md'
-                          : 'text-gray-600 hover:text-gray-900'
-                      }`}
+                      disabled={!textSearch.trim()}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-ocean-bright text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-ocean-mid transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <span className="text-base">🗺️</span>
-                      <span>Map</span>
+                      🔍
                     </button>
                   </div>
-
-                  {/* EV Charging Button - Only show for EV owners with stations */}
-                  {profile?.isEV && chargingStations && chargingStations.length > 0 && (
-                    <button
-                      onClick={() => setShowEVPanel(!showEVPanel)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm ${
-                        showEVPanel
-                          ? 'bg-green-600 text-white shadow-md border-green-700'
-                          : 'bg-white/80 text-gray-700 hover:bg-green-50 border-gray-200'
-                      }`}
-                    >
-                      <span className="text-base">⚡</span>
-                      <span>Charging</span>
-                      <span className="text-xs bg-white/30 px-1.5 py-0.5 rounded-full">
-                        {chargingStations.length}
-                      </span>
-                    </button>
-                  )}
                 </div>
-              )}
+
+                {/* View Mode Toggle - Pill style with text */}
+                {(viewMode === 'list' || viewMode === 'map' || viewMode === 'offgrid') && (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex bg-white/80 backdrop-blur-sm rounded-full p-1 border border-gray-200 shadow-sm">
+                      <button
+                        onClick={() => {
+                          if (viewMode === 'offgrid') {
+                            setOffgridViewMode('list');
+                          } else {
+                            setViewMode('list');
+                          }
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          (viewMode === 'list') || (viewMode === 'offgrid' && offgridViewMode === 'list')
+                            ? 'bg-ocean-bright text-white shadow-md'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        <span className="text-base">📋</span>
+                        <span>List</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (viewMode === 'offgrid') {
+                            setOffgridViewMode('map');
+                          } else {
+                            setViewMode('map');
+                          }
+                        }}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          (viewMode === 'map') || (viewMode === 'offgrid' && offgridViewMode === 'map')
+                            ? 'bg-ocean-bright text-white shadow-md'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                      >
+                        <span className="text-base">🗺️</span>
+                        <span>Map</span>
+                      </button>
+                    </div>
+
+                    {/* EV Charging Button - Only show for EV owners with stations */}
+                    {profile?.isEV && chargingStations && chargingStations.length > 0 && (
+                      <button
+                        onClick={() => setShowEVPanel(!showEVPanel)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm whitespace-nowrap ${
+                          showEVPanel
+                            ? 'bg-green-600 text-white shadow-md border-green-700'
+                            : 'bg-white/80 text-gray-700 hover:bg-green-50 border-gray-200'
+                        }`}
+                      >
+                        <span className="text-base">⚡</span>
+                        <span>Charging</span>
+                        <span className="text-xs bg-white/30 px-1.5 py-0.5 rounded-full">
+                          {chargingStations.length}
+                        </span>
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
