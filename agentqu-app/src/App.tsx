@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useLocation } from './hooks/useLocation';
 import { useDiscovery } from './hooks/useDiscovery';
@@ -178,6 +178,9 @@ function App() {
   const [showFastFood, setShowFastFood] = useState(false); // Toggle for "Give me all the calories!"
   const [textSearch, setTextSearch] = useState(''); // Text search query
   const [activeTextSearch, setActiveTextSearch] = useState(''); // Currently active search
+  const [canScrollLeft, setCanScrollLeft] = useState(false); // Can scroll controls left
+  const [canScrollRight, setCanScrollRight] = useState(false); // Can scroll controls right
+  const controlsScrollRef = useRef<HTMLDivElement>(null);
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -216,6 +219,36 @@ function App() {
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Check if controls can scroll left/right
+  const checkScrollPosition = () => {
+    const container = controlsScrollRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setCanScrollLeft(scrollLeft > 0);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5); // -5 for small buffer
+  };
+
+  // Attach scroll listener to controls container
+  useEffect(() => {
+    const container = controlsScrollRef.current;
+    if (!container) return;
+
+    // Check initial state
+    checkScrollPosition();
+
+    // Listen for scroll events
+    container.addEventListener('scroll', checkScrollPosition);
+
+    // Check on resize in case content width changes
+    window.addEventListener('resize', checkScrollPosition);
+
+    return () => {
+      container.removeEventListener('scroll', checkScrollPosition);
+      window.removeEventListener('resize', checkScrollPosition);
+    };
   }, []);
 
   // Fetch nearby towns when location and city are available
@@ -1089,9 +1122,9 @@ function App() {
         <div className="w-full">
           {/* Drawer Toggle Button with View Mode Toggle */}
           <div className="px-4 py-3">
-            {/* Mobile: Scrollable horizontal layout with scroll indicator */}
+            {/* Mobile: Scrollable horizontal layout with scroll indicators */}
             <div className="relative">
-              <div className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
+              <div ref={controlsScrollRef} className="overflow-x-auto -mx-4 px-4 pb-2 scrollbar-hide">
                 <div className="flex items-center gap-3 min-w-max">
                   <button
                     onClick={() => setShowControlsDrawer(!showControlsDrawer)}
@@ -1213,10 +1246,20 @@ function App() {
               </div>
             </div>
 
-            {/* Scroll indicator - Shows user they can scroll - extends to screen edge */}
-            <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 sm:hidden">
-              <span className="text-ocean-bright text-base animate-pulse font-bold">→</span>
-            </div>
+            {/* Scroll indicators - Show which direction user can scroll */}
+            {/* Left scroll indicator - shows when scrolled right */}
+            {canScrollLeft && (
+              <div className="absolute -left-4 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 to-transparent pointer-events-none flex items-center justify-start pl-4 sm:hidden">
+                <span className="text-ocean-bright text-base animate-pulse font-bold">←</span>
+              </div>
+            )}
+
+            {/* Right scroll indicator - shows when can scroll more right */}
+            {canScrollRight && (
+              <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 sm:hidden">
+                <span className="text-ocean-bright text-base animate-pulse font-bold">→</span>
+              </div>
+            )}
           </div>
         </div>
 
