@@ -70,7 +70,7 @@ const ContactUs: React.FC = () => {
             style={{
               backgroundImage: 'url(/agent-q-robot-banner.png)',
               backgroundSize: 'auto 150%',
-              backgroundPosition: 'calc(50% - 200px) calc(50% + 25px)',
+              backgroundPosition: 'calc(50% - 200px) calc(50% + 30px)',
               backgroundRepeat: 'no-repeat'
             }}
           >
