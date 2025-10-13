@@ -1285,19 +1285,15 @@ function App() {
               </div>
             </div>
 
-            {/* Scroll indicator - Single arrow that switches sides based on scroll position */}
-            {/* Only show on mobile (< 640px) */}
-            {canScrollRight ? (
-              /* Right arrow - shows by default at start, indicates can scroll right to see more */
+            {/* Scroll indicator - Arrow stays on right, direction flips based on scroll position */}
+            {/* Only show on mobile (< 640px) - shows if can scroll either direction */}
+            {(canScrollRight || canScrollLeft) && (
               <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 block sm:hidden z-10">
-                <span className="text-ocean-bright text-base animate-pulse font-bold">→</span>
+                <span className="text-ocean-bright text-base animate-pulse font-bold">
+                  {canScrollRight ? '→' : '←'}
+                </span>
               </div>
-            ) : canScrollLeft ? (
-              /* Left arrow - shows when scrolled to end, indicates can scroll back left */
-              <div className="absolute -left-4 top-0 bottom-0 w-16 bg-gradient-to-r from-white/90 to-transparent pointer-events-none flex items-center justify-start pl-4 block sm:hidden z-10">
-                <span className="text-ocean-bright text-base animate-pulse font-bold">←</span>
-              </div>
-            ) : null}
+            )}
           </div>
         </div>
 
