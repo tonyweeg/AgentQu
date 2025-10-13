@@ -255,15 +255,52 @@ function App() {
       checkScrollPosition();
     }, 100);
 
-    // Listen for scroll events
+    // For Safari mobile: use continuous checking during scroll with RAF
+    let isScrolling = false;
+    let rafId: number | null = null;
+
+    const continuousCheck = () => {
+      if (isScrolling) {
+        checkScrollPosition();
+        rafId = requestAnimationFrame(continuousCheck);
+      }
+    };
+
+    const handleTouchStart = () => {
+      isScrolling = true;
+      if (!rafId) {
+        rafId = requestAnimationFrame(continuousCheck);
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isScrolling = false;
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      // Final check after touch ends
+      setTimeout(checkScrollPosition, 50);
+    };
+
+    // Listen for scroll events (desktop and some mobile)
     container.addEventListener('scroll', checkScrollPosition);
+
+    // Safari mobile touch events
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', checkScrollPosition, { passive: true });
+    container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     // Check on resize in case content width changes
     window.addEventListener('resize', checkScrollPosition);
 
     return () => {
       clearTimeout(safariDelayCheck);
+      if (rafId) cancelAnimationFrame(rafId);
       container.removeEventListener('scroll', checkScrollPosition);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', checkScrollPosition);
+      container.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('resize', checkScrollPosition);
     };
   }, []);
