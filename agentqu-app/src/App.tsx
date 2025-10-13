@@ -206,12 +206,9 @@ function App() {
     key: refreshKey
   });
 
-  // Request location when user completes onboarding
-  useEffect(() => {
-    if (profile?.onboarded && !location) {
-      requestLocation();
-    }
-  }, [profile?.onboarded, location, requestLocation]);
+  // Don't auto-request location - let user trigger it manually
+  // This is important for Safari mobile which requires user interaction
+  // Location request happens in the "Enable Location" screen below
 
   // Update current time every second
   useEffect(() => {
@@ -558,7 +555,37 @@ function App() {
     );
   }
 
-  // Location permission needed
+  // Location permission needed - Show welcome screen with manual trigger
+  // This is important for Safari mobile which requires user interaction
+  if (!location && !locationLoading && !locationError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-seafoam p-4">
+        <div className="text-center max-w-md">
+          <img
+            src="/agentqu-logo.png"
+            alt="AgentQu"
+            className="h-24 w-auto mx-auto mb-6 opacity-90"
+          />
+          <div className="text-6xl mb-6">📍</div>
+          <h2 className="text-3xl font-bold text-navy-text mb-3">One More Step!</h2>
+          <p className="text-gray-700 mb-6 text-lg">
+            We need your location to find amazing activities nearby.
+          </p>
+          <button
+            onClick={() => requestLocation()}
+            className="bg-ocean-bright text-white px-8 py-4 rounded-xl hover:bg-ocean-mid transition-colors font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105"
+          >
+            Enable Location 📍
+          </button>
+          <p className="text-gray-500 mt-6 text-sm">
+            Your location is only used to find activities near you and is never shared.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Location loading
   if (locationLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-seafoam">
@@ -570,24 +597,54 @@ function App() {
           />
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-ocean-bright border-t-transparent mx-auto mb-4"></div>
           <p className="text-navy-text text-lg font-medium">Getting your location...</p>
-          <p className="text-gray-600 mt-2 text-sm">Please allow location access</p>
+          <p className="text-gray-600 mt-2 text-sm">This may take a few seconds</p>
         </div>
       </div>
     );
   }
 
+  // Location error - Show helpful message with retry
   if (locationError) {
+    const errorMessages = {
+      1: {
+        title: 'Location Permission Denied',
+        message: 'Please enable location access in your browser settings to use AgentQu.',
+        tip: 'On Safari iOS: Settings → Safari → Location → Allow'
+      },
+      2: {
+        title: 'Location Unavailable',
+        message: 'Unable to determine your location. Please check your device settings.',
+        tip: 'Make sure Location Services are enabled on your device.'
+      },
+      3: {
+        title: 'Location Request Timeout',
+        message: 'The location request took too long. Please try again.',
+        tip: 'This can happen on slower connections. We\'ll retry automatically.'
+      }
+    };
+
+    const errorInfo = errorMessages[locationError.code as keyof typeof errorMessages] || {
+      title: 'Location Error',
+      message: 'Unable to get your location. Please try again.',
+      tip: 'Make sure location services are enabled.'
+    };
+
     return (
-      <div className="flex items-center justify-center min-h-screen bg-seafoam">
-        <div className="text-center max-w-md p-6">
-          <div className="text-6xl mb-4">📍</div>
-          <h2 className="text-2xl font-bold text-navy-text mb-3">Location Access Required</h2>
-          <p className="text-gray-600 mb-6">AgentQu needs your location to find activities near you.</p>
+      <div className="flex items-center justify-center min-h-screen bg-seafoam p-4">
+        <div className="text-center max-w-md bg-white rounded-2xl shadow-xl p-8">
+          <div className="text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-navy-text mb-3">{errorInfo.title}</h2>
+          <p className="text-gray-700 mb-4">{errorInfo.message}</p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <p className="text-sm text-blue-800">
+              <span className="font-bold">💡 Tip:</span> {errorInfo.tip}
+            </p>
+          </div>
           <button
-            onClick={requestLocation}
-            className="bg-ocean-bright text-white px-8 py-3 rounded-xl hover:bg-ocean-mid transition-colors font-medium"
+            onClick={() => requestLocation()}
+            className="bg-ocean-bright text-white px-8 py-3 rounded-xl hover:bg-ocean-mid transition-colors font-medium shadow-lg"
           >
-            Enable Location
+            Try Again
           </button>
         </div>
       </div>
