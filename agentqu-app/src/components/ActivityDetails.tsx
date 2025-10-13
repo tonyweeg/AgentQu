@@ -615,6 +615,37 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                   <span>{beenHere ? "✓ I've been here" : "I've been here"}</span>
                 </button>
 
+                {/* Share on X button */}
+                <button
+                  onClick={() => {
+                    const getCategoryEmoji = () => {
+                      switch (category) {
+                        case 'hiking': return '🥾';
+                        case 'events': return '🎉';
+                        case 'food_and_dining': return '🍽️';
+                        case 'arts_and_culture': return '🎨';
+                        case 'sports_and_recreation': return '⚽';
+                        case 'nature_and_outdoors': return '🌲';
+                        case 'entertainment': return '🎭';
+                        case 'shopping': return '🛍️';
+                        case 'museums': return '🏛️';
+                        default: return '📍';
+                      }
+                    };
+                    const cityName = activity.location?.address?.split(',')[0] || activity.city || 'my area';
+                    const tweetText = `🎯 I'm discovering ${activity.name} in ${cityName} with AgentQu! ${getCategoryEmoji()} Check it out:`;
+                    const url = 'https://agentqu-platform.web.app';
+                    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`;
+                    window.open(twitterUrl, '_blank', 'width=550,height=420');
+                  }}
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-bold transition-all shadow-lg bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                  <span>Share on X</span>
+                </button>
+
                 {nextTrip ? (
                   <button
                     onClick={handleAddToTrip}

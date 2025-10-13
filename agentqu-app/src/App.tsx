@@ -982,7 +982,7 @@ function App() {
                       }
                     }}
                     placeholder="Search for specific places... (e.g., mexican restaurants)"
-                    className="w-full px-4 py-2 pr-20 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-ocean-bright focus:border-transparent"
+                    className="w-full h-[42px] px-4 pr-20 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-ocean-bright focus:border-transparent"
                   />
                   {textSearch && (
                     <button

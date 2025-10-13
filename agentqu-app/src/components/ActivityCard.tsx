@@ -37,18 +37,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
     }
   };
 
-  // Generate Twitter share URL
-  const handleShare = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click from opening details
-
-    const cityName = activity.location?.address?.split(',')[0] || 'my area';
-    const tweetText = `🎯 I'm discovering ${activity.name} in ${cityName} with AgentQu! ${getCategoryEmoji()} Check it out:`;
-    const url = 'https://agentqu-platform.web.app';
-
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`;
-    window.open(twitterUrl, '_blank', 'width=550,height=420');
-  };
-
   // Calculate signal bars based on Q Score (0-5 bars)
   // Q Score ranges typically 100-300+, map to 0-5 bars
   const qScore = activity.score || 0;
@@ -237,20 +225,6 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
           )}
         </div>
 
-        {/* Share button - subtle top right */}
-        <button
-          onClick={handleShare}
-          className="absolute top-14 right-3 p-2 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-all shadow-lg group"
-          title="Share on X"
-        >
-          <svg
-            className="w-3.5 h-3.5 text-gray-700 group-hover:text-blue-500 transition-colors"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-          </svg>
-        </button>
       </div>
 
       {/* Activity Details Modal */}
