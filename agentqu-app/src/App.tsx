@@ -1068,25 +1068,6 @@ function App() {
                       </span>
                     </button>
                   )}
-
-                  {/* Fast Food Toggle - Show when viewing food/dining category */}
-                  {(selectedCategory === 'food_and_dining' || selectedCategory === 'all') && (
-                    <button
-                      onClick={() => {
-                        setShowFastFood(!showFastFood);
-                        setRefreshKey(prev => prev + 1);
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition-all border backdrop-blur-sm ${
-                        showFastFood
-                          ? 'bg-red-600 text-white shadow-md border-red-700'
-                          : 'bg-white/80 text-gray-700 hover:bg-red-50 border-gray-200'
-                      }`}
-                      title={showFastFood ? 'Hide chains & fast food' : 'Show chains & fast food'}
-                    >
-                      <span className="text-base">🍔</span>
-                      <span className="whitespace-nowrap">Give me all the calories!</span>
-                    </button>
-                  )}
                 </div>
               )}
             </div>
@@ -1687,6 +1668,24 @@ function App() {
                                     <span className="text-xs opacity-75">({categoryCounts[category]})</span>
                                   </button>
                                 ))}
+
+                              {/* Fast Food Toggle - Only show when viewing food/dining category */}
+                              {selectedCategory === 'food_and_dining' && (
+                                <button
+                                  onClick={() => {
+                                    setShowFastFood(!showFastFood);
+                                    setRefreshKey(prev => prev + 1);
+                                  }}
+                                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                                    showFastFood
+                                      ? 'bg-red-500 text-white border-red-600 shadow-sm'
+                                      : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-500'
+                                  }`}
+                                  title={showFastFood ? 'Hide chains & fast food' : 'Show chains & fast food'}
+                                >
+                                  <span>🍔 Give me all the calories!</span>
+                                </button>
+                              )}
                             </div>
                           )}
 
