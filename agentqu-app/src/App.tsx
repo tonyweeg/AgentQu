@@ -403,7 +403,7 @@ function App() {
         <div className="min-h-screen bg-transparent">
           {/* Simple Header for non-logged-in users */}
           <header className="bg-white/85 backdrop-blur-sm shadow-sm sticky top-0 z-10">
-            <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
+            <div className="w-full px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 {/* Logo */}
                 <a href="/" className="flex items-center gap-2 hover:opacity-70 transition-opacity">
@@ -429,7 +429,7 @@ function App() {
 
           {/* Footer */}
           <footer className="bg-navy-text text-white mt-12 py-8">
-            <div className="max-w-7xl mx-auto px-4">
+            <div className="w-full px-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
                 <div>
                   <h3 className="font-bold text-xl mb-3">AgentQu</h3>
@@ -484,7 +484,7 @@ function App() {
       <div className="min-h-screen bg-transparent">
         {/* Simple Header for logged-in users on corporate pages */}
         <header className="bg-white/85 backdrop-blur-sm shadow-sm sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
+          <div className="w-full px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between">
               {/* Logo */}
               <a href="/" className="flex items-center gap-2 hover:opacity-70 transition-opacity">
@@ -523,7 +523,7 @@ function App() {
 
         {/* Footer */}
         <footer className="bg-navy-text text-white mt-12 py-8">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="w-full px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
               <div>
                 <h3 className="font-bold text-xl mb-3">AgentQu</h3>
@@ -681,7 +681,7 @@ function App() {
       <div className="min-h-screen bg-transparent relative z-0">
         {/* Header */}
       <header className="bg-white/85 backdrop-blur-sm shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6">
+        <div className="w-full px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <button
@@ -905,7 +905,7 @@ function App() {
         {/* Mobile Menu */}
         {showMobileMenu && (
           <div className="lg:hidden border-t border-gray-200 bg-white/85 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto px-4 py-4 space-y-3">
+            <div className="w-full px-4 py-4 space-y-3">
               {/* Location Display */}
               {location && city && state && (
                 <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
@@ -1086,7 +1086,7 @@ function App() {
 
       {/* Collapsible Controls Drawer */}
       <div className="bg-white/85 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full">
           {/* Drawer Toggle Button with View Mode Toggle */}
           <div className="px-4 py-3">
             {/* Mobile: Scrollable horizontal layout with scroll indicator */}
@@ -1223,7 +1223,7 @@ function App() {
           {/* Drawer Content - Small square map + location info + controls */}
           {showControlsDrawer && (
             <div className="border-t border-gray-200 bg-gray-50/50">
-              <div className="max-w-7xl mx-auto px-4 py-4">
+              <div className="w-full px-4 py-4">
                 <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                   {/* Condensed Controls - Mobile First */}
                   <div className="flex flex-wrap gap-4 md:hidden">
@@ -1513,7 +1513,7 @@ function App() {
       )}
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6">
+      <main className="w-full px-4 py-8 sm:px-6">
 
         {/* Loading State */}
         {activitiesLoading && (
@@ -1957,7 +1957,7 @@ function App() {
 
       {/* Footer */}
       <footer className="bg-navy-text/40 backdrop-blur-sm text-white mt-12 py-8">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="w-full px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
             {/* About */}
             <div>
