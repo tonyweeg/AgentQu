@@ -227,16 +227,8 @@ function App() {
     if (!container) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = container;
-    const canLeft = scrollLeft > 0;
+    const canLeft = scrollLeft > 5; // Give it a 5px threshold
     const canRight = scrollLeft < scrollWidth - clientWidth - 5; // -5 for small buffer
-
-    console.log('🔍 SCROLL CHECK:', {
-      scrollLeft,
-      scrollWidth,
-      clientWidth,
-      canScrollLeft: canLeft,
-      canScrollRight: canRight
-    });
 
     setCanScrollLeft(canLeft);
     setCanScrollRight(canRight);
@@ -255,52 +247,61 @@ function App() {
       checkScrollPosition();
     }, 100);
 
-    // For Safari mobile: use continuous checking during scroll with RAF
+    // Use polling during scroll for mobile reliability
+    let scrollTimer: NodeJS.Timeout | null = null;
     let isScrolling = false;
-    let rafId: number | null = null;
 
-    const continuousCheck = () => {
-      if (isScrolling) {
-        checkScrollPosition();
-        rafId = requestAnimationFrame(continuousCheck);
-      }
-    };
-
-    const handleTouchStart = () => {
+    const handleScrollStart = () => {
+      if (isScrolling) return;
       isScrolling = true;
-      if (!rafId) {
-        rafId = requestAnimationFrame(continuousCheck);
-      }
+
+      // Poll every 50ms while scrolling
+      scrollTimer = setInterval(() => {
+        checkScrollPosition();
+      }, 50);
     };
 
-    const handleTouchEnd = () => {
+    const handleScrollEnd = () => {
+      if (scrollTimer) {
+        clearInterval(scrollTimer);
+        scrollTimer = null;
+      }
       isScrolling = false;
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
-      }
-      // Final check after touch ends
-      setTimeout(checkScrollPosition, 50);
+      // Final check after scroll ends
+      setTimeout(checkScrollPosition, 100);
     };
 
-    // Listen for scroll events (desktop and some mobile)
-    container.addEventListener('scroll', checkScrollPosition);
+    // Listen for scroll events - works on most browsers
+    container.addEventListener('scroll', () => {
+      handleScrollStart();
+      // Reset the timeout on every scroll event
+      if (scrollTimer) {
+        clearInterval(scrollTimer);
+      }
+      scrollTimer = setInterval(checkScrollPosition, 50);
 
-    // Safari mobile touch events
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+      // Clear polling after scroll stops (no events for 150ms)
+      setTimeout(() => {
+        if (scrollTimer) {
+          clearInterval(scrollTimer);
+          scrollTimer = null;
+          isScrolling = false;
+          checkScrollPosition();
+        }
+      }, 150);
+    }, { passive: true });
+
+    // Touch events for mobile
+    container.addEventListener('touchstart', handleScrollStart, { passive: true });
     container.addEventListener('touchmove', checkScrollPosition, { passive: true });
-    container.addEventListener('touchend', handleTouchEnd, { passive: true });
+    container.addEventListener('touchend', handleScrollEnd, { passive: true });
 
     // Check on resize in case content width changes
     window.addEventListener('resize', checkScrollPosition);
 
     return () => {
       clearTimeout(safariDelayCheck);
-      if (rafId) cancelAnimationFrame(rafId);
-      container.removeEventListener('scroll', checkScrollPosition);
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchmove', checkScrollPosition);
-      container.removeEventListener('touchend', handleTouchEnd);
+      if (scrollTimer) clearInterval(scrollTimer);
       window.removeEventListener('resize', checkScrollPosition);
     };
   }, []);
@@ -1320,17 +1321,17 @@ function App() {
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Scroll indicator - Arrow stays on right, direction flips when user scrolls */}
-            {/* Only show on mobile (< 640px) - shows if can scroll either direction */}
-            {(canScrollRight || canScrollLeft) && (
-              <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 block sm:hidden z-10">
-                <span className="text-ocean-bright text-base animate-pulse font-bold">
-                  {canScrollLeft ? '←' : '→'}
-                </span>
-              </div>
-            )}
+              {/* Scroll indicator - Arrow stays on right, direction flips when user scrolls */}
+              {/* Only show on mobile (< 640px) - shows if can scroll either direction */}
+              {(canScrollRight || canScrollLeft) && (
+                <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white/90 to-transparent pointer-events-none flex items-center justify-end pr-4 block sm:hidden z-10">
+                  <span className="text-ocean-bright text-base animate-pulse font-bold">
+                    {canScrollLeft ? '←' : '→'}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
