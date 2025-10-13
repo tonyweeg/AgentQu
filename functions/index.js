@@ -428,7 +428,11 @@ const KNOWN_CHAINS = [
   // Other Chains
   'panda express', 'pei wei', 'noodles & company',
   'buffalo wild wings', 'wingstop', 'hooters',
-  'golden corral', 'cici\'s pizza', 'cicis pizza'
+  'golden corral', 'cici\'s pizza', 'cicis pizza',
+
+  // Big Box Stores (last resort only)
+  'walmart', 'target', 'costco', 'sam\'s club', 'sams club',
+  'bj\'s wholesale', 'bjs wholesale'
 ];
 
 /**
@@ -456,6 +460,19 @@ const HEALTHY_FOOD_INDICATORS = [
 function isKnownChain(placeName) {
   const nameLower = (placeName || '').toLowerCase();
   return KNOWN_CHAINS.some(chain => nameLower.includes(chain));
+}
+
+/**
+ * Check if a place is a big box store (Walmart, Target, etc.)
+ * These should only appear as last resort
+ */
+function isBigBoxStore(placeName) {
+  const nameLower = (placeName || '').toLowerCase();
+  const bigBoxStores = [
+    'walmart', 'target', 'costco', 'sam\'s club', 'sams club',
+    'bj\'s wholesale', 'bjs wholesale'
+  ];
+  return bigBoxStores.some(store => nameLower.includes(store));
 }
 
 /**
@@ -628,20 +645,97 @@ function calculateFinalScore(activity, userLat, userLng, userAffinities, musicGe
     baseScore += chainPenalty;
   }
 
+  // Big box store penalty (-40 points for Walmart, Target, etc. - last resort only)
+  let bigBoxPenalty = 0;
+  if (isBigBoxStore(activity.name)) {
+    bigBoxPenalty = -40;
+    baseScore += bigBoxPenalty;
+    console.log(`🏪 Big box penalty applied to ${activity.name}: ${bigBoxPenalty} points`);
+  }
+
   return {
     finalScore: Math.max(0, Math.round(baseScore)),
-    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints - restaurantAffinityPoints - healthyFoodBonus - chainPenalty),
+    baseScore: Math.round(baseScore - affinityPoints - genreAffinityPoints - restaurantAffinityPoints - healthyFoodBonus - chainPenalty - bigBoxPenalty),
     affinityScore: Math.round(affinityPoints),
     genreAffinityScore: Math.round(genreAffinityPoints),
     restaurantAffinityScore: Math.round(restaurantAffinityPoints),
     healthyFoodBonus: Math.round(healthyFoodBonus),
     chainPenalty: Math.round(chainPenalty),
+    bigBoxPenalty: Math.round(bigBoxPenalty),
   };
 }
 
 // ============================================================================
 // API FETCHING FUNCTIONS
 // ============================================================================
+
+/**
+ * Fetch results from Google Custom Search with specific text query
+ */
+async function fetchGoogleSearchWithQuery(lat, lng, city = null, textQuery) {
+  const GOOGLE_SEARCH_API_KEY = googleSearchApiKey.value();
+  const GOOGLE_SEARCH_ENGINE_ID = googleSearchEngineId.value();
+
+  if (!GOOGLE_SEARCH_API_KEY || !GOOGLE_SEARCH_ENGINE_ID) {
+    console.warn("🔍 SEARCH API: Not configured");
+    return [];
+  }
+
+  if (!textQuery) {
+    console.warn("🔍 SEARCH API: No text query provided");
+    return [];
+  }
+
+  try {
+    // Add city name to search query if available
+    const searchQuery = city ? `${textQuery} in ${city}` : textQuery;
+
+    console.log(`🔍 CUSTOM SEARCH: Searching for: "${searchQuery}"`);
+
+    const response = await axios.get(`https://www.googleapis.com/customsearch/v1`, {
+      params: {
+        key: GOOGLE_SEARCH_API_KEY,
+        cx: GOOGLE_SEARCH_ENGINE_ID,
+        q: searchQuery,
+        num: 10,
+      },
+    });
+
+    console.log(`🔍 CUSTOM SEARCH: Got ${response.data.items?.length || 0} results`);
+
+    if (!response.data.items) return [];
+
+    // Map results to activities
+    return response.data.items.map((item, index) => {
+      return {
+        id: `custom_search_${Date.now()}_${index}`,
+        activityId: `custom_search_${Date.now()}_${index}`,
+        name: item.title,
+        description: item.snippet,
+        url: item.link,
+        type: 'permanent',
+        categories: ['other'],
+        primaryCategory: 'other',
+        location: {
+          lat: lat, // Approximate location
+          lng: lng,
+          address: city || 'Unknown location',
+        },
+        details: {
+          description: item.snippet,
+          url: item.link,
+        },
+        images: item.pagemap?.cse_image?.map(img => img.src).slice(0, 3) || [],
+      };
+    });
+  } catch (error) {
+    console.error(`🔍 CUSTOM SEARCH ERROR: ${error.message}`);
+    if (error.response) {
+      console.error('🔍 CUSTOM SEARCH Response:', error.response.data);
+    }
+    return [];
+  }
+}
 
 /**
  * Fetch activities from Google Custom Search
@@ -1325,25 +1419,129 @@ function affinityToPlaceTypes(affinities) {
     'family_friendly': ['amusement_park', 'zoo', 'aquarium', 'park']
   };
 
+  // Always include these base types regardless of affinities
+  const baseTypes = new Set(['restaurant', 'cafe', 'bar']);
+
   if (!affinities || Object.keys(affinities).length === 0) {
     // Default: broad categories
     return ['restaurant', 'cafe', 'park', 'museum', 'tourist_attraction', 'bar'];
   }
 
-  // Get top 5 affinity categories
+  // Get top 8 affinity categories (increased from 5 to be more inclusive)
   const topCategories = Object.entries(affinities)
     .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
+    .slice(0, 8)
     .map(([cat]) => cat);
 
-  // Convert to place types
-  const placeTypes = new Set();
+  // Convert to place types, starting with base types
+  const placeTypes = new Set([...baseTypes]);
   topCategories.forEach(cat => {
     const types = categoryMapping[cat] || [];
     types.forEach(type => placeTypes.add(type));
   });
 
-  return Array.from(placeTypes).slice(0, 10); // Limit to 10 types
+  return Array.from(placeTypes).slice(0, 12); // Increased limit to 12 types
+}
+
+/**
+ * Fetch places from Google Places API using text search
+ */
+async function fetchGooglePlacesTextSearch(lat, lng, radius = 10, textQuery) {
+  const GOOGLE_PLACES_API_KEY = googlePlacesApiKey.value();
+
+  if (!GOOGLE_PLACES_API_KEY) {
+    console.warn("Google Places API key not configured");
+    return [];
+  }
+
+  if (!textQuery) {
+    console.warn("No text query provided for text search");
+    return [];
+  }
+
+  try {
+    const radiusMeters = radius * 1609; // miles to meters
+
+    console.log(`🔍 TEXT SEARCH: Searching for "${textQuery}" within ${radius} miles`);
+
+    // Use Places API (New) - searchText endpoint
+    const response = await axios.post(
+      `https://places.googleapis.com/v1/places:searchText`,
+      {
+        textQuery: textQuery,
+        locationBias: {
+          circle: {
+            center: {
+              latitude: lat,
+              longitude: lng
+            },
+            radius: radiusMeters
+          }
+        },
+        maxResultCount: 20
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_PLACES_API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.types,places.rating,places.userRatingCount,places.id,places.photos,places.priceLevel,places.currentOpeningHours,places.regularOpeningHours'
+        }
+      }
+    );
+
+    console.log(`🔍 TEXT SEARCH: Got ${response.data.places?.length || 0} results for "${textQuery}"`);
+
+    if (!response.data.places) {
+      return [];
+    }
+
+    return response.data.places.map((place) => {
+      const placeTypes = place.types || [];
+      const categories = mapPlaceTypeToCategories(placeTypes);
+
+      const activity = {
+        id: place.id,
+        activityId: place.id,
+        name: place.displayName?.text || place.displayName || 'Unknown Place',
+        location: {
+          lat: place.location?.latitude,
+          lng: place.location?.longitude,
+          address: place.formattedAddress,
+        },
+        address: place.formattedAddress,
+        type: 'permanent',
+        categories: categories,
+        primaryCategory: categories[0] || 'other',
+        placeTypes: placeTypes,
+        details: {
+          description: null,
+          priceLevel: place.priceLevel || null,
+        },
+        cost: {
+          priceLevel: place.priceLevel || 0,
+          free: place.priceLevel === 0 || !place.priceLevel,
+        },
+        rating: place.rating || null,
+        ratings: {
+          googleRating: place.rating || null,
+        },
+        openNow: place.currentOpeningHours?.openNow || false,
+        images: place.photos?.slice(0, 3).map(photo => {
+          const photoRef = photo.name?.split('/').pop();
+          return photoRef ? `https://places.googleapis.com/v1/${photo.name}/media?key=${GOOGLE_PLACES_API_KEY}&maxHeightPx=800&maxWidthPx=800` : null;
+        }).filter(Boolean) || [],
+      };
+
+      console.log(`🔍 TEXT SEARCH: Mapped ${activity.name} - categories: ${activity.categories.join(', ')}`);
+      return activity;
+    });
+  } catch (error) {
+    console.error(`🔍 TEXT SEARCH ERROR: ${error.message}`);
+    if (error.response) {
+      console.error('🔍 TEXT SEARCH Response:', error.response.data);
+    }
+    return [];
+  }
 }
 
 /**
@@ -1397,7 +1595,45 @@ async function fetchGooglePlaces(lat, lng, radius = 10, userAffinities = null) {
       return [];
     }
 
-    return response.data.places.map((place) => {
+    // Filter out big box stores masquerading as cafes/coffee shops
+    const filteredPlaces = response.data.places.filter((place) => {
+      const placeTypes = place.types || [];
+      const categories = mapPlaceTypeToCategories(placeTypes);
+
+      // Big box store types that shouldn't appear as cafes
+      const bigBoxTypes = [
+        'department_store',
+        'supermarket',
+        'grocery_or_supermarket',
+        'shopping_mall',
+        'convenience_store',
+        'gas_station',
+        'home_goods_store',
+        'hardware_store',
+        'furniture_store',
+        'clothing_store',
+        'electronics_store',
+        'pharmacy',
+        'drugstore'
+      ];
+
+      // Check if this is a big box store
+      const isBigBoxStore = placeTypes.some(type => bigBoxTypes.includes(type));
+
+      // Check if it's categorized as cafe/coffee
+      const isCafe = categories.includes('coffee') || categories.includes('cafes') ||
+                     placeTypes.includes('cafe') || placeTypes.includes('coffee_shop');
+
+      // Exclude big box stores from cafe results
+      if (isBigBoxStore && isCafe) {
+        console.log(`🚫 Excluding ${place.displayName?.text || place.displayName} - big box store with cafe`);
+        return false;
+      }
+
+      return true;
+    });
+
+    return filteredPlaces.map((place) => {
       const placeLat = place.location.latitude;
       const placeLng = place.location.longitude;
       const categories = mapPlaceTypeToCategories(place.types || []);
@@ -1729,6 +1965,7 @@ exports.discoverActivities = onCall(
     enablePlaces = true,
     enableCustomSearch = true,
     showFastFood = false,
+    textSearch = null,
     bypassCache = false
   } = request.data;
 
@@ -1816,15 +2053,26 @@ exports.discoverActivities = onCall(
     const fetchPromises = [];
 
     // Google Places (permanent locations)
-    if (enablePlaces) {
+    if (textSearch) {
+      // Use text search when query is provided
+      console.log(`🔍 Using text search for: "${textSearch}"`);
+      fetchPromises.push(fetchGooglePlacesTextSearch(lat, lng, radius, textSearch));
+
+      // Also search Google Custom Search for the text query
+      console.log(`🔍 Adding Google Custom Search for: "${textSearch}"`);
+      fetchPromises.push(fetchGoogleSearchWithQuery(lat, lng, cityName, textSearch));
+    } else if (enablePlaces) {
+      // Use regular affinity-based search
       fetchPromises.push(fetchGooglePlaces(lat, lng, radius, userAffinities));
+      fetchPromises.push(Promise.resolve([])); // Placeholder for Custom Search
     } else {
+      fetchPromises.push(Promise.resolve([]));
       fetchPromises.push(Promise.resolve([]));
     }
 
-    // Ticketmaster Events (only if events enabled)
+    // Ticketmaster Events (only if events enabled and NOT doing text search)
     // NOTE: Get your affiliate ID from https://ticketmaster.com/partners
-    if (enableCustomSearch) {
+    if (enableCustomSearch && !textSearch) {
       fetchPromises.push(fetchTicketmasterEvents(lat, lng, radius, cityName));
     } else {
       fetchPromises.push(Promise.resolve([]));
@@ -1833,11 +2081,11 @@ exports.discoverActivities = onCall(
     // Reddit (local community buzz)
     fetchPromises.push(fetchRedditLocalBuzz(lat, lng, cityOnly, stateOnly));
 
-    const [googlePlaces, ticketmasterEvents, redditBuzz] = await Promise.all(fetchPromises);
+    const [googlePlaces, customSearch, ticketmasterEvents, redditBuzz] = await Promise.all(fetchPromises);
 
-    let allActivities = [...googlePlaces, ...ticketmasterEvents, ...redditBuzz];
+    let allActivities = [...googlePlaces, ...customSearch, ...ticketmasterEvents, ...redditBuzz];
 
-    console.log(`✅ Fetched ${googlePlaces.length} from Places, ${ticketmasterEvents.length} from Ticketmaster, ${redditBuzz.length} from Reddit`);
+    console.log(`✅ Fetched ${googlePlaces.length} from Places, ${customSearch.length} from Custom Search, ${ticketmasterEvents.length} from Ticketmaster, ${redditBuzz.length} from Reddit`);
 
     // Fetch EV charging stations if user is an EV owner
     let chargingStations = [];
@@ -2005,6 +2253,49 @@ exports.discoverActivities = onCall(
       }
     } else {
       console.log(`🍔 FAST FOOD MODE: Skipping chain filter - showing ALL chains and fast food!`);
+    }
+
+    // Filter out big box stores (Walmart, Target, etc.) - EXTREME last resort only
+    // These should ONLY appear if there are VERY few other options (< 3 places)
+    // SKIP if showFastFood is true (user wants all the calories!)
+    if (!showFastFood) {
+      const beforeBigBoxFilter = allActivities.length;
+
+      // Separate big box stores from everything else
+      const bigBoxStores = [];
+      const nonBigBoxPlaces = [];
+
+      allActivities.forEach((activity) => {
+        if (isBigBoxStore(activity.name)) {
+          bigBoxStores.push(activity);
+        } else {
+          nonBigBoxPlaces.push(activity);
+        }
+      });
+
+      // Count all non-big-box places within 50 miles
+      const otherPlacesNearby = nonBigBoxPlaces.filter(a => a.distance <= 50).length;
+
+      // Only include big box stores if there are fewer than 3 other options
+      // This makes them EXTREME last resort for truly desperate areas
+      if (otherPlacesNearby >= 3) {
+        allActivities = nonBigBoxPlaces;
+        console.log(`🏪 Filtered out ${bigBoxStores.length} big box stores (${otherPlacesNearby} better options available)`);
+        if (bigBoxStores.length > 0) {
+          console.log(`🏪 Big box stores filtered: ${bigBoxStores.map(b => b.name).join(', ')}`);
+        }
+      } else {
+        // Keep big box stores only as EXTREME last resort
+        allActivities = [...nonBigBoxPlaces, ...bigBoxStores];
+        console.log(`🏪 Keeping ${bigBoxStores.length} big box stores as EXTREME last resort (only ${otherPlacesNearby} options available - desperate area!)`);
+      }
+
+      const afterBigBoxFilter = allActivities.length;
+      if (beforeBigBoxFilter > afterBigBoxFilter) {
+        console.log(`🏪 Big box filter: removed ${beforeBigBoxFilter - afterBigBoxFilter} places`);
+      }
+    } else {
+      console.log(`🍔 FAST FOOD MODE: Skipping big box filter - showing Walmart, Target, etc.!`);
     }
 
     // Calculate scores

@@ -10,6 +10,7 @@ interface UseDiscoveryOptions {
   enablePlaces?: boolean;
   enableCustomSearch?: boolean;
   showFastFood?: boolean;
+  textSearch?: string;
   key?: number;
 }
 
@@ -20,6 +21,7 @@ export function useDiscovery({
   enablePlaces = true,
   enableCustomSearch = true,
   showFastFood = false,
+  textSearch = '',
   key = 0
 }: UseDiscoveryOptions) {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -46,6 +48,7 @@ export function useDiscovery({
         enablePlaces,
         enableCustomSearch,
         showFastFood,
+        textSearch: textSearch || null,
         bypassCache: key > 0,
       });
 
@@ -58,6 +61,7 @@ export function useDiscovery({
         enablePlaces,
         enableCustomSearch,
         showFastFood,
+        textSearch: textSearch || null,
         bypassCache: key > 0,
       });
 
@@ -88,7 +92,7 @@ export function useDiscovery({
     } finally {
       setLoading(false);
     }
-  }, [location, userId, filters, enablePlaces, enableCustomSearch, showFastFood, key]);
+  }, [location, userId, filters, enablePlaces, enableCustomSearch, showFastFood, textSearch, key]);
 
   useEffect(() => {
     fetchActivities();

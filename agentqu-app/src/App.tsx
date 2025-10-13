@@ -26,6 +26,120 @@ import EVPanel from './components/EVPanel';
 import BeenThereView from './components/BeenThereView';
 import { DiscoveryFilters, Activity } from './lib/types';
 
+// Known chain restaurants and brands (same as backend)
+const KNOWN_CHAINS = [
+  // Fast Food Chains
+  'mcdonalds', "mcdonald's", 'burger king', 'wendy\'s', 'wendys',
+  'taco bell', 'kfc', 'popeyes', 'chick-fil-a', 'chick fil a',
+  'sonic', 'dairy queen', 'arby\'s', 'arbys', 'carl\'s jr', 'carls jr',
+  'hardee\'s', 'hardees', 'jack in the box', 'white castle',
+  'five guys', 'in-n-out', 'shake shack', 'whataburger',
+
+  // Pizza Chains
+  'pizza hut', 'dominos', 'domino\'s', 'papa john\'s', 'papa johns',
+  'little caesars', 'papa murphy\'s', 'marco\'s pizza',
+
+  // Sandwich/Sub Chains
+  'subway', 'jimmy john\'s', 'jimmy johns', 'jersey mike\'s',
+  'firehouse subs', 'quiznos', 'blimpie', 'potbelly',
+
+  // Coffee Chains (corporate, not local)
+  'starbucks', 'dunkin', 'dunkin donuts', 'tim hortons',
+
+  // Convenience Stores
+  'wawa', '7-eleven', '7 eleven', 'circle k', 'sheetz',
+  'cumberland farms', 'speedway', 'pilot', 'flying j',
+  'love\'s', 'loves', 'ta petro', 'am/pm', 'ampm',
+
+  // Casual Dining Chains
+  'applebee\'s', 'applebees', 'chili\'s', 'chilis', 'tgi friday\'s',
+  'red lobster', 'olive garden', 'outback steakhouse',
+  'texas roadhouse', 'longhorn steakhouse', 'cracker barrel',
+  'denny\'s', 'dennys', 'ihop', 'waffle house', 'bob evans',
+  'panera bread', 'panera', 'chipotle', 'qdoba', 'moe\'s southwest',
+
+  // Other Chains
+  'panda express', 'pei wei', 'noodles & company',
+  'buffalo wild wings', 'wingstop', 'hooters',
+  'golden corral', 'cici\'s pizza', 'cicis pizza',
+
+  // Big Box Stores (last resort only)
+  'walmart', 'target', 'costco', 'sam\'s club', 'sams club',
+  'bj\'s wholesale', 'bjs wholesale'
+];
+
+// Check if a place is a known chain
+function isKnownChain(placeName: string): boolean {
+  const nameLower = (placeName || '').toLowerCase();
+  return KNOWN_CHAINS.some(chain => nameLower.includes(chain));
+}
+
+// Normalize chain name for grouping (remove numbers, addresses, etc)
+function normalizeChainName(placeName: string): string {
+  let normalized = placeName.toLowerCase().trim();
+
+  // Remove common suffixes and prefixes
+  normalized = normalized.replace(/#\d+$/, ''); // Remove #123
+  normalized = normalized.replace(/\d+$/, ''); // Remove trailing numbers
+  normalized = normalized.replace(/\s+-\s+.*$/, ''); // Remove everything after " - "
+  normalized = normalized.replace(/\s+\(.*\)/, ''); // Remove parenthetical info
+
+  return normalized.trim();
+}
+
+// Extended Activity type with grouped locations
+interface GroupedActivity extends Activity {
+  isGrouped?: boolean;
+  locationCount?: number;
+  locations?: Activity[];
+}
+
+// Group activities by chain name when showFastFood is active
+function groupActivitiesByChain(activities: Activity[], shouldGroup: boolean): GroupedActivity[] {
+  if (!shouldGroup) {
+    return activities;
+  }
+
+  const chainGroups: { [key: string]: Activity[] } = {};
+  const nonChains: Activity[] = [];
+
+  // Separate chains from non-chains
+  activities.forEach(activity => {
+    if (isKnownChain(activity.name)) {
+      const normalizedName = normalizeChainName(activity.name);
+      if (!chainGroups[normalizedName]) {
+        chainGroups[normalizedName] = [];
+      }
+      chainGroups[normalizedName].push(activity);
+    } else {
+      nonChains.push(activity);
+    }
+  });
+
+  // Create grouped activities
+  const grouped: GroupedActivity[] = [];
+
+  Object.entries(chainGroups).forEach(([chainName, locations]) => {
+    if (locations.length > 1) {
+      // Multiple locations - create grouped activity
+      const primaryLocation = locations[0];
+      grouped.push({
+        ...primaryLocation,
+        isGrouped: true,
+        locationCount: locations.length,
+        locations: locations.sort((a, b) => (a.distance || 0) - (b.distance || 0)), // Sort by distance
+        name: locations[0].name.split(' -')[0].split(' #')[0].replace(/\d+$/, '').trim() // Clean name
+      });
+    } else {
+      // Single location - keep as is
+      grouped.push(locations[0]);
+    }
+  });
+
+  // Combine and sort by score
+  return [...grouped, ...nonChains].sort((a, b) => (b.score || 0) - (a.score || 0));
+}
+
 function App() {
   // Check URL for special routes
   const urlPath = window.location.pathname;
@@ -62,6 +176,8 @@ function App() {
   const [showDetailTray, setShowDetailTray] = useState(false);
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [showFastFood, setShowFastFood] = useState(false); // Toggle for "Give me all the calories!"
+  const [textSearch, setTextSearch] = useState(''); // Text search query
+  const [activeTextSearch, setActiveTextSearch] = useState(''); // Currently active search
   const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
 
   // Get user location
@@ -86,6 +202,7 @@ function App() {
     enablePlaces,
     enableCustomSearch,
     showFastFood,
+    textSearch: activeTextSearch,
     key: refreshKey
   });
 
@@ -835,7 +952,7 @@ function App() {
         <div className="max-w-7xl mx-auto">
           {/* Drawer Toggle Button with View Mode Toggle */}
           <div className="flex items-center justify-between px-4 py-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1">
               <button
                 onClick={() => setShowControlsDrawer(!showControlsDrawer)}
                 className="flex items-center gap-2 hover:opacity-70 transition-opacity"
@@ -850,6 +967,54 @@ function App() {
                   ▼
                 </span>
               </button>
+
+              {/* Text Search Input */}
+              <div className="flex-1 max-w-md">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={textSearch}
+                    onChange={(e) => setTextSearch(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && textSearch.trim()) {
+                        setActiveTextSearch(textSearch.trim());
+                        setRefreshKey(prev => prev + 1);
+                      }
+                    }}
+                    placeholder="Search for specific places... (e.g., mexican restaurants)"
+                    className="w-full px-4 py-2 pr-20 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-ocean-bright focus:border-transparent"
+                  />
+                  {textSearch && (
+                    <button
+                      onClick={() => {
+                        setTextSearch('');
+                        setActiveTextSearch('');
+                        setRefreshKey(prev => prev + 1);
+                      }}
+                      className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (textSearch.trim()) {
+                        setActiveTextSearch(textSearch.trim());
+                        setRefreshKey(prev => prev + 1);
+                      }
+                    }}
+                    disabled={!textSearch.trim()}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-ocean-bright text-white px-3 py-1 rounded-full text-xs font-medium hover:bg-ocean-mid transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    🔍
+                  </button>
+                </div>
+                {activeTextSearch && (
+                  <div className="mt-1 text-xs text-ocean-bright font-medium px-2">
+                    Searching for: "{activeTextSearch}"
+                  </div>
+                )}
+              </div>
 
               {/* View Mode Toggle - Pill style with text */}
               {(viewMode === 'list' || viewMode === 'map' || viewMode === 'offgrid') && (
@@ -1453,6 +1618,9 @@ function App() {
                       // Sort places by Q Score
                       const sortedPlaces = [...filteredPlaces].sort((a, b) => (b.score || 0) - (a.score || 0));
 
+                      // Apply chain grouping when fast food mode is active
+                      const displayPlaces = groupActivitiesByChain(sortedPlaces, showFastFood);
+
                       // Sort events by Q Score
                       const sortedEvents = [...events].sort((a, b) => (b.score || 0) - (a.score || 0));
 
@@ -1510,20 +1678,20 @@ function App() {
                           )}
 
                           {/* Places Grid - Cards */}
-                          {sortedPlaces.length > 0 && (
+                          {displayPlaces.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-12">
-                              {sortedPlaces.map((activity, index) => (
+                              {displayPlaces.map((activity, index) => (
                                 <ActivityCard
                                   key={activity.id || activity.activityId}
                                   activity={activity}
                                   index={index}
-                                  allActivities={sortedPlaces}
+                                  allActivities={displayPlaces}
                                 />
                               ))}
                             </div>
                           )}
 
-                          {sortedPlaces.length === 0 && places.length > 0 && (
+                          {displayPlaces.length === 0 && places.length > 0 && (
                             <div className="text-center py-12 mb-12">
                               <div className="text-4xl mb-3">{getCategoryEmoji(selectedCategory)}</div>
                               <p className="text-gray-600">No {selectedCategory.replace(/_/g, ' ')} places found</p>

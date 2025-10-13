@@ -355,7 +355,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
               )}
 
               {/* Location - NOT for events */}
-              {activity.type !== 'event' && activity.address && (
+              {activity.type !== 'event' && activity.address && !(activity as any).isGrouped && (
                 <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
                   <h3 className="text-white font-bold text-lg mb-2 flex items-center gap-2">
                     <span className="text-2xl">📍</span>
@@ -369,6 +369,53 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({ activity, onClose, on
                       </span>
                     )}
                   </p>
+                </div>
+              )}
+
+              {/* Multiple Locations - Tufte-style list for grouped chains */}
+              {activity.type !== 'event' && (activity as any).isGrouped && (activity as any).locations && (
+                <div className="bg-white/20 backdrop-blur-xl rounded-2xl px-6 py-4">
+                  <h3 className="text-white font-bold text-lg mb-3 flex items-center gap-2">
+                    <span className="text-2xl">📍</span>
+                    {(activity as any).locationCount} Locations
+                  </h3>
+                  {/* Tufte-style compact data table */}
+                  <div className="space-y-2">
+                    {((activity as any).locations as Activity[]).map((location: Activity, idx: number) => (
+                      <div
+                        key={location.id || location.activityId || idx}
+                        className="flex items-start justify-between gap-4 py-2 border-b border-white/10 last:border-0"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-base font-medium leading-tight">
+                            {location.address?.split(',')[0] || 'Address unavailable'}
+                          </p>
+                          <p className="text-white/70 text-sm mt-0.5">
+                            {location.address?.split(',').slice(1).join(',').trim() || ''}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="text-white text-base font-bold whitespace-nowrap">
+                            {location.distance?.toFixed(1)} mi
+                          </span>
+                          {location.openNow && (
+                            <span className="text-emerald-400 text-xs font-medium">
+                              Open
+                            </span>
+                          )}
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sky-300 hover:text-sky-200 text-xs font-medium underline transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Directions →
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

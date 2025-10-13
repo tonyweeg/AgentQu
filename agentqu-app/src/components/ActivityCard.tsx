@@ -143,6 +143,13 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
           </div>
         )}
 
+        {/* Location count badge for grouped chains - below visited or distance */}
+        {(activity as any).isGrouped && (activity as any).locationCount && (
+          <div className={`absolute ${isVisited ? 'top-[4.5rem]' : 'top-12'} right-3 bg-orange-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full shadow-lg`}>
+            <span className="text-xs font-bold">📍 {(activity as any).locationCount} locations</span>
+          </div>
+        )}
+
         {/* Off-Grid Icon - Bottom Left corner of image */}
         {isOffGrid && (
           <div className="absolute bottom-20 left-3 bg-green-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full shadow-lg">
