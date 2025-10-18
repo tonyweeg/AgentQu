@@ -791,21 +791,38 @@ function App() {
         <div className="w-full px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <button
-              onClick={() => {
-                setViewMode('list');
-                setShowSettings(false);
-                setShowGeocaches(false);
-              }}
-              className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer"
-            >
-              <img
-                src="/agentqu-glyph.png"
-                alt="AgentQu"
-                className="h-8 w-8 hidden lg:block"
-              />
-              <h1 className="text-2xl sm:text-3xl font-bold text-black" style={{ letterSpacing: '-0.05em' }}>AgentQu</h1>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setViewMode('list');
+                  setShowSettings(false);
+                  setShowGeocaches(false);
+                }}
+                className="flex items-center gap-2 hover:opacity-70 transition-opacity cursor-pointer"
+              >
+                <img
+                  src="/agentqu-glyph.png"
+                  alt="AgentQu"
+                  className="h-8 w-8 hidden lg:block"
+                />
+                <h1 className="text-2xl sm:text-3xl font-bold text-black" style={{ letterSpacing: '-0.05em' }}>AgentQu</h1>
+              </button>
+
+              {/* Here Button - Reset to Current Location */}
+              <button
+                onClick={() => {
+                  setManualLocation(null);
+                  setRefreshKey(prev => prev + 1);
+                  setViewMode('list');
+                  setShowSettings(false);
+                  setShowGeocaches(false);
+                }}
+                className="px-2 py-1 text-xs font-medium text-white bg-ocean-bright hover:bg-ocean-mid rounded-md transition-colors shadow-sm"
+                title="Return to your current location"
+              >
+                Here
+              </button>
+            </div>
 
             {/* Desktop Navigation */}
             {location && (
