@@ -897,8 +897,8 @@ function App() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-black" style={{ letterSpacing: '-0.05em' }}>AgentQu</h1>
               </button>
 
-              {/* Here Button - Reset to Current Location (only show when viewing a different location) */}
-              {manualLocation && (
+              {/* Back to City Button - Reset to Current Location (only show when viewing a different location) */}
+              {manualLocation && city && (
                 <button
                   onClick={() => {
                     setManualLocation(null);
@@ -908,9 +908,9 @@ function App() {
                     setShowGeocaches(false);
                   }}
                   className="px-1.5 py-0.5 text-xs font-medium text-white bg-ocean-bright hover:bg-ocean-mid rounded transition-colors"
-                  title="Return to your current location"
+                  title={`Return to ${city}`}
                 >
-                  Here, now!
+                  Back to {city}
                 </button>
               )}
             </div>
