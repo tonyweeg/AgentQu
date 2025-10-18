@@ -20,7 +20,7 @@ const { calculateDistance, encodeGeohash } = require('../utils/distance');
 const { calculateFinalScore, passesMusicGenreFilter, passesRestaurantGenreFilter } = require('../utils/scoring');
 const { mapPlaceTypeToCategories } = require('../utils/mappings');
 const { validateCoordinates, validateRadius, validateUserId } = require('../utils/validation');
-const { RATE_LIMITS } = require('../config/constants');
+const { RATE_LIMITS, KNOWN_CHAINS } = require('../config/constants');
 
 class ActivityService {
   constructor() {
@@ -106,8 +106,18 @@ class ActivityService {
         activity.distance = calculateDistance(lat, lng, actLat, actLng);
       });
 
+      // Deduplicate activities (same place from multiple sources)
+      const deduped = this.deduplicateActivities(allActivities);
+      this.logger.debug(`Deduplicated ${allActivities.length} → ${deduped.length} activities`);
+
       // Filter by radius
-      const withinRadius = allActivities.filter((a) => a.distance <= radius);
+      let withinRadius = deduped.filter((a) => a.distance <= radius);
+
+      // Filter out corporate chains unless showFastFood is true
+      if (!showFastFood) {
+        withinRadius = withinRadius.filter((a) => !this.isKnownChain(a.name));
+        this.logger.debug(`Filtered chains, ${withinRadius.length} activities remaining`);
+      }
 
       // Apply genre filters if user has preferences (skip during text search)
       let filtered = withinRadius;
@@ -522,6 +532,42 @@ class ActivityService {
       success: true,
       visitedPlaces,
     };
+  }
+
+  /**
+   * Deduplicate activities based on name and location
+   * @private
+   */
+  deduplicateActivities(activities) {
+    const seen = new Map();
+    const deduped = [];
+
+    for (const activity of activities) {
+      // Create a key based on name + approximate location
+      const name = (activity.name || '').toLowerCase().trim();
+      const lat = (activity.location?.lat || activity.lat || 0).toFixed(4);
+      const lng = (activity.location?.lng || activity.lng || 0).toFixed(4);
+      const key = `${name}|${lat}|${lng}`;
+
+      if (!seen.has(key)) {
+        seen.set(key, true);
+        deduped.push(activity);
+      } else {
+        this.logger.debug(`Duplicate found: ${activity.name}`);
+      }
+    }
+
+    return deduped;
+  }
+
+  /**
+   * Check if place is a known corporate chain
+   * @private
+   */
+  isKnownChain(placeName) {
+    if (!placeName) return false;
+    const nameLower = placeName.toLowerCase();
+    return KNOWN_CHAINS.some((chain) => nameLower.includes(chain));
   }
 }
 
