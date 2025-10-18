@@ -9,6 +9,7 @@ const GooglePlacesClient = require('./GooglePlacesClient');
 const GoogleSearchClient = require('./GoogleSearchClient');
 const TwitterClient = require('./TwitterClient');
 const WeatherClient = require('./WeatherClient');
+const TicketmasterClient = require('./TicketmasterClient');
 
 module.exports = {
   BaseApiClient,
@@ -16,4 +17,5 @@ module.exports = {
   GoogleSearchClient,
   TwitterClient,
   WeatherClient,
+  TicketmasterClient,
 };

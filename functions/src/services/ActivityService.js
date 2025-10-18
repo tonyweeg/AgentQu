@@ -14,7 +14,7 @@
  */
 
 const { ActivityRepository, UserRepository } = require('../repositories');
-const { GooglePlacesClient, GoogleSearchClient } = require('../api');
+const { GooglePlacesClient, GoogleSearchClient, TicketmasterClient } = require('../api');
 const { createLogger } = require('../utils/logger');
 const { calculateDistance, encodeGeohash } = require('../utils/distance');
 const { calculateFinalScore, passesMusicGenreFilter, passesRestaurantGenreFilter } = require('../utils/scoring');
@@ -28,6 +28,7 @@ class ActivityService {
     this.userRepo = new UserRepository();
     this.placesClient = new GooglePlacesClient();
     this.searchClient = new GoogleSearchClient();
+    this.ticketmasterClient = new TicketmasterClient();
     this.logger = createLogger('ACTIVITY_SERVICE');
   }
 
@@ -47,6 +48,7 @@ class ActivityService {
         userId = null,
         enablePlaces = true,
         enableCustomSearch = true,
+        enableTicketmaster = true,
         showFastFood = false,
         textSearch = null,
       } = params;
@@ -86,6 +88,13 @@ class ActivityService {
         const events = await this.fetchCustomSearchEvents(lat, lng);
         allActivities.push(...events);
         this.logger.debug(`Got ${events.length} events from Custom Search`);
+      }
+
+      // Fetch from Ticketmaster (only if not doing text search)
+      if (enableTicketmaster && !textSearch) {
+        const ticketmasterEvents = await this.fetchTicketmasterEvents(lat, lng, radius);
+        allActivities.push(...ticketmasterEvents);
+        this.logger.debug(`Got ${ticketmasterEvents.length} events from Ticketmaster`);
       }
 
       // Calculate distance for all activities
@@ -225,6 +234,32 @@ class ActivityService {
   }
 
   /**
+   * Fetch events from Ticketmaster
+   * @private
+   */
+  async fetchTicketmasterEvents(lat, lng, radius, days = 3) {
+    try {
+      if (!this.ticketmasterClient.isReady()) {
+        this.logger.debug('Ticketmaster not configured, skipping');
+        return [];
+      }
+
+      const events = await this.ticketmasterClient.getUpcomingEvents({
+        lat,
+        lng,
+        radius,
+        days,
+      });
+
+      // Transform to our activity format
+      return events.map((event) => this.transformTicketmasterEvent(event));
+    } catch (error) {
+      this.logger.error('Ticketmaster fetch failed', error);
+      return [];
+    }
+  }
+
+  /**
    * Transform Google Place to Activity format
    * @private
    */
@@ -286,6 +321,56 @@ class ActivityService {
       cost: {
         free: result.snippet?.toLowerCase().includes('free') || false,
       },
+    };
+  }
+
+  /**
+   * Transform Ticketmaster event to Activity format
+   * @private
+   */
+  transformTicketmasterEvent(tmEvent) {
+    const categories = ['events', 'entertainment'];
+
+    // Add music category if it's a music event
+    if (tmEvent.musicGenres && tmEvent.musicGenres.length > 0) {
+      categories.push('music');
+    }
+
+    return {
+      id: tmEvent.id,
+      activityId: tmEvent.activityId,
+      name: tmEvent.name,
+      type: 'event',
+      location: {
+        lat: tmEvent.location.lat,
+        lng: tmEvent.location.lng,
+        address: tmEvent.address,
+        city: tmEvent.city,
+        geohash: encodeGeohash(tmEvent.location.lat, tmEvent.location.lng),
+      },
+      categories,
+      primaryCategory: 'event',
+      rating: null, // Ticketmaster doesn't provide ratings
+      reviewCount: 0,
+      openNow: true,
+      cost: {
+        free: tmEvent.priceRange?.min === 0,
+        priceLevel: tmEvent.priceRange?.min > 100 ? 4 : tmEvent.priceRange?.min > 50 ? 3 : tmEvent.priceRange?.min > 20 ? 2 : 1,
+      },
+      images: tmEvent.images || [],
+      details: {
+        description: tmEvent.description,
+        shortDescription: tmEvent.description?.substring(0, 150) || tmEvent.name,
+        imageUrl: tmEvent.images?.[0],
+        website: tmEvent.website,
+        eventDate: tmEvent.eventDate,
+        venue: tmEvent.venue,
+        venueAddress: tmEvent.venueAddress,
+        priceRange: tmEvent.priceRange,
+      },
+      musicGenres: tmEvent.musicGenres || [],
+      source: tmEvent.source,
+      sourceId: tmEvent.sourceId,
     };
   }
 
