@@ -71,9 +71,9 @@ const EVPanel: React.FC<EVPanelProps> = ({ stations, userLocation, onViewAllMap 
       return a.distance - b.distance;
     });
 
-  // Show only top 3 closest
-  const topStations = sortedStations.slice(0, 3);
-  const hasMore = sortedStations.length > 3;
+  // Show top 10 closest
+  const topStations = sortedStations.slice(0, 10);
+  const hasMore = sortedStations.length > 10;
 
   return (
     <div className="w-full bg-white/75 border-b border-gray-300 shadow-sm">
@@ -128,7 +128,7 @@ const EVPanel: React.FC<EVPanelProps> = ({ stations, userLocation, onViewAllMap 
               onClick={onViewAllMap}
               className="text-xs text-gray-600 hover:text-ocean-bright font-medium transition-colors"
             >
-              + {sortedStations.length - 3} more stations • View All on Map →
+              + {sortedStations.length - 10} more stations • View All on Map →
             </button>
           </div>
         )}

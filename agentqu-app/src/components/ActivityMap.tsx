@@ -441,8 +441,8 @@ const ActivityMap: React.FC<ActivityMapProps> = ({
           );
         })}
 
-        {/* EV Charging Station markers - only show top 3 in EV mode */}
-        {!compact && evMode && top3EVStations.map((station, index) => {
+        {/* EV Charging Station markers - show all in EV mode, highlight top 3 */}
+        {!compact && evMode && evStations.map((station, index) => {
           const lat = station.location?.lat;
           const lng = station.location?.lng;
 

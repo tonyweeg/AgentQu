@@ -377,7 +377,7 @@ function App() {
     return b.qScore - a.qScore;
   });
 
-  // Top 3 EV stations for map display
+  // Top 3 EV stations for highlighting (Tesla/Wawa/250kW priority)
   const top3EVStations = evStationsWithQScores.slice(0, 3);
 
   // Handle map drag to search new location
