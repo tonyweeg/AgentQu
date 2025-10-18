@@ -181,6 +181,9 @@ function App() {
   const [canScrollLeft, setCanScrollLeft] = useState(false); // Can scroll controls left
   const [canScrollRight, setCanScrollRight] = useState(false); // Can scroll controls right
   const controlsScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeftCategories, setCanScrollLeftCategories] = useState(false); // Can scroll categories left
+  const [canScrollRightCategories, setCanScrollRightCategories] = useState(false); // Can scroll categories right
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
   const { user, profile, loading: authLoading, updateAffinities, updateLanguageCode, signOut } = useAuth();
 
   // Get user location
@@ -232,6 +235,19 @@ function App() {
 
     setCanScrollLeft(canLeft);
     setCanScrollRight(canRight);
+  };
+
+  // Check if categories can scroll left/right
+  const checkCategoriesScrollPosition = () => {
+    const container = categoriesScrollRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    const canLeft = scrollLeft > 5;
+    const canRight = scrollLeft < scrollWidth - clientWidth - 5;
+
+    setCanScrollLeftCategories(canLeft);
+    setCanScrollRightCategories(canRight);
   };
 
   // Attach scroll listener to controls container
@@ -306,9 +322,82 @@ function App() {
     };
   }, []);
 
+  // Attach scroll listener to categories container
+  useEffect(() => {
+    const container = categoriesScrollRef.current;
+    if (!container) return;
+
+    // Check initial state
+    checkCategoriesScrollPosition();
+
+    // Safari mobile needs a delayed check after layout completes
+    const safariDelayCheck = setTimeout(() => {
+      checkCategoriesScrollPosition();
+    }, 100);
+
+    // Use polling during scroll for mobile reliability
+    let scrollTimer: NodeJS.Timeout | null = null;
+    let isScrolling = false;
+
+    const handleScrollStart = () => {
+      if (isScrolling) return;
+      isScrolling = true;
+
+      // Poll every 50ms while scrolling
+      scrollTimer = setInterval(() => {
+        checkCategoriesScrollPosition();
+      }, 50);
+    };
+
+    const handleScrollEnd = () => {
+      if (scrollTimer) {
+        clearInterval(scrollTimer);
+        scrollTimer = null;
+      }
+      isScrolling = false;
+      // Final check after scroll ends
+      setTimeout(checkCategoriesScrollPosition, 100);
+    };
+
+    // Listen for scroll events - works on most browsers
+    container.addEventListener('scroll', () => {
+      handleScrollStart();
+      // Reset the timeout on every scroll event
+      if (scrollTimer) {
+        clearInterval(scrollTimer);
+      }
+      scrollTimer = setInterval(checkCategoriesScrollPosition, 50);
+
+      // Clear polling after scroll stops (no events for 150ms)
+      setTimeout(() => {
+        if (scrollTimer) {
+          clearInterval(scrollTimer);
+          scrollTimer = null;
+          isScrolling = false;
+          checkCategoriesScrollPosition();
+        }
+      }, 150);
+    }, { passive: true });
+
+    // Touch events for mobile
+    container.addEventListener('touchstart', handleScrollStart, { passive: true });
+    container.addEventListener('touchmove', checkCategoriesScrollPosition, { passive: true });
+    container.addEventListener('touchend', handleScrollEnd, { passive: true });
+
+    // Check on resize in case content width changes
+    window.addEventListener('resize', checkCategoriesScrollPosition);
+
+    return () => {
+      clearTimeout(safariDelayCheck);
+      if (scrollTimer) clearInterval(scrollTimer);
+      window.removeEventListener('resize', checkCategoriesScrollPosition);
+    };
+  }, []);
+
   // Re-check scroll position when activities load or view changes
   useEffect(() => {
     checkScrollPosition();
+    checkCategoriesScrollPosition();
   }, [activities.length, viewMode]);
 
   // Fetch nearby towns when location and city are available
@@ -1915,69 +2004,96 @@ function App() {
                         <>
                           {/* Category Filter Chips - For Places Only */}
                           {places.length > 0 && (
-                            <div className="mb-6 flex flex-wrap gap-2 items-center">
-                              {/* Active Text Search Indicator */}
-                              {activeTextSearch && (
-                                <div className="flex items-center gap-2 bg-sky-100 border-2 border-sky-300 px-4 py-2 rounded-full">
-                                  <span className="text-sm font-bold text-gray-800">🔍 Searching:</span>
-                                  <span className="text-sm font-bold text-gray-800">"{activeTextSearch}"</span>
-                                  <button
-                                    onClick={() => {
-                                      setTextSearch('');
-                                      setActiveTextSearch('');
-                                      setRefreshKey(prev => prev + 1);
-                                    }}
-                                    className="ml-1 bg-white hover:bg-sky-200 text-gray-800 font-bold px-2 py-0.5 rounded-full transition-colors"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              )}
-
-                              <button
-                                onClick={() => setSelectedCategory('all')}
-                                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                                  selectedCategory === 'all'
-                                    ? 'bg-ocean-bright text-white shadow-md'
-                                    : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
-                                }`}
+                            <div className="mb-6 relative">
+                              {/* Horizontal scrolling container */}
+                              <div
+                                ref={categoriesScrollRef}
+                                className="overflow-x-auto scrollbar-hide"
+                                style={{
+                                  scrollbarWidth: 'none',
+                                  msOverflowStyle: 'none',
+                                  WebkitOverflowScrolling: 'touch'
+                                }}
                               >
-                                All Places ({places.length})
-                              </button>
-                              {allCategories
-                                .sort((a, b) => categoryCounts[b] - categoryCounts[a])
-                                .map(category => (
+                                <div className="flex gap-2 items-center">
+                                  {/* Active Text Search Indicator */}
+                                  {activeTextSearch && (
+                                    <div className="flex items-center gap-2 bg-sky-100 border-2 border-sky-300 px-4 py-2 rounded-full whitespace-nowrap">
+                                      <span className="text-sm font-bold text-gray-800">🔍 Searching:</span>
+                                      <span className="text-sm font-bold text-gray-800">"{activeTextSearch}"</span>
+                                      <button
+                                        onClick={() => {
+                                          setTextSearch('');
+                                          setActiveTextSearch('');
+                                          setRefreshKey(prev => prev + 1);
+                                        }}
+                                        className="ml-1 bg-white hover:bg-sky-200 text-gray-800 font-bold px-2 py-0.5 rounded-full transition-colors"
+                                      >
+                                        ✕
+                                      </button>
+                                    </div>
+                                  )}
+
                                   <button
-                                    key={category}
-                                    onClick={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
-                                      selectedCategory === category
+                                    onClick={() => setSelectedCategory('all')}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+                                      selectedCategory === 'all'
                                         ? 'bg-ocean-bright text-white shadow-md'
                                         : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
                                     }`}
                                   >
-                                    <span>{getCategoryEmoji(category)}</span>
-                                    <span className="capitalize">{category.replace(/_/g, ' ')}</span>
-                                    <span className="text-xs opacity-75">({categoryCounts[category]})</span>
+                                    All Places ({places.length})
                                   </button>
-                                ))}
+                                  {allCategories
+                                    .sort((a, b) => {
+                                      // Sort alphabetically
+                                      const nameA = a.replace(/_/g, ' ');
+                                      const nameB = b.replace(/_/g, ' ');
+                                      return nameA.localeCompare(nameB);
+                                    })
+                                    .map(category => (
+                                      <button
+                                        key={category}
+                                        onClick={() => setSelectedCategory(category)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                                          selectedCategory === category
+                                            ? 'bg-ocean-bright text-white shadow-md'
+                                            : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
+                                        }`}
+                                      >
+                                        <span>{getCategoryEmoji(category)}</span>
+                                        <span className="capitalize">{category.replace(/_/g, ' ')}</span>
+                                        <span className="text-xs opacity-75">({categoryCounts[category]})</span>
+                                      </button>
+                                    ))}
 
-                              {/* Fast Food Toggle - Only show when viewing food/dining category */}
-                              {selectedCategory === 'food_and_dining' && (
-                                <button
-                                  onClick={() => {
-                                    setShowFastFood(!showFastFood);
-                                    setRefreshKey(prev => prev + 1);
-                                  }}
-                                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                                    showFastFood
-                                      ? 'bg-red-500 text-white border-red-600 shadow-sm'
-                                      : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-500'
-                                  }`}
-                                  title={showFastFood ? 'Hide chains & fast food' : 'Show chains & fast food'}
-                                >
-                                  <span>🍔 Give me all the calories!</span>
-                                </button>
+                                  {/* Fast Food Toggle - Only show when viewing food/dining category */}
+                                  {selectedCategory === 'food_and_dining' && (
+                                    <button
+                                      onClick={() => {
+                                        setShowFastFood(!showFastFood);
+                                        setRefreshKey(prev => prev + 1);
+                                      }}
+                                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border whitespace-nowrap ${
+                                        showFastFood
+                                          ? 'bg-red-500 text-white border-red-600 shadow-sm'
+                                          : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-500'
+                                      }`}
+                                      title={showFastFood ? 'Hide chains & fast food' : 'Show chains & fast food'}
+                                    >
+                                      <span>🍔 Give me all the calories!</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Scroll indicator - Arrow stays on right, direction flips when user scrolls */}
+                              {(canScrollRightCategories || canScrollLeftCategories) && (
+                                <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent pointer-events-none flex items-center justify-end pr-4 z-10">
+                                  <span className="text-ocean-bright text-base animate-pulse font-bold">
+                                    {canScrollLeftCategories ? '←' : '→'}
+                                  </span>
+                                </div>
                               )}
                             </div>
                           )}
