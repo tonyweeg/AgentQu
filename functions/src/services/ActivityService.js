@@ -133,6 +133,11 @@ class ActivityService {
       // Take top results
       const topActivities = scored.slice(0, RATE_LIMITS.PLACES_API_MAX_RESULTS);
 
+      // Fetch EV charging stations if user is EV owner
+      // TODO: Implement full EV charging station fetching
+      // For now, return empty array to maintain API compatibility
+      const chargingStations = [];
+
       const queryTime = Date.now() - startTime;
 
       this.logger.info('Discovery complete', {
@@ -143,6 +148,7 @@ class ActivityService {
       return {
         success: true,
         activities: topActivities,
+        chargingStations, // Required by frontend for EV owners
         metadata: {
           totalFound: topActivities.length,
           queryTimeMs: queryTime,
