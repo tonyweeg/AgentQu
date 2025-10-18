@@ -10,6 +10,9 @@
  * - Configuration in src/config/
  */
 
+// Load environment variables from .env file
+require('dotenv').config();
+
 const functions = require('./src/functions');
 const { onRequest } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');

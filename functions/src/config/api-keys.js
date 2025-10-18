@@ -6,20 +6,40 @@
  * - Open/Closed: Easy to add new API keys without modifying existing code
  *
  * Reads API keys from environment variables (.env file)
- * Firebase automatically loads .env files in the functions directory
+ * Firebase requires uppercase env var names, but code uses camelCase
  */
 
 /**
+ * Map camelCase key names to uppercase env var names
+ * Firebase .env validation requires uppercase variable names
+ */
+const KEY_MAPPINGS = {
+  // Google API keys (camelCase -> SCREAMING_SNAKE_CASE)
+  'googlePlaces': 'GOOGLE_PLACES_API_KEY',
+  'googleSearch': 'GOOGLE_SEARCH_API_KEY',
+  'googleSearchEngineId': 'GOOGLE_SEARCH_ENGINE_ID',
+  'googleGeocoding': 'GOOGLE_GEOCODING_API_KEY',
+
+  // Keys that are already in correct format
+  'TWITTER_BEARER_TOKEN': 'TWITTER_BEARER_TOKEN',
+  'OPEN_WEATHER_API_KEY': 'OPEN_WEATHER_API_KEY',
+  'TICKETMASTER_API_KEY': 'TICKETMASTER_API_KEY',
+  'EVENTBRITE_PRIVATE_TOKEN': 'EVENTBRITE_PRIVATE_TOKEN',
+};
+
+/**
  * Get API key value from environment variables
- * @param {string} keyName - Name of the API key (e.g., 'GOOGLE_PLACES_API_KEY')
+ * @param {string} keyName - Name of the API key (camelCase or SCREAMING_SNAKE_CASE)
  * @returns {string} API key value
  */
 function getApiKey(keyName) {
-  const value = process.env[keyName];
+  // Map camelCase to uppercase if needed
+  const envVarName = KEY_MAPPINGS[keyName] || keyName;
+  const value = process.env[envVarName];
 
   if (!value || value.trim() === '') {
     throw new Error(
-      `API key not configured: ${keyName}. Please set it in functions/.env file`
+      `API key not configured: ${keyName} (env var: ${envVarName}). Please set it in functions/.env file`
     );
   }
 
@@ -28,12 +48,14 @@ function getApiKey(keyName) {
 
 /**
  * Check if API key is configured
- * @param {string} keyName - Name of the API key
+ * @param {string} keyName - Name of the API key (camelCase or SCREAMING_SNAKE_CASE)
  * @returns {boolean}
  */
 function isConfigured(keyName) {
   try {
-    const value = process.env[keyName];
+    // Map camelCase to uppercase if needed
+    const envVarName = KEY_MAPPINGS[keyName] || keyName;
+    const value = process.env[envVarName];
     return Boolean(value && value.trim() !== '');
   } catch {
     return false;
