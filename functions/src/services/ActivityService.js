@@ -59,10 +59,11 @@ class ActivityService {
 
       this.logger.info('Discovering activities', { lat, lng, radius, userId });
 
-      // Load user affinities
+      // Load user affinities and EV owner status
       let userAffinities = null;
       let musicGenreAffinities = null;
       let restaurantGenreAffinities = null;
+      let isEVOwner = false;
 
       if (userId) {
         const userProfile = await this.userRepo.getProfile(userId);
@@ -70,6 +71,7 @@ class ActivityService {
           userAffinities = userProfile.affinities;
           musicGenreAffinities = userProfile.musicGenreAffinities;
           restaurantGenreAffinities = userProfile.restaurantGenreAffinities;
+          isEVOwner = userProfile.isEV || false;
         }
       }
 
@@ -143,9 +145,12 @@ class ActivityService {
       const topActivities = scored.slice(0, RATE_LIMITS.PLACES_API_MAX_RESULTS);
 
       // Fetch EV charging stations if user is EV owner
-      // TODO: Implement full EV charging station fetching
-      // For now, return empty array to maintain API compatibility
-      const chargingStations = [];
+      let chargingStations = [];
+      if (isEVOwner) {
+        this.logger.info('User is EV owner - fetching charging stations');
+        chargingStations = await this.fetchEVChargingStations(lat, lng, radius);
+        this.logger.info(`Returning ${chargingStations.length} charging stations`);
+      }
 
       const queryTime = Date.now() - startTime;
 
@@ -255,6 +260,82 @@ class ActivityService {
       return events.map((event) => this.transformTicketmasterEvent(event));
     } catch (error) {
       this.logger.error('Ticketmaster fetch failed', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch EV charging stations from Google Places API (New)
+   * @private
+   */
+  async fetchEVChargingStations(lat, lng, radius) {
+    try {
+      if (!this.placesClient.isReady()) {
+        this.logger.warn('Google Places not configured');
+        return [];
+      }
+
+      const radiusMeters = radius * 1609; // Convert miles to meters
+
+      this.logger.info(`Searching charging stations within ${radius} miles`);
+
+      // Use Places API (New) searchNearby endpoint
+      // Note: Using axios directly instead of placesClient.get() because this is a new API endpoint
+      const axios = require('axios');
+      const response = await axios.post(
+        'https://places.googleapis.com/v1/places:searchNearby',
+        {
+          includedTypes: ['electric_vehicle_charging_station'],
+          maxResultCount: 20,
+          locationRestriction: {
+            circle: {
+              center: {
+                latitude: lat,
+                longitude: lng,
+              },
+              radius: radiusMeters,
+            },
+          },
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': this.placesClient.getKey(),
+            'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.rating,places.currentOpeningHours,places.id',
+          },
+        }
+      );
+
+      const places = response.data.places || [];
+      this.logger.info(`Found ${places.length} charging stations`);
+
+      if (places.length === 0) {
+        return [];
+      }
+
+      return places.map((place) => {
+        const placeLat = place.location.latitude;
+        const placeLng = place.location.longitude;
+        const distance = calculateDistance(lat, lng, placeLat, placeLng);
+
+        return {
+          id: place.id,
+          name: place.displayName?.text || place.displayName || 'Charging Station',
+          address: place.formattedAddress || '',
+          distance: distance,
+          location: {
+            lat: placeLat,
+            lng: placeLng,
+          },
+          rating: place.rating || null,
+          openNow: place.currentOpeningHours?.openNow || false,
+        };
+      });
+    } catch (error) {
+      this.logger.error('EV charging fetch failed', error);
+      if (error.response) {
+        this.logger.error(`API status ${error.response.status}:`, error.response.data);
+      }
       return [];
     }
   }
