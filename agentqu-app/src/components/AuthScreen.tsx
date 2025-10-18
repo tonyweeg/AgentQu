@@ -786,44 +786,42 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
             </div>
 
             {/* Content with glass morphism background */}
-            <div className="p-8 space-y-4 text-gray-800 leading-relaxed max-h-[60vh] overflow-y-auto">
-              {/* Agent Q Image - Left Justified */}
-              <div className="flex justify-start mb-4">
-                <img
-                  src="/img/agent-q-smallest.png"
-                  alt="Agent Q"
-                  className="max-h-[120px] w-auto rounded-lg shadow-lg"
-                />
-              </div>
-              <p>
+            <div className="p-8 text-gray-800 leading-relaxed max-h-[60vh] overflow-y-auto">
+              {/* Agent Q Image - Floats left with text wrapping */}
+              <img
+                src="/img/agent-q-smallest.png"
+                alt="Agent Q"
+                className="float-left max-h-[120px] w-auto mr-4 mb-2"
+              />
+              <p className="mb-4">
                 You know how James Bond's Q always had the perfect gadget at the perfect time? The exploding pen, the invisible car, the watch that did everything except tell time? Q never sent Bond into the field unprepared.
               </p>
 
-              <p className="font-semibold text-navy-text">
+              <p className="font-semibold text-navy-text mb-4">
                 That's the idea here.
               </p>
 
-              <p>
+              <p className="mb-4">
                 Agent Qu is your Q now. Not mine—yours. Your right-hand agent in unfamiliar territory, whether that's a new city, a different country, or just a neighborhood you've never explored. You don't know where the good coffee is? Qu knows. You're not sure which museum is actually worth your time? Qu's already been there.
               </p>
 
-              <p className="font-semibold text-navy-text">
+              <p className="font-semibold text-navy-text mb-4">
                 The mission: help you feel at home when you're anywhere but.
               </p>
 
-              <p>
+              <p className="mb-4">
                 James Bond had M giving orders from London. You have something better—direct access. New features? They're only an email away. Want something the app doesn't do yet? Ask. We're not MI6 bureaucracy; we're a field team that adapts.
               </p>
 
-              <p>
+              <p className="mb-4">
                 Think of it this way: Bond trusted Q because Q understood the mission wasn't just about survival—it was about doing the job well, with style, with confidence. Same here. This isn't about surviving a trip; it's about finding what you love in places you're not sure about yet.
               </p>
 
-              <p className="font-semibold text-navy-text">
+              <p className="font-semibold text-navy-text mb-4">
                 No exploding pens required. Just you, Qu, and the world.
               </p>
 
-              <p className="text-xl font-bold text-ocean-bright text-center pt-4">
+              <p className="text-xl font-bold text-ocean-bright text-center pt-4 clear-left">
                 Your mission, should you choose to accept it: go anywhere.
               </p>
             </div>
