@@ -270,11 +270,6 @@ class ActivityService {
    */
   async fetchEVChargingStations(lat, lng, radius) {
     try {
-      if (!this.placesClient.isReady()) {
-        this.logger.warn('Google Places not configured');
-        return [];
-      }
-
       const radiusMeters = radius * 1609; // Convert miles to meters
 
       this.logger.info(`Searching charging stations within ${radius} miles`);
@@ -282,6 +277,8 @@ class ActivityService {
       // Use Places API (New) searchNearby endpoint
       // Note: Using axios directly instead of placesClient.get() because this is a new API endpoint
       const axios = require('axios');
+      const apiKey = this.placesClient.getKey();
+
       const response = await axios.post(
         'https://places.googleapis.com/v1/places:searchNearby',
         {
@@ -300,7 +297,7 @@ class ActivityService {
         {
           headers: {
             'Content-Type': 'application/json',
-            'X-Goog-Api-Key': this.placesClient.getKey(),
+            'X-Goog-Api-Key': apiKey,
             'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.rating,places.currentOpeningHours,places.id',
           },
         }
