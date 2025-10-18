@@ -197,7 +197,10 @@ function App() {
   // Use manual location if set, otherwise GPS location
   const activeLocation = manualLocation || location;
 
-  // Reverse geocode to get city name
+  // Reverse geocode for GPS location (user's actual current city - never changes)
+  const { city: gpsCity, state: gpsState } = useReverseGeocode(location);
+
+  // Reverse geocode to get city name for active location (changes with nearby towns)
   const { city, state } = useReverseGeocode(activeLocation);
 
   // Fetch activities (only when user is onboarded)
@@ -898,7 +901,7 @@ function App() {
               </button>
 
               {/* Back to City Button - Reset to Current Location (only show when viewing a different location) */}
-              {manualLocation && city && (
+              {manualLocation && gpsCity && (
                 <button
                   onClick={() => {
                     setManualLocation(null);
@@ -908,9 +911,9 @@ function App() {
                     setShowGeocaches(false);
                   }}
                   className="px-1.5 py-0.5 text-xs font-medium text-white bg-ocean-bright hover:bg-ocean-mid rounded transition-colors"
-                  title={`Return to ${city}`}
+                  title={`Return to ${gpsCity}`}
                 >
-                  Back to {city}
+                  Back to {gpsCity}
                 </button>
               )}
             </div>
