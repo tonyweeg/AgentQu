@@ -790,9 +790,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
               {/* Agent Q Image - Left Justified */}
               <div className="flex justify-start mb-4">
                 <img
-                  src="/img/agent-q-smaller.png"
+                  src="/img/agent-q-smallest.png"
                   alt="Agent Q"
-                  className="max-h-[150px] w-auto rounded-lg shadow-lg"
+                  className="max-h-[120px] w-auto rounded-lg shadow-lg"
                 />
               </div>
               <p>
