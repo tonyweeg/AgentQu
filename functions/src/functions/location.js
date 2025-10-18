@@ -46,9 +46,12 @@ exports.getNearbyTowns = onCall(async (request) => {
 
     logger.info('getNearbyTowns called', { lat, lng, radius });
 
-    const result = await locationService.getNearbyTowns(lat, lng, radius);
+    const towns = await locationService.getNearbyTowns(lat, lng, radius);
 
-    return result;
+    return {
+      success: true,
+      towns,
+    };
   } catch (error) {
     logger.error('getNearbyTowns failed', error);
     throw new HttpsError('internal', error.message);

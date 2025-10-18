@@ -109,15 +109,17 @@ class ActivityService {
       // Filter by radius
       const withinRadius = allActivities.filter((a) => a.distance <= radius);
 
-      // Apply genre filters if user has preferences
+      // Apply genre filters if user has preferences (skip during text search)
       let filtered = withinRadius;
 
-      if (musicGenreAffinities) {
-        filtered = filtered.filter((a) => passesMusicGenreFilter(a, musicGenreAffinities));
-      }
+      if (!textSearch) {
+        if (musicGenreAffinities) {
+          filtered = filtered.filter((a) => passesMusicGenreFilter(a, musicGenreAffinities));
+        }
 
-      if (restaurantGenreAffinities) {
-        filtered = filtered.filter((a) => passesRestaurantGenreFilter(a, restaurantGenreAffinities));
+        if (restaurantGenreAffinities) {
+          filtered = filtered.filter((a) => passesRestaurantGenreFilter(a, restaurantGenreAffinities));
+        }
       }
 
       // Score and rank activities
