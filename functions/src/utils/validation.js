@@ -10,18 +10,22 @@ const profanityFilter = require('leo-profanity');
 
 /**
  * Validate coordinates
- * @param {number} lat - Latitude
- * @param {number} lng - Longitude
+ * @param {number|string} lat - Latitude
+ * @param {number|string} lng - Longitude
  * @throws {Error} If coordinates are invalid
  */
 function validateCoordinates(lat, lng) {
-  if (typeof lat !== 'number' || typeof lng !== 'number') {
-    throw new Error('Coordinates must be numbers');
+  // Convert to numbers if they're strings (Firebase callable can pass numbers as strings)
+  const latNum = typeof lat === 'string' ? parseFloat(lat) : lat;
+  const lngNum = typeof lng === 'string' ? parseFloat(lng) : lng;
+
+  if (typeof latNum !== 'number' || typeof lngNum !== 'number' || isNaN(latNum) || isNaN(lngNum)) {
+    throw new Error('Coordinates must be valid numbers');
   }
-  if (lat < -90 || lat > 90) {
+  if (latNum < -90 || latNum > 90) {
     throw new Error('Latitude must be between -90 and 90');
   }
-  if (lng < -180 || lng > 180) {
+  if (lngNum < -180 || lngNum > 180) {
     throw new Error('Longitude must be between -180 and 180');
   }
 }
