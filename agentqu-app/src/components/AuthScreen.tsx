@@ -787,6 +787,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
             {/* Content with glass morphism background */}
             <div className="p-8 space-y-4 text-gray-800 leading-relaxed max-h-[60vh] overflow-y-auto">
+              {/* Agent Q Image - Left Justified */}
+              <div className="flex justify-start mb-4">
+                <img
+                  src="/img/agent-q-smaller.png"
+                  alt="Agent Q"
+                  className="max-h-[150px] w-auto rounded-lg shadow-lg"
+                />
+              </div>
               <p>
                 You know how James Bond's Q always had the perfect gadget at the perfect time? The exploding pen, the invisible car, the watch that did everything except tell time? Q never sent Bond into the field unprepared.
               </p>
