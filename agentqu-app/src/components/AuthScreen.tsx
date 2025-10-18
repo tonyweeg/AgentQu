@@ -85,6 +85,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
   const [mapError, setMapError] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<'dawn' | 'day' | 'dusk' | 'night'>('day');
   const [weather, setWeather] = useState<'clear' | 'cloudy' | 'rainy'>('clear');
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   // Use ref to track last fetched location to prevent repeated API calls
   const lastFetchedLocation = useRef<{ lat: number; lng: number } | null>(null);
@@ -584,12 +585,22 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
           <div className="flex flex-col md:flex-row items-start gap-8 relative z-10">
             {/* Left side - Logo (top aligned) */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex flex-col items-center gap-3">
               <img
                 src="/agentqu-logo.png"
                 alt="AgentQu"
                 className="h-32 md:h-40 w-auto"
               />
+              <button
+                onClick={() => setShowAboutModal(true)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  timeOfDay === 'night'
+                    ? 'bg-indigo-500/30 hover:bg-indigo-500/50 text-white border border-indigo-400/30'
+                    : 'bg-ocean-bright/20 hover:bg-ocean-bright/30 text-navy-text border border-ocean-bright/30'
+                }`}
+              >
+                Who is AgentQu?
+              </button>
             </div>
 
             {/* Middle - Content */}
@@ -743,6 +754,84 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
           </div>
         </div>
       </div>
+
+      {/* About AgentQu Modal */}
+      {showAboutModal && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setShowAboutModal(false)}
+        >
+          <div
+            className="bg-white/90 backdrop-blur-xl rounded-3xl max-w-2xl w-full shadow-2xl border border-white/20 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with glass morphism effect */}
+            <div className="bg-gradient-to-br from-ocean-bright/20 to-seafoam/20 backdrop-blur-xl p-8 border-b border-white/20">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <img
+                    src="/agentqu-logo.png"
+                    alt="AgentQu"
+                    className="h-16 w-auto"
+                  />
+                  <h2 className="text-3xl font-bold text-navy-text">Q: Your Field Agent for Anywhere</h2>
+                </div>
+                <button
+                  onClick={() => setShowAboutModal(false)}
+                  className="text-gray-500 hover:text-gray-700 text-3xl leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Content with glass morphism background */}
+            <div className="p-8 space-y-4 text-gray-800 leading-relaxed max-h-[60vh] overflow-y-auto">
+              <p>
+                You know how James Bond's Q always had the perfect gadget at the perfect time? The exploding pen, the invisible car, the watch that did everything except tell time? Q never sent Bond into the field unprepared.
+              </p>
+
+              <p className="font-semibold text-navy-text">
+                That's the idea here.
+              </p>
+
+              <p>
+                Agent Qu is your Q now. Not mine—yours. Your right-hand agent in unfamiliar territory, whether that's a new city, a different country, or just a neighborhood you've never explored. You don't know where the good coffee is? Qu knows. You're not sure which museum is actually worth your time? Qu's already been there.
+              </p>
+
+              <p className="font-semibold text-navy-text">
+                The mission: help you feel at home when you're anywhere but.
+              </p>
+
+              <p>
+                James Bond had M giving orders from London. You have something better—direct access. New features? They're only an email away. Want something the app doesn't do yet? Ask. We're not MI6 bureaucracy; we're a field team that adapts.
+              </p>
+
+              <p>
+                Think of it this way: Bond trusted Q because Q understood the mission wasn't just about survival—it was about doing the job well, with style, with confidence. Same here. This isn't about surviving a trip; it's about finding what you love in places you're not sure about yet.
+              </p>
+
+              <p className="font-semibold text-navy-text">
+                No exploding pens required. Just you, Qu, and the world.
+              </p>
+
+              <p className="text-xl font-bold text-ocean-bright text-center pt-4">
+                Your mission, should you choose to accept it: go anywhere.
+              </p>
+            </div>
+
+            {/* Footer with glass morphism */}
+            <div className="bg-gradient-to-br from-ocean-bright/10 to-seafoam/10 backdrop-blur-xl p-6 border-t border-white/20">
+              <button
+                onClick={() => setShowAboutModal(false)}
+                className="w-full px-6 py-3 bg-ocean-bright text-white rounded-xl hover:bg-ocean-bright/90 transition-colors font-medium shadow-lg"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
