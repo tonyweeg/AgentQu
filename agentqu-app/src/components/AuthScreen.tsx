@@ -571,8 +571,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
 
       <div className="max-w-5xl w-full relative z-10">
         {/* Hero Section */}
-        <div className={`backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border ${timeOfDay === 'night' ? 'bg-indigo-900/60 border-indigo-400/30' : 'bg-white/80 border-blue-900/20'}`}>
-          <div className="flex flex-col md:flex-row items-start gap-8">
+        <div
+          className={`backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 mb-8 border bg-cover bg-center bg-no-repeat relative ${timeOfDay === 'night' ? 'border-indigo-400/30' : 'border-blue-900/20'}`}
+          style={{ backgroundImage: 'url(/img/agent-q-robot-banner.png)' }}
+        >
+          {/* Overlay for readability */}
+          <div className={`absolute inset-0 rounded-3xl ${timeOfDay === 'night' ? 'bg-indigo-900/70' : 'bg-white/85'}`}></div>
+
+          <div className="flex flex-col md:flex-row items-start gap-8 relative z-10">
             {/* Left side - Logo (top aligned) */}
             <div className="flex-shrink-0">
               <img
