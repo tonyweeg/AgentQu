@@ -27,7 +27,7 @@ interface DayItinerary {
 interface ItineraryBuilderProps {
   tripDates: { startDate: number; endDate: number };
   scoredActivities: ScoredActivity[];
-  onSaveItinerary: (itinerary: DayItinerary[]) => void;
+  onSaveItinerary: (itinerary: any[]) => Promise<void>;
 }
 
 const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({
