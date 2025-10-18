@@ -235,7 +235,7 @@ class ActivityService {
       id: place.place_id,
       activityId: `place_${place.place_id}`,
       name: place.name,
-      type: 'venue',
+      type: 'permanent',
       location: {
         lat: place.geometry.location.lat,
         lng: place.geometry.location.lng,
