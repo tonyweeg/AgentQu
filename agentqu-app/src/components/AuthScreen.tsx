@@ -793,6 +793,9 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
                 alt="Agent Q"
                 className="float-left max-h-[120px] w-auto mr-4 mb-2"
               />
+              <h3 className="text-lg font-mono text-ocean-bright mb-4">
+                HelloWorld('I am Qu');
+              </h3>
               <p className="mb-4">
                 You know how James Bond's Q always had the perfect gadget at the perfect time? The exploding pen, the invisible car, the watch that did everything except tell time? Q never sent Bond into the field unprepared.
               </p>
