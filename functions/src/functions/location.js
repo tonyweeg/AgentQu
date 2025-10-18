@@ -24,7 +24,7 @@ exports.geocode = onCall(async (request) => {
 
     logger.info('geocode called', { lat, lng });
 
-    const result = await locationService.reverseGeocode({ lat, lng });
+    const result = await locationService.reverseGeocode(lat, lng);
 
     return result;
   } catch (error) {
