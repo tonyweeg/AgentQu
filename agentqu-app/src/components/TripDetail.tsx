@@ -378,11 +378,11 @@ const TripDetail: React.FC<TripDetailProps> = ({ tripId }) => {
       const error = err as FirebaseError;
       console.error('❌ TRIP_DETAIL: Error adding member to trip:', error);
       console.error('❌ TRIP_DETAIL: Error details:', {
-        message: err.message,
-        code: err.code,
-        name: err.name,
+        message: error.message,
+        code: error.code,
+        name: error.name,
       });
-      alert(`Failed to add member to trip: ${err.message || 'Unknown error'}`);
+      alert(`Failed to add member to trip: ${error.message || 'Unknown error'}`);
     } finally {
       setAddingMember(false);
       setShowAddMember(false);
