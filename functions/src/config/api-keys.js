@@ -4,33 +4,26 @@
  * SOLID Principles Applied:
  * - Single Responsibility: API key management only
  * - Open/Closed: Easy to add new API keys without modifying existing code
+ *
+ * Reads API keys from environment variables (.env file)
+ * Firebase automatically loads .env files in the functions directory
  */
 
-const { defineString } = require('firebase-functions/params');
-
-// Define all API keys as Firebase Functions config parameters
-const apiKeys = {
-  googlePlaces: defineString('GOOGLE_PLACES_API_KEY'),
-  googleSearch: defineString('GOOGLE_SEARCH_API_KEY'),
-  googleSearchEngineId: defineString('GOOGLE_SEARCH_ENGINE_ID'),
-  googleGeocoding: defineString('GOOGLE_GEOCODING_API_KEY'),
-  openWeather: defineString('OPENWEATHER_API_KEY'),
-  eventbrite: defineString('EVENTBRITE_PRIVATE_TOKEN'),
-  ticketmaster: defineString('TICKETMASTER_API_KEY'),
-  twitter: defineString('TWITTER_BEARER_TOKEN'),
-};
-
 /**
- * Get API key value
- * @param {string} keyName - Name of the API key
+ * Get API key value from environment variables
+ * @param {string} keyName - Name of the API key (e.g., 'GOOGLE_PLACES_API_KEY')
  * @returns {string} API key value
  */
 function getApiKey(keyName) {
-  const key = apiKeys[keyName];
-  if (!key) {
-    throw new Error(`Unknown API key: ${keyName}`);
+  const value = process.env[keyName];
+
+  if (!value || value.trim() === '') {
+    throw new Error(
+      `API key not configured: ${keyName}. Please set it in functions/.env file`
+    );
   }
-  return key.value();
+
+  return value.trim();
 }
 
 /**
@@ -40,7 +33,7 @@ function getApiKey(keyName) {
  */
 function isConfigured(keyName) {
   try {
-    const value = getApiKey(keyName);
+    const value = process.env[keyName];
     return Boolean(value && value.trim() !== '');
   } catch {
     return false;
@@ -50,5 +43,4 @@ function isConfigured(keyName) {
 module.exports = {
   getApiKey,
   isConfigured,
-  keys: apiKeys,
 };
