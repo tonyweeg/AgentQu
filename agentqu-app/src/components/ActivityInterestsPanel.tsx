@@ -44,7 +44,9 @@ const ActivityInterestsPanel: React.FC<ActivityInterestsPanelProps> = ({ affinit
       {/* Collapsible category list */}
       {isExpanded && (
         <div className="space-y-4">
-          {displayCategories.map(category => {
+          {displayCategories
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(category => {
             const value = affinities[category.id] || 0;
             return (
               <div key={category.id} className="bg-white rounded-xl p-4 shadow-sm">
