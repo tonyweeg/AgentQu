@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { TripPlan, Activity, Cirqle, CirqleMember, TripParticipant } from '../lib/types';
+import {
+  TripPlan,
+  Activity,
+  Cirqle,
+  CirqleMember,
+  TripParticipant,
+  WeatherApiResponse,
+  AirQualityApiResponse,
+  SolarDataApiResponse,
+  DayItinerary,
+  FirebaseError,
+} from '../lib/types';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import EnvironmentalDashboard from './EnvironmentalDashboard';
@@ -142,9 +153,9 @@ const TripDetail: React.FC<TripDetailProps> = ({ tripId }) => {
           }),
         ]);
 
-        const weatherData = weatherResult.data as { success: boolean; forecasts?: any };
-        const aqData = aqResult.data as { success: boolean; current?: any };
-        const solarDataResult = solarResult.data as { success: boolean; solarData?: any };
+        const weatherData = weatherResult.data as WeatherApiResponse;
+        const aqData = aqResult.data as AirQualityApiResponse;
+        const solarDataResult = solarResult.data as SolarDataApiResponse;
 
         // Score activities using the There-Then algorithm
         const scoreActivities = httpsCallable(functions, 'scoreThereThenActivities');
@@ -258,9 +269,9 @@ const TripDetail: React.FC<TripDetailProps> = ({ tripId }) => {
         }),
       ]);
 
-      const weatherData = weatherResult.data as { success: boolean; forecasts?: any };
-      const aqData = aqResult.data as { success: boolean; current?: any };
-      const solarDataResult = solarResult.data as { success: boolean; solarData?: any };
+      const weatherData = weatherResult.data as WeatherApiResponse;
+      const aqData = aqResult.data as AirQualityApiResponse;
+      const solarDataResult = solarResult.data as SolarDataApiResponse;
 
       // Score activities with GROUP affinities and participant ages
       const scoreActivities = httpsCallable(functions, 'scoreThereThenActivities');
@@ -363,8 +374,9 @@ const TripDetail: React.FC<TripDetailProps> = ({ tripId }) => {
         console.log(`🔄 TRIP_DETAIL: Re-scoring activities with group affinities`);
         rescoreWithGroupAffinities(updatedParticipants);
       }
-    } catch (err: any) {
-      console.error('❌ TRIP_DETAIL: Error adding member to trip:', err);
+    } catch (err) {
+      const error = err as FirebaseError;
+      console.error('❌ TRIP_DETAIL: Error adding member to trip:', error);
       console.error('❌ TRIP_DETAIL: Error details:', {
         message: err.message,
         code: err.code,
@@ -426,7 +438,7 @@ const TripDetail: React.FC<TripDetailProps> = ({ tripId }) => {
   };
 
   // Save itinerary to Firestore
-  const handleSaveItinerary = async (itinerary: any[]) => {
+  const handleSaveItinerary = async (itinerary: DayItinerary[]) => {
     if (!user || !trip) return;
 
     try {

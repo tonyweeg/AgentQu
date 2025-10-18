@@ -326,3 +326,125 @@ export interface Cirqle {
   createdAt: number;
   updatedAt: number;
 }
+
+// ============================================
+// API RESPONSE TYPES
+// ============================================
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+export interface WeatherApiResponse {
+  success: boolean;
+  location: {
+    lat: number;
+    lng: number;
+    city: string;
+    country: string;
+  };
+  forecasts: WeatherForecast[];
+  totalDataPoints: number;
+}
+
+export interface AirQualityApiResponse {
+  success: boolean;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  current: {
+    date: string;
+    aqi: number;
+    category: 'Good' | 'Fair' | 'Moderate' | 'Poor' | 'Very Poor';
+    pollutants: {
+      pm25: string;
+      pm10: string;
+      o3: string;
+      no2: string;
+      so2: string;
+      co: string;
+    };
+  };
+  note?: string;
+}
+
+export interface SolarDataApiResponse {
+  success: boolean;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  solarData: SolarForecast[];
+}
+
+export interface TwitterSearchResult {
+  id: string;
+  text: string;
+  createdAt: string;
+  author: {
+    id: string;
+    username: string;
+    name: string;
+    profileImage: string;
+  };
+  metrics: {
+    like_count: number;
+    retweet_count: number;
+    reply_count: number;
+    quote_count?: number;
+  };
+  location?: {
+    name: string;
+    placeType: string;
+  };
+  hashtags: string[];
+  urls: string[];
+  hasEventInfo: boolean;
+  searchType: string;
+}
+
+export interface TwitterApiResponse {
+  success: boolean;
+  tweets: TwitterSearchResult[];
+  totalResults: number;
+}
+
+export interface VibeIndexScore {
+  score: number;
+  tweetCount: number;
+  uniqueUsers: number;
+  avgEngagement: number;
+  name: string;
+  lastUpdated: string;
+}
+
+export interface VibeIndexApiResponse {
+  success: boolean;
+  cityId: string;
+  cityName: string;
+  state: string;
+  overallVibeScore: number;
+  scores: Record<string, VibeIndexScore>;
+  trendingCategories: string[];
+  totalTweets: number;
+}
+
+// ============================================
+// ERROR TYPES
+// ============================================
+
+export interface FirebaseError extends Error {
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+export interface ApiError extends Error {
+  status?: number;
+  code?: string;
+  details?: unknown;
+}
