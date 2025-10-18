@@ -16,19 +16,42 @@ const activityService = new ActivityService();
  */
 exports.discoverActivities = onCall(async (request) => {
   try {
-    const { lat, lng, radius, userId } = request.data;
+    const {
+      lat,
+      lng,
+      radius,
+      userId,
+      enablePlaces,
+      enableCustomSearch,
+      enableTicketmaster,
+      showFastFood,
+      textSearch,
+      bypassCache,
+    } = request.data;
 
     if (!lat || !lng) {
       throw new HttpsError('invalid-argument', 'Location (lat, lng) is required');
     }
 
-    logger.info('discoverActivities called', { lat, lng, radius, userId });
+    logger.info('discoverActivities called', {
+      lat,
+      lng,
+      radius,
+      userId,
+      textSearch: textSearch || null,
+    });
 
     const result = await activityService.discoverActivities({
       lat,
       lng,
       radius,
       userId,
+      enablePlaces,
+      enableCustomSearch,
+      enableTicketmaster,
+      showFastFood,
+      textSearch,
+      bypassCache,
     });
 
     return result;
