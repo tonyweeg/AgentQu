@@ -10,6 +10,7 @@ const axios = require('axios');
 const { getApiKey, isConfigured } = require('../config/api-keys');
 const { createLogger } = require('../utils/logger');
 const { validateCoordinates } = require('../utils/validation');
+const { calculateDistance } = require('../utils/distance');
 
 class LocationService {
   constructor() {
@@ -158,12 +159,19 @@ class LocationService {
         throw new Error(`Nearby towns search failed: ${response.data.status}`);
       }
 
-      const towns = (response.data.results || []).map((place) => ({
-        name: place.name,
-        lat: place.geometry.location.lat,
-        lng: place.geometry.location.lng,
-        vicinity: place.vicinity,
-      }));
+      const towns = (response.data.results || []).map((place) => {
+        const townLat = place.geometry.location.lat;
+        const townLng = place.geometry.location.lng;
+        const distance = calculateDistance(lat, lng, townLat, townLng);
+
+        return {
+          name: place.name,
+          lat: townLat,
+          lng: townLng,
+          vicinity: place.vicinity,
+          distance,
+        };
+      });
 
       this.logger.info('Found nearby towns', { count: towns.length });
 
