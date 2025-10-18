@@ -1848,8 +1848,8 @@ function App() {
                       // Get unique categories from places only (exclude events from category chips)
                       const allCategories = Array.from(new Set(places.map(a => a.primaryCategory || 'other')));
 
-                      // Filter places by selected category
-                      const filteredPlaces = selectedCategory === 'all'
+                      // Filter places by selected category (skip filtering when doing text search)
+                      const filteredPlaces = (selectedCategory === 'all' || activeTextSearch)
                         ? places
                         : places.filter(a => (a.primaryCategory || 'other') === selectedCategory);
 
