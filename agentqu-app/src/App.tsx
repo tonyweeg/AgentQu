@@ -817,10 +817,10 @@ function App() {
                   setShowSettings(false);
                   setShowGeocaches(false);
                 }}
-                className="px-2 py-1 text-xs font-medium text-white bg-ocean-bright hover:bg-ocean-mid rounded-md transition-colors shadow-sm"
+                className="px-1.5 py-0.5 text-xs font-medium text-white bg-ocean-bright hover:bg-ocean-mid rounded transition-colors"
                 title="Return to your current location"
               >
-                Here
+                Here, now!
               </button>
             </div>
 
