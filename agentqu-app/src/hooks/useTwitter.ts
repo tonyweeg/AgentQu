@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { Location } from '../lib/types';
+import { Location, ApiError } from '../lib/types';
 
 export interface Tweet {
   id: string;
@@ -80,7 +80,7 @@ export function useTwitter({
 
     try {
       const functions = getFunctions();
-      const searchTwitterFn = httpsCallable<any, TwitterSearchResult>(functions, 'searchTwitter');
+      const searchTwitterFn = httpsCallable<unknown, TwitterSearchResult>(functions, 'searchTwitter');
 
       console.log('🐦 CLIENT: Searching Twitter...', { location, affinities, radius, cityName, stateName });
 
@@ -97,9 +97,10 @@ export function useTwitter({
       console.log('🐦 CLIENT: Twitter search result:', result.data);
 
       setTweets(result.data);
-    } catch (err: any) {
-      console.error('🐦 CLIENT: Twitter search error:', err);
-      setError(err.message || 'Failed to search Twitter');
+    } catch (err) {
+      const error = err as ApiError;
+      console.error('🐦 CLIENT: Twitter search error:', error);
+      setError(error.message || 'Failed to search Twitter');
     } finally {
       setLoading(false);
     }
