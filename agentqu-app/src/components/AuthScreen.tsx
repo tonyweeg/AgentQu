@@ -599,16 +599,16 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onSuccess }) => {
               </p>
 
               {/* Feature pills - horizontal */}
-              <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeOfDay === 'night' ? 'bg-sky-400/30' : 'bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10'}`}>
+              <div className="flex justify-center md:justify-start gap-3">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border ${timeOfDay === 'night' ? 'border-indigo-400/30' : 'border-blue-900/20'}`}>
                   <span className="text-xl">📍</span>
                   <span className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>Location-Based</span>
                 </div>
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeOfDay === 'night' ? 'bg-sky-400/30' : 'bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10'}`}>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border ${timeOfDay === 'night' ? 'border-indigo-400/30' : 'border-blue-900/20'}`}>
                   <span className="text-xl">🎯</span>
                   <span className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>Personalized</span>
                 </div>
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeOfDay === 'night' ? 'bg-sky-400/30' : 'bg-gradient-to-r from-ocean-bright/20 to-ocean-bright/10'}`}>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 border ${timeOfDay === 'night' ? 'border-indigo-400/30' : 'border-blue-900/20'}`}>
                   <span className="text-xl">✨</span>
                   <span className={`text-sm font-semibold ${timeOfDay === 'night' ? 'text-white' : 'text-navy-text'}`}>AI-Powered</span>
                 </div>
