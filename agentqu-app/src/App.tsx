@@ -1688,9 +1688,9 @@ function App() {
 
                     {/* Compact Activity List - Tufte Style (hide in EV mode) */}
                     {!showEVMap && <div className="space-y-2 mt-4">
-                      {/* Top 20 activities sorted by score */}
+                      {/* Top 20 activities sorted by distance */}
                       {activities
-                        .sort((a, b) => (b.score || 0) - (a.score || 0))
+                        .sort((a, b) => (a.distance || 0) - (b.distance || 0))
                         .slice(0, 20)
                         .map((activity) => {
                           const category = activity.primaryCategory || 'other';
@@ -1853,14 +1853,14 @@ function App() {
                         ? places
                         : places.filter(a => (a.primaryCategory || 'other') === selectedCategory);
 
-                      // Sort places by Q Score
-                      const sortedPlaces = [...filteredPlaces].sort((a, b) => (b.score || 0) - (a.score || 0));
+                      // Sort places by distance (closest first)
+                      const sortedPlaces = [...filteredPlaces].sort((a, b) => (a.distance || 0) - (b.distance || 0));
 
                       // Apply chain grouping when fast food mode is active
                       const displayPlaces = groupActivitiesByChain(sortedPlaces, showFastFood);
 
-                      // Sort events by Q Score
-                      const sortedEvents = [...events].sort((a, b) => (b.score || 0) - (a.score || 0));
+                      // Sort events by distance (closest first)
+                      const sortedEvents = [...events].sort((a, b) => (a.distance || 0) - (b.distance || 0));
 
                       // Category emoji mapping
                       const getCategoryEmoji = (cat: string) => {
@@ -1953,7 +1953,7 @@ function App() {
 
                           {/* Places Grid - Cards */}
                           {displayPlaces.length > 0 && (
-                            <div className="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-5 gap-3 mb-12">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-12">
                               {displayPlaces.map((activity, index) => (
                                 <ActivityCard
                                   key={activity.id || activity.activityId}
@@ -2027,7 +2027,7 @@ function App() {
                                             ({genreEvents.length} event{genreEvents.length !== 1 ? 's' : ''})
                                           </span>
                                         </h4>
-                                        <div className="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                                           {topEvents.map((event, index) => (
                                             <ActivityCard
                                               key={event.id || event.activityId}
