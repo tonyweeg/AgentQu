@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
+import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../lib/languages';
 
 interface OnboardingScreenProps {
   userName: string;
-  onComplete: (selectedAffinities: Record<string, number>) => void;
+  onComplete: (selectedAffinities: Record<string, number>, languageCode: string) => void;
   onSignOut?: () => void;
 }
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplete, onSignOut }) => {
+  const [step, setStep] = useState<'language' | 'affinities'>('language');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(DEFAULT_LANGUAGE);
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
 
   const toggleCategory = (categoryId: string) => {
@@ -20,6 +23,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
     setSelectedCategories(newSelected);
   };
 
+  const handleLanguageContinue = () => {
+    setStep('affinities');
+  };
+
   const handleContinue = () => {
     // Convert selections to affinity scores
     const affinities: Record<string, number> = {};
@@ -27,11 +34,105 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       // Selected = 0.9, Not selected = 0.3 (slight preference for variety)
       affinities[category.id] = selectedCategories.has(category.id) ? 0.9 : 0.3;
     });
-    onComplete(affinities);
+    onComplete(affinities, selectedLanguage);
   };
 
   const firstName = userName.split(' ')[0];
 
+  // Language Selection Step
+  if (step === 'language') {
+    return (
+      <div className="min-h-screen bg-transparent p-4 pb-24">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8 pt-8">
+            <h1 className="text-4xl font-bold text-navy-text mb-3">
+              Welcome, {firstName}! 👋
+            </h1>
+            <p className="text-xl text-gray-700 mb-2">
+              Choose your preferred language
+            </p>
+            <p className="text-gray-600">
+              We'll show activity categories in your language
+            </p>
+            {onSignOut && (
+              <button
+                onClick={onSignOut}
+                className="mt-4 text-sm text-gray-500 hover:text-ocean-bright underline transition-colors"
+              >
+                Not {firstName}? Sign in as a different user
+              </button>
+            )}
+          </div>
+
+          {/* Language Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {SUPPORTED_LANGUAGES.map((language) => {
+              const isSelected = selectedLanguage === language.code;
+              return (
+                <button
+                  key={language.code}
+                  onClick={() => setSelectedLanguage(language.code)}
+                  className={`
+                    p-6 rounded-2xl border-2 transition-all text-left
+                    ${
+                      isSelected
+                        ? 'bg-ocean-bright/10 border-ocean-bright shadow-md scale-105'
+                        : 'bg-white border-gray-200 hover:border-ocean-bright/50 hover:shadow-sm'
+                    }
+                  `}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-4xl">{language.flag}</span>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-navy-text mb-1">{language.name}</h3>
+                      <p className="text-sm text-gray-600">{language.nativeName}</p>
+                    </div>
+                    {isSelected && (
+                      <div className="flex-shrink-0">
+                        <div className="w-6 h-6 bg-ocean-bright rounded-full flex items-center justify-center">
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Fixed Bottom Bar */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            <div className="text-sm text-gray-600">
+              <span>Step 1 of 2</span>
+            </div>
+            <button
+              onClick={handleLanguageContinue}
+              className="bg-ocean-bright hover:bg-ocean-bright/90 text-white font-bold py-4 px-8 rounded-xl transition-all"
+            >
+              Continue
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Affinity Selection Step
   return (
     <div className="min-h-screen bg-transparent p-4 pb-24">
       <div className="max-w-4xl mx-auto">
@@ -121,11 +222,18 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
       {/* Fixed Bottom Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <div className="text-sm text-gray-600">
+          <button
+            onClick={() => setStep('language')}
+            className="text-gray-600 hover:text-ocean-bright font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            ← Back
+          </button>
+          <div className="flex-1 text-center text-sm text-gray-600">
+            <span>Step 2 of 2</span>
             {selectedCategories.size < 3 ? (
-              <span>Select at least {3 - selectedCategories.size} more</span>
+              <span className="ml-2">• Select at least {3 - selectedCategories.size} more</span>
             ) : (
-              <span className="text-green-600 font-medium">✓ Ready to continue</span>
+              <span className="ml-2 text-green-600 font-medium">• ✓ Ready to continue</span>
             )}
           </div>
           <button

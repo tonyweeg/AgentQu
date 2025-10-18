@@ -26,6 +26,7 @@ export interface UserProfile {
   musicGenreAffinities?: Record<string, number>; // Music genre preferences (0-100)
   restaurantGenreAffinities?: Record<string, number>; // Restaurant genre preferences (0-100)
   isEV?: boolean; // Electric vehicle owner (unlocks eco-friendly visuals + supercharger locations)
+  languageCode?: string; // Preferred language for affinity categories (en, es, zh, etc.)
   visitedPlaces?: VisitedPlace[]; // Places the user has been to
   onboarded: boolean;
   createdAt: number;
@@ -200,6 +201,33 @@ export function useAuth() {
     }
   };
 
+  const updateLanguageCode = async (languageCode: string) => {
+    if (!user) return;
+
+    try {
+      const profileRef = doc(db, 'users', user.uid);
+      await setDoc(
+        profileRef,
+        {
+          languageCode,
+          lastActive: Date.now(),
+        },
+        { merge: true }
+      );
+
+      // Update local state
+      if (profile) {
+        setProfile({
+          ...profile,
+          languageCode,
+        });
+      }
+    } catch (error) {
+      console.error('Error updating language preference:', error);
+      throw error;
+    }
+  };
+
   const markAsVisited = async (place: VisitedPlace) => {
     if (!user || !profile) return;
 
@@ -279,6 +307,7 @@ export function useAuth() {
     updateMusicGenreAffinities,
     updateRestaurantGenreAffinities,
     updateEVStatus,
+    updateLanguageCode,
     markAsVisited,
     removeVisitedPlace,
     signOut: () => auth.signOut(),

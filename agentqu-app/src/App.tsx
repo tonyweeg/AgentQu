@@ -558,13 +558,21 @@ function App() {
     return <AuthScreen onSuccess={() => {}} />;
   }
 
-  // Authenticated but not onboarded - show onboarding
-  if (!profile.onboarded) {
+  // Authenticated but not onboarded OR missing language preference - show onboarding
+  // This forces all existing users to select a language
+  if (!profile.onboarded || !profile.languageCode) {
     return (
       <OnboardingScreen
         userName={profile.displayName || 'there'}
-        onComplete={async (affinities) => {
+        onComplete={async (affinities, languageCode) => {
           await updateAffinities(affinities);
+          // Save language preference to user profile
+          if (user && languageCode) {
+            const { doc, updateDoc } = await import('firebase/firestore');
+            const { db } = await import('./lib/firebase');
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(userRef, { languageCode });
+          }
         }}
         onSignOut={signOut}
       />

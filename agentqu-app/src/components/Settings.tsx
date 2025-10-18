@@ -3,15 +3,17 @@ import { useAuth } from '../hooks/useAuth';
 import ActivityInterestsPanel from './ActivityInterestsPanel';
 import MusicGenresPanel from './MusicGenresPanel';
 import RestaurantGenresPanel from './RestaurantGenresPanel';
+import { SUPPORTED_LANGUAGES, getLanguage, DEFAULT_LANGUAGE } from '../lib/languages';
 
 interface SettingsProps {
   onClose: () => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ onClose }) => {
-  const { profile, updateAffinities, updateMusicGenreAffinities, updateRestaurantGenreAffinities, updateEVStatus } = useAuth();
+  const { profile, updateAffinities, updateMusicGenreAffinities, updateRestaurantGenreAffinities, updateEVStatus, updateLanguageCode } = useAuth();
   const [affinities, setAffinities] = useState<Record<string, number>>(profile?.affinities || {});
   const [isEV, setIsEV] = useState<boolean>(profile?.isEV || false);
+  const [languageCode, setLanguageCode] = useState<string>(profile?.languageCode || DEFAULT_LANGUAGE);
   const [saving, setSaving] = useState(false);
 
   // Update local state when profile changes (after reload)
@@ -23,7 +25,10 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     if (profile?.isEV !== undefined) {
       setIsEV(profile.isEV);
     }
-  }, [profile?.affinities, profile?.isEV]);
+    if (profile?.languageCode) {
+      setLanguageCode(profile.languageCode);
+    }
+  }, [profile?.affinities, profile?.isEV, profile?.languageCode]);
 
   const handleSliderChange = (category: string, value: number) => {
     setAffinities(prev => ({
@@ -37,11 +42,13 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
     try {
       console.log('💾 Saving affinities:', affinities);
       console.log('🔋 Saving EV status:', isEV);
+      console.log('🌍 Saving language preference:', languageCode);
 
-      // Save both affinities and EV status
+      // Save affinities, EV status, and language preference
       await Promise.all([
         updateAffinities(affinities),
-        updateEVStatus(isEV)
+        updateEVStatus(isEV),
+        updateLanguageCode(languageCode)
       ]);
 
       console.log('✅ Settings saved successfully');
@@ -96,6 +103,63 @@ const Settings: React.FC<SettingsProps> = ({ onClose }) => {
             initialAffinities={profile?.musicGenreAffinities}
             onSave={updateMusicGenreAffinities}
           />
+
+          {/* Language Preference Panel */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
+            <div className="flex items-start gap-4 mb-4">
+              <span className="text-4xl">🌍</span>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-navy-text mb-1">
+                  Language Preference
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Choose your preferred language for activity categories
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {SUPPORTED_LANGUAGES.map((language) => {
+                const isSelected = languageCode === language.code;
+                return (
+                  <button
+                    key={language.code}
+                    onClick={() => setLanguageCode(language.code)}
+                    className={`
+                      p-3 rounded-xl border-2 transition-all text-left
+                      ${
+                        isSelected
+                          ? 'bg-ocean-bright/10 border-ocean-bright shadow-md'
+                          : 'bg-white border-gray-200 hover:border-ocean-bright/50 hover:shadow-sm'
+                      }
+                    `}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{language.flag}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-navy-text truncate">{language.name}</p>
+                        <p className="text-xs text-gray-600 truncate">{language.nativeName}</p>
+                      </div>
+                      {isSelected && (
+                        <svg
+                          className="w-5 h-5 text-ocean-bright flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* EV Owner Checkbox */}
           <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
