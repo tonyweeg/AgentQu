@@ -121,14 +121,15 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      if (profile) {
-        setProfile({
-          ...profile,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
           affinities,
           onboarded: true,
-        });
-      }
+        };
+      });
     } catch (error) {
       console.error('Error updating affinities:', error);
       throw error;
@@ -149,13 +150,14 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      if (profile) {
-        setProfile({
-          ...profile,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
           musicGenreAffinities,
-        });
-      }
+        };
+      });
     } catch (error) {
       console.error('Error updating music genre affinities:', error);
       throw error;
@@ -176,13 +178,14 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      if (profile) {
-        setProfile({
-          ...profile,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
           restaurantGenreAffinities,
-        });
-      }
+        };
+      });
     } catch (error) {
       console.error('Error updating restaurant genre affinities:', error);
       throw error;
@@ -203,13 +206,14 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      if (profile) {
-        setProfile({
-          ...profile,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
           isEV,
-        });
-      }
+        };
+      });
     } catch (error) {
       console.error('Error updating EV status:', error);
       throw error;
@@ -230,13 +234,14 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      if (profile) {
-        setProfile({
-          ...profile,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
           languageCode,
-        });
-      }
+        };
+      });
     } catch (error) {
       console.error('Error updating language preference:', error);
       throw error;
@@ -271,10 +276,13 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      setProfile({
-        ...profile,
-        visitedPlaces: updatedPlaces,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
+          visitedPlaces: updatedPlaces,
+        };
       });
 
       console.log('✅ Marked as visited:', place.name);
@@ -301,10 +309,13 @@ export function useAuth() {
         { merge: true }
       );
 
-      // Update local state
-      setProfile({
-        ...profile,
-        visitedPlaces: updatedPlaces,
+      // Update local state (use functional form to avoid race conditions)
+      setProfile(prevProfile => {
+        if (!prevProfile) return prevProfile;
+        return {
+          ...prevProfile,
+          visitedPlaces: updatedPlaces,
+        };
       });
 
       console.log('🗑️ Removed from visited places');
