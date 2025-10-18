@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
+import { AFFINITY_CATEGORIES, getTranslatedCategories } from '../lib/affinityCategories';
 import { SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from '../lib/languages';
+import { useGeoLanguage } from '../hooks/useGeoLanguage';
 
 interface OnboardingScreenProps {
   userName: string;
@@ -9,9 +10,31 @@ interface OnboardingScreenProps {
 }
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplete, onSignOut }) => {
+  // Auto-detect browser language and match to our supported languages
+  const detectBrowserLanguage = (): string => {
+    // Get browser language (e.g., "en-US", "es-ES", "zh-CN")
+    const browserLang = navigator.language || navigator.languages?.[0] || DEFAULT_LANGUAGE;
+
+    // Extract the primary language code (e.g., "en" from "en-US")
+    const primaryLangCode = browserLang.split('-')[0].toLowerCase();
+
+    // Check if we support this language
+    const isSupported = SUPPORTED_LANGUAGES.some(lang => lang.code === primaryLangCode);
+
+    console.log('🌍 Browser language detected:', browserLang, '→', primaryLangCode, 'Supported:', isSupported);
+
+    return isSupported ? primaryLangCode : DEFAULT_LANGUAGE;
+  };
+
   const [step, setStep] = useState<'language' | 'affinities'>('language');
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(DEFAULT_LANGUAGE);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(detectBrowserLanguage());
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+
+  // Get geo-based language for displaying categories (based on physical location)
+  const { geoLanguage, geoCountry } = useGeoLanguage();
+
+  // Get translated categories based on geo location
+  const displayCategories = getTranslatedCategories(geoLanguage);
 
   const toggleCategory = (categoryId: string) => {
     const newSelected = new Set(selectedCategories);
@@ -28,12 +51,19 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
   };
 
   const handleContinue = () => {
+    console.log('🚀 OnboardingScreen: handleContinue clicked', {
+      selectedCategories: Array.from(selectedCategories),
+      selectedLanguage,
+    });
+
     // Convert selections to affinity scores
     const affinities: Record<string, number> = {};
     AFFINITY_CATEGORIES.forEach((category) => {
       // Selected = 0.9, Not selected = 0.3 (slight preference for variety)
       affinities[category.id] = selectedCategories.has(category.id) ? 0.9 : 0.3;
     });
+
+    console.log('📝 OnboardingScreen: Calling onComplete with affinities and language');
     onComplete(affinities, selectedLanguage);
   };
 
@@ -170,7 +200,13 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ userName, onComplet
 
         {/* Category Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          {AFFINITY_CATEGORIES.map((category) => {
+          {/* Show location-based language hint if different from EN */}
+          {geoCountry && geoLanguage !== 'en' && (
+            <div className="col-span-full text-center text-sm text-gray-600 mb-2">
+              📍 Showing categories in local language ({geoCountry})
+            </div>
+          )}
+          {displayCategories.map((category) => {
             const isSelected = selectedCategories.has(category.id);
             return (
               <button

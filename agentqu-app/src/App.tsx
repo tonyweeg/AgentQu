@@ -181,7 +181,7 @@ function App() {
   const [canScrollLeft, setCanScrollLeft] = useState(false); // Can scroll controls left
   const [canScrollRight, setCanScrollRight] = useState(false); // Can scroll controls right
   const controlsScrollRef = useRef<HTMLDivElement>(null);
-  const { user, profile, loading: authLoading, updateAffinities, signOut } = useAuth();
+  const { user, profile, loading: authLoading, updateAffinities, updateLanguageCode, signOut } = useAuth();
 
   // Get user location
   const {
@@ -565,13 +565,19 @@ function App() {
       <OnboardingScreen
         userName={profile.displayName || 'there'}
         onComplete={async (affinities, languageCode) => {
-          await updateAffinities(affinities);
-          // Save language preference to user profile
-          if (user && languageCode) {
-            const { doc, updateDoc } = await import('firebase/firestore');
-            const { db } = await import('./lib/firebase');
-            const userRef = doc(db, 'users', user.uid);
-            await updateDoc(userRef, { languageCode });
+          try {
+            console.log('🎯 Onboarding complete - saving affinities and language:', { languageCode });
+            await updateAffinities(affinities);
+            console.log('✅ Affinities saved');
+
+            // Save language preference to user profile
+            if (languageCode) {
+              await updateLanguageCode(languageCode);
+              console.log('✅ Language preference saved');
+            }
+          } catch (error) {
+            console.error('❌ Error completing onboarding:', error);
+            alert('Error saving preferences. Please try again.');
           }
         }}
         onSignOut={signOut}

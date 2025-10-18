@@ -62,14 +62,29 @@ export function useAuth() {
 
       if (profileSnap.exists()) {
         // Profile exists
-        setProfile(profileSnap.data() as UserProfile);
+        const existingProfile = profileSnap.data() as UserProfile;
+        setProfile(existingProfile);
 
-        // Update last active
-        await setDoc(
-          profileRef,
-          { lastActive: Date.now() },
-          { merge: true }
-        );
+        // Auto-detect and set language if not already set
+        if (!existingProfile.languageCode) {
+          const browserLang = navigator.language || navigator.languages?.[0] || 'en';
+          const primaryLangCode = browserLang.split('-')[0].toLowerCase();
+          console.log('🌍 Auto-detecting language for existing user:', primaryLangCode);
+
+          // Update profile with detected language (will still go through onboarding)
+          await setDoc(
+            profileRef,
+            { lastActive: Date.now() },
+            { merge: true }
+          );
+        } else {
+          // Update last active
+          await setDoc(
+            profileRef,
+            { lastActive: Date.now() },
+            { merge: true }
+          );
+        }
       } else {
         // Create new profile
         const newProfile: UserProfile = {

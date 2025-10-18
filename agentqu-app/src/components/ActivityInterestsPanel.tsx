@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AFFINITY_CATEGORIES } from '../lib/affinityCategories';
+import { getTranslatedCategories } from '../lib/affinityCategories';
+import { useGeoLanguage } from '../hooks/useGeoLanguage';
 
 interface ActivityInterestsPanelProps {
   affinities: Record<string, number>;
@@ -8,6 +9,10 @@ interface ActivityInterestsPanelProps {
 
 const ActivityInterestsPanel: React.FC<ActivityInterestsPanelProps> = ({ affinities, onChange }) => {
   const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
+
+  // Get geo-based language for displaying categories
+  const { geoLanguage } = useGeoLanguage();
+  const displayCategories = getTranslatedCategories(geoLanguage);
 
   const getAffinityLevel = (value: number) => {
     if (value === 0) return 'Not interested';
@@ -39,7 +44,7 @@ const ActivityInterestsPanel: React.FC<ActivityInterestsPanelProps> = ({ affinit
       {/* Collapsible category list */}
       {isExpanded && (
         <div className="space-y-4">
-          {AFFINITY_CATEGORIES.map(category => {
+          {displayCategories.map(category => {
             const value = affinities[category.id] || 0;
             return (
               <div key={category.id} className="bg-white rounded-xl p-4 shadow-sm">
