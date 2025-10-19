@@ -9,6 +9,7 @@ const ActivityRepository = require('./ActivityRepository');
 const UserRepository = require('./UserRepository');
 const TripRepository = require('./TripRepository');
 const CirqleRepository = require('./CirqleRepository');
+const CacheRepository = require('./CacheRepository');
 
 module.exports = {
   BaseRepository,
@@ -16,4 +17,5 @@ module.exports = {
   UserRepository,
   TripRepository,
   CirqleRepository,
+  CacheRepository,
 };

@@ -17,7 +17,7 @@ const functions = require('./src/functions');
 const { onRequest } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { createLogger } = require('./src/utils/logger');
-const { getFirestore } = require('./src/config/firebase');
+const CacheRepository = require('./src/repositories/CacheRepository');
 
 const logger = createLogger('INDEX');
 
@@ -80,28 +80,17 @@ exports.getEnvironmentalData = functions.getEnvironmentalData;
 /**
  * Clear activity cache
  * HTTP Endpoint for manual cache clearing
+ * Uses CacheRepository for proper abstraction
  */
 exports.clearCache = onRequest(async (req, res) => {
   try {
     logger.info('Cache clear requested');
 
-    const db = getFirestore();
-    const activitiesRef = db.collection('activities');
-    const querySnapshot = await activitiesRef.get();
+    const cacheRepo = new CacheRepository();
+    const result = await cacheRepo.clearAllCaches();
 
-    const batch = db.batch();
-    querySnapshot.docs.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-
-    await batch.commit();
-
-    logger.info('Cache cleared', { deletedCount: querySnapshot.size });
-
-    res.status(200).send({
-      success: true,
-      message: `Cleared ${querySnapshot.size} cached activities`,
-    });
+    logger.info('Cache cleared successfully', result);
+    res.status(200).send(result);
   } catch (error) {
     logger.error('Cache clear failed', error);
     res.status(500).send({
