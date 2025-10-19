@@ -8,6 +8,16 @@
  * Note: This mirrors the frontend chainConstants.ts structure
  * but is kept separate due to Node.js/TypeScript boundary.
  * If chains are updated, update both files.
+ *
+ * @module chainConstants
+ * @description Central registry of known restaurant/retail chains for filtering
+ * and categorization. Includes 100+ chains across categories:
+ * - Fast food (McDonald's, Burger King, etc.)
+ * - Pizza chains (Pizza Hut, Domino's, etc.)
+ * - Coffee shops (Starbucks, Dunkin, etc.)
+ * - Casual dining (Applebee's, Chili's, etc.)
+ * - Convenience stores (7-Eleven, Wawa, etc.)
+ * - Big box stores (Walmart, Target, etc.)
  */
 
 // ============================================================================
