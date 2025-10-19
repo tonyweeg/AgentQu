@@ -362,6 +362,142 @@ curl https://healthcheck-gnr47betrq-uc.a.run.app
 
 ---
 
+## 🎯 AgentQu Skills (Automated Workflows)
+
+**Location:** `.claude/skills/`
+**Reference:** See `SKILLS-REFERENCE.md` for complete trigger patterns
+
+### 🤖 Auto-Invoke Rules
+
+**Claude should automatically invoke skills based on user requests without asking permission.**
+
+### Skill Trigger Patterns
+
+#### 🚀 agentqu-deploy
+**Auto-invoke when user says:**
+- "deploy", "push to production", "release", "publish"
+- "deploy functions", "deploy hosting", "update production"
+- After completing features and user mentions deployment
+
+**Example:** "Deploy to production" → Automatically invoke skill
+
+---
+
+#### 🐛 agentqu-debug
+**Auto-invoke when user says:**
+- "not working", "bug", "error", "issue", "problem"
+- "why isn't X showing", "activities not loading", "nothing appears"
+- "check logs", "debug this", "what's wrong"
+
+**Example:** "Activities aren't loading" → Automatically invoke skill
+
+---
+
+#### 🏗️ agentqu-architecture
+**Auto-invoke when user says:**
+- "where should I put", "where do I add", "how do I structure"
+- "new feature", "new API", "add integration", "create service"
+- "which file", "what layer", "service or repository"
+
+**Example:** "Where should I add Yelp integration?" → Automatically invoke skill
+
+---
+
+#### 👤 agentqu-user-profile
+**Auto-invoke when user says:**
+- "test personalization", "create test user", "test affinities"
+- "test different profiles", "simulate user", "affinity testing"
+- "reset user", "change affinities"
+
+**Example:** "Create a test user who loves nightlife" → Automatically invoke skill
+
+---
+
+#### 🔑 agentqu-api-verify
+**Auto-invoke when user says:**
+- "API not working", "getting 401 errors", "authentication failed"
+- "check API keys", "verify environment", "test APIs"
+- "setup", "configuration", ".env file"
+
+**Example:** "Check if all API keys are configured" → Automatically invoke skill
+
+---
+
+#### 🎯 agentqu-score-explain
+**Auto-invoke when user says:**
+- "why is X scoring", "why does this have high/low score", "explain score"
+- "why is this ranked higher", "scoring seems wrong"
+- "score breakdown", "affinity not working"
+
+**Example:** "Why is Blue Moon Cafe scoring 187?" → Automatically invoke skill
+
+---
+
+#### 💾 agentqu-cache-manager
+**Auto-invoke when user says:**
+- "seeing old data", "changes not showing", "stale results"
+- "clear cache", "cache status", "refresh data"
+- "cache", "old activities", "not updating"
+
+**Example:** "Clear the cache" → Automatically invoke skill
+
+---
+
+### Skill Chaining
+
+**Deploy Flow:**
+```
+User: "Let's deploy"
+1. [agentqu-debug] - "Test in browser console first?"
+2. Wait for confirmation
+3. [agentqu-deploy] - Execute deployment
+```
+
+**Debug Flow:**
+```
+User: "Activities aren't loading"
+1. [agentqu-debug] - Check logs
+2. If API errors → [agentqu-api-verify]
+3. If cache issue → [agentqu-cache-manager]
+4. If scoring → [agentqu-score-explain]
+```
+
+**New Feature Flow:**
+```
+User: "Add Spotify integration"
+1. [agentqu-architecture] - Guide placement
+2. Implement feature
+3. [agentqu-user-profile] - Create test users
+4. [agentqu-debug] - Browser console testing
+5. [agentqu-deploy] - Deploy when ready
+```
+
+### Priority Order
+
+When multiple skills apply, use this order:
+1. **agentqu-debug** - Fix errors FIRST
+2. **agentqu-api-verify** - If API-related
+3. **agentqu-cache-manager** - If data staleness
+4. **agentqu-architecture** - If adding code
+5. **agentqu-user-profile** - If testing
+6. **agentqu-score-explain** - If explaining
+7. **agentqu-deploy** - Always LAST
+
+### Quick Reference
+```
+deploy → agentqu-deploy
+debug/error → agentqu-debug
+where/structure → agentqu-architecture
+test user → agentqu-user-profile
+API/keys → agentqu-api-verify
+score/why → agentqu-score-explain
+cache/stale → agentqu-cache-manager
+```
+
+**Remember:** Skills are workflow accelerators - use them proactively to save time!
+
+---
+
 **Current Branch:** main
 **Current Tag:** v1.0-solid-foundation
 **Last Updated:** October 18, 2025
