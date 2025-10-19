@@ -9,28 +9,41 @@
  * Features:
  * - Automatic retry with exponential backoff
  * - Rate limiting
- * - Response caching
+ * - Response caching (in-memory for function lifetime)
  * - Structured error handling
+ *
+ * Cache Design:
+ * This class uses in-memory Map for caching, which is CORRECT for Cloud Functions:
+ * - Cloud Functions are stateless and short-lived (seconds to minutes)
+ * - In-memory cache persists for the function instance lifetime
+ * - Multiple requests to same function instance benefit from cache
+ * - No need for external cache (Firestore/Redis) which adds cost/complexity
+ * - For persistent cross-function caching, use CacheRepository instead
+ *
+ * When to use each cache:
+ * - BaseApiClient cache: Fast, instance-level, automatic (API responses)
+ * - CacheRepository: Persistent, cross-function, manual (activity data)
  */
 
 const axios = require('axios');
 const { createLogger } = require('../utils/logger');
+const appConfig = require('../config/app-config');
 
 class BaseApiClient {
   /**
    * @param {Object} config - Client configuration
    * @param {string} config.name - Client name for logging
    * @param {string} config.baseURL - Base URL for API
-   * @param {number} config.timeout - Request timeout in ms
-   * @param {number} config.maxRetries - Max retry attempts
-   * @param {number} config.cacheTTL - Cache TTL in seconds
+   * @param {number} config.timeout - Request timeout in ms (optional, uses app config default)
+   * @param {number} config.maxRetries - Max retry attempts (optional, uses app config default)
+   * @param {number} config.cacheTTL - Cache TTL in seconds (optional, uses app config default)
    */
   constructor(config) {
     this.name = config.name || 'API';
     this.baseURL = config.baseURL || '';
-    this.timeout = config.timeout || 10000;
-    this.maxRetries = config.maxRetries || 3;
-    this.cacheTTL = config.cacheTTL || 300; // 5 minutes default
+    this.timeout = config.timeout || appConfig.api.timeout.default;
+    this.maxRetries = config.maxRetries || appConfig.api.retries.maxAttempts;
+    this.cacheTTL = config.cacheTTL || 300; // 5 minutes default (specific to each client)
 
     this.logger = createLogger(this.name);
     this.cache = new Map();
@@ -60,8 +73,8 @@ class BaseApiClient {
 
       // Check if should retry
       if (retryCount < this.maxRetries && this.shouldRetry(error)) {
-        // Exponential backoff: 1s, 2s, 4s, 8s...
-        const delay = Math.pow(2, retryCount) * 1000;
+        // Exponential backoff with configurable multiplier
+        const delay = Math.pow(appConfig.api.retries.backoffMultiplier, retryCount) * appConfig.api.retries.initialDelay;
         this.logger.debug(`Retrying after ${delay}ms`);
 
         await this.sleep(delay);
@@ -185,7 +198,7 @@ class BaseApiClient {
   async checkRateLimit(url) {
     const now = Date.now();
     const lastRequest = this.rateLimitMap.get(url) || 0;
-    const minInterval = 100; // Minimum 100ms between requests to same endpoint
+    const minInterval = appConfig.api.rateLimit.minInterval;
 
     const timeSinceLastRequest = now - lastRequest;
     if (timeSinceLastRequest < minInterval) {

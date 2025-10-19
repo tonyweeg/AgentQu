@@ -9,8 +9,8 @@
 
 const { mapMusicGenre, mapRestaurantGenre } = require('./mappings');
 const { calculateDistanceBonus } = require('./distance');
+const { isKnownChain, isBigBoxStore } = require('../config/chainConstants');
 const {
-  KNOWN_CHAINS,
   HEALTHY_FOOD_INDICATORS,
   MUSIC_GENRE_FILTER_THRESHOLD,
   RESTAURANT_GENRE_FILTER_THRESHOLD,
@@ -119,34 +119,7 @@ function calculateRestaurantGenreAffinityScore(restaurantCategories, restaurantG
   return Math.round(totalScore / matchCount);
 }
 
-/**
- * Check if place is a known chain
- * @param {string} placeName - Name of the place
- * @returns {boolean}
- */
-function isKnownChain(placeName) {
-  const nameLower = (placeName || '').toLowerCase();
-  return KNOWN_CHAINS.some((chain) => nameLower.includes(chain));
-}
-
-/**
- * Check if place is a big box store
- * @param {string} placeName - Name of the place
- * @returns {boolean}
- */
-function isBigBoxStore(placeName) {
-  const nameLower = (placeName || '').toLowerCase();
-  const bigBoxStores = [
-    'walmart',
-    'target',
-    'costco',
-    "sam's club",
-    'sams club',
-    "bj's wholesale",
-    'bjs wholesale',
-  ];
-  return bigBoxStores.some((store) => nameLower.includes(store));
-}
+// Chain detection functions imported from chainConstants.js above
 
 /**
  * Check if place is a healthy food option

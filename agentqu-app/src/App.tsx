@@ -24,68 +24,14 @@ import BiomeRenderer from './biomes/core/BiomeRenderer';
 import LocalFlavorColumn from './components/LocalFlavorColumn';
 import EVPanel from './components/EVPanel';
 import BeenThereView from './components/BeenThereView';
+import LoadingScreen from './components/LoadingScreen';
+import LocationErrorScreen from './components/LocationErrorScreen';
+import ViewModeSelector from './components/ViewModeSelector';
+import CategoryFilter from './components/CategoryFilter';
+import ActivityListView from './components/ActivityListView';
 import { DiscoveryFilters, Activity } from './lib/types';
-
-// Known chain restaurants and brands (same as backend)
-const KNOWN_CHAINS = [
-  // Fast Food Chains
-  'mcdonalds', "mcdonald's", 'burger king', 'wendy\'s', 'wendys',
-  'taco bell', 'kfc', 'popeyes', 'chick-fil-a', 'chick fil a',
-  'sonic', 'dairy queen', 'arby\'s', 'arbys', 'carl\'s jr', 'carls jr',
-  'hardee\'s', 'hardees', 'jack in the box', 'white castle',
-  'five guys', 'in-n-out', 'shake shack', 'whataburger',
-
-  // Pizza Chains
-  'pizza hut', 'dominos', 'domino\'s', 'papa john\'s', 'papa johns',
-  'little caesars', 'papa murphy\'s', 'marco\'s pizza',
-
-  // Sandwich/Sub Chains
-  'subway', 'jimmy john\'s', 'jimmy johns', 'jersey mike\'s',
-  'firehouse subs', 'quiznos', 'blimpie', 'potbelly',
-
-  // Coffee Chains (corporate, not local)
-  'starbucks', 'dunkin', 'dunkin donuts', 'tim hortons',
-
-  // Convenience Stores
-  'wawa', '7-eleven', '7 eleven', 'circle k', 'sheetz',
-  'cumberland farms', 'speedway', 'pilot', 'flying j',
-  'love\'s', 'loves', 'ta petro', 'am/pm', 'ampm',
-
-  // Casual Dining Chains
-  'applebee\'s', 'applebees', 'chili\'s', 'chilis', 'tgi friday\'s',
-  'red lobster', 'olive garden', 'outback steakhouse',
-  'texas roadhouse', 'longhorn steakhouse', 'cracker barrel',
-  'denny\'s', 'dennys', 'ihop', 'waffle house', 'bob evans',
-  'panera bread', 'panera', 'chipotle', 'qdoba', 'moe\'s southwest',
-
-  // Other Chains
-  'panda express', 'pei wei', 'noodles & company',
-  'buffalo wild wings', 'wingstop', 'hooters',
-  'golden corral', 'cici\'s pizza', 'cicis pizza',
-
-  // Big Box Stores (last resort only)
-  'walmart', 'target', 'costco', 'sam\'s club', 'sams club',
-  'bj\'s wholesale', 'bjs wholesale'
-];
-
-// Check if a place is a known chain
-function isKnownChain(placeName: string): boolean {
-  const nameLower = (placeName || '').toLowerCase();
-  return KNOWN_CHAINS.some(chain => nameLower.includes(chain));
-}
-
-// Normalize chain name for grouping (remove numbers, addresses, etc)
-function normalizeChainName(placeName: string): string {
-  let normalized = placeName.toLowerCase().trim();
-
-  // Remove common suffixes and prefixes
-  normalized = normalized.replace(/#\d+$/, ''); // Remove #123
-  normalized = normalized.replace(/\d+$/, ''); // Remove trailing numbers
-  normalized = normalized.replace(/\s+-\s+.*$/, ''); // Remove everything after " - "
-  normalized = normalized.replace(/\s+\(.*\)/, ''); // Remove parenthetical info
-
-  return normalized.trim();
-}
+import { isKnownChain, normalizeChainName } from './lib/chainConstants';
+import { createLogger } from './utils/logger';
 
 // Extended Activity type with grouped locations
 interface GroupedActivity extends Activity {
@@ -141,6 +87,9 @@ function groupActivitiesByChain(activities: Activity[], shouldGroup: boolean): G
 }
 
 function App() {
+  // Create logger for App component
+  const logger = createLogger('APP');
+
   // Check URL for special routes
   const urlPath = window.location.pathname;
   const urlParams = new URLSearchParams(window.location.search);
@@ -181,9 +130,6 @@ function App() {
   const [canScrollLeft, setCanScrollLeft] = useState(false); // Can scroll controls left
   const [canScrollRight, setCanScrollRight] = useState(false); // Can scroll controls right
   const controlsScrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeftCategories, setCanScrollLeftCategories] = useState(false); // Can scroll categories left
-  const [canScrollRightCategories, setCanScrollRightCategories] = useState(false); // Can scroll categories right
-  const categoriesScrollRef = useRef<HTMLDivElement>(null);
   const { user, profile, loading: authLoading, updateAffinities, updateLanguageCode, signOut } = useAuth();
 
   // Get user location
@@ -238,19 +184,6 @@ function App() {
 
     setCanScrollLeft(canLeft);
     setCanScrollRight(canRight);
-  };
-
-  // Check if categories can scroll left/right
-  const checkCategoriesScrollPosition = () => {
-    const container = categoriesScrollRef.current;
-    if (!container) return;
-
-    const { scrollLeft, scrollWidth, clientWidth } = container;
-    const canLeft = scrollLeft > 5;
-    const canRight = scrollLeft < scrollWidth - clientWidth - 5;
-
-    setCanScrollLeftCategories(canLeft);
-    setCanScrollRightCategories(canRight);
   };
 
   // Attach scroll listener to controls container
@@ -325,82 +258,9 @@ function App() {
     };
   }, []);
 
-  // Attach scroll listener to categories container
-  useEffect(() => {
-    const container = categoriesScrollRef.current;
-    if (!container) return;
-
-    // Check initial state
-    checkCategoriesScrollPosition();
-
-    // Safari mobile needs a delayed check after layout completes
-    const safariDelayCheck = setTimeout(() => {
-      checkCategoriesScrollPosition();
-    }, 100);
-
-    // Use polling during scroll for mobile reliability
-    let scrollTimer: NodeJS.Timeout | null = null;
-    let isScrolling = false;
-
-    const handleScrollStart = () => {
-      if (isScrolling) return;
-      isScrolling = true;
-
-      // Poll every 50ms while scrolling
-      scrollTimer = setInterval(() => {
-        checkCategoriesScrollPosition();
-      }, 50);
-    };
-
-    const handleScrollEnd = () => {
-      if (scrollTimer) {
-        clearInterval(scrollTimer);
-        scrollTimer = null;
-      }
-      isScrolling = false;
-      // Final check after scroll ends
-      setTimeout(checkCategoriesScrollPosition, 100);
-    };
-
-    // Listen for scroll events - works on most browsers
-    container.addEventListener('scroll', () => {
-      handleScrollStart();
-      // Reset the timeout on every scroll event
-      if (scrollTimer) {
-        clearInterval(scrollTimer);
-      }
-      scrollTimer = setInterval(checkCategoriesScrollPosition, 50);
-
-      // Clear polling after scroll stops (no events for 150ms)
-      setTimeout(() => {
-        if (scrollTimer) {
-          clearInterval(scrollTimer);
-          scrollTimer = null;
-          isScrolling = false;
-          checkCategoriesScrollPosition();
-        }
-      }, 150);
-    }, { passive: true });
-
-    // Touch events for mobile
-    container.addEventListener('touchstart', handleScrollStart, { passive: true });
-    container.addEventListener('touchmove', checkCategoriesScrollPosition, { passive: true });
-    container.addEventListener('touchend', handleScrollEnd, { passive: true });
-
-    // Check on resize in case content width changes
-    window.addEventListener('resize', checkCategoriesScrollPosition);
-
-    return () => {
-      clearTimeout(safariDelayCheck);
-      if (scrollTimer) clearInterval(scrollTimer);
-      window.removeEventListener('resize', checkCategoriesScrollPosition);
-    };
-  }, []);
-
   // Re-check scroll position when activities load or view changes
   useEffect(() => {
     checkScrollPosition();
-    checkCategoriesScrollPosition();
   }, [activities.length, viewMode]);
 
   // Fetch nearby towns when location and city are available
@@ -474,7 +334,7 @@ function App() {
 
   // Handle map drag to search new location
   const handleMapLocationChange = (lat: number, lng: number) => {
-    console.log('🗺️ Searching new location from map drag:', lat, lng);
+    logger.info('Searching new location from map drag', { lat, lng });
     setManualLocation({ lat, lng });
     setRefreshKey(prev => prev + 1);
   };
@@ -544,7 +404,7 @@ function App() {
           }
         }
       } catch (error) {
-        console.error('Error fetching location info:', error);
+        logger.error('Error fetching location info', error as Error);
         setWikiData(null);
       }
     };
@@ -1369,82 +1229,23 @@ function App() {
                   </div>
                 </div>
 
-                {/* View Mode Toggle - Pill style with text */}
-                {(viewMode === 'list' || viewMode === 'map' || viewMode === 'offgrid') && (
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="flex bg-white/80 backdrop-blur-sm rounded-full p-1 border border-gray-200 shadow-sm">
-                      <button
-                        onClick={() => {
-                          if (viewMode === 'offgrid') {
-                            setOffgridViewMode('list');
-                          } else {
-                            setViewMode('list');
-                          }
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                          (viewMode === 'list') || (viewMode === 'offgrid' && offgridViewMode === 'list')
-                            ? 'bg-ocean-bright text-white shadow-md'
-                            : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        <span className="text-base">📋</span>
-                        <span>List</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (viewMode === 'offgrid') {
-                            setOffgridViewMode('map');
-                          } else {
-                            setViewMode('map');
-                          }
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                          (viewMode === 'map') || (viewMode === 'offgrid' && offgridViewMode === 'map')
-                            ? 'bg-ocean-bright text-white shadow-md'
-                            : 'text-gray-600 hover:text-gray-900'
-                        }`}
-                      >
-                        <span className="text-base">🗺️</span>
-                        <span>Map</span>
-                      </button>
-                    </div>
-
-                    {/* Off-Grid Button - Show for all users */}
-                    <button
-                      onClick={() => {
-                        setViewMode('offgrid');
-                        setShowSettings(false);
-                        setShowGeocaches(false);
-                      }}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm whitespace-nowrap ${
-                        viewMode === 'offgrid'
-                          ? 'bg-green-600 text-white shadow-md border-green-700'
-                          : 'bg-white/80 text-gray-700 hover:bg-green-50 border-gray-200'
-                      }`}
-                    >
-                      <span className="text-base">🏕️</span>
-                      <span>Off-Grid</span>
-                    </button>
-
-                    {/* EV Charging Button - Only show for EV owners with stations */}
-                    {profile?.isEV && chargingStations && chargingStations.length > 0 && (
-                      <button
-                        onClick={() => setShowEVPanel(!showEVPanel)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm whitespace-nowrap ${
-                          showEVPanel
-                            ? 'bg-green-600 text-white shadow-md border-green-700'
-                            : 'bg-white/80 text-gray-700 hover:bg-green-50 border-gray-200'
-                        }`}
-                      >
-                        <span className="text-base">⚡</span>
-                        <span>Charging</span>
-                        <span className="text-xs bg-white/30 px-1.5 py-0.5 rounded-full">
-                          {chargingStations.length}
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                )}
+                {/* View Mode Toggle */}
+                <ViewModeSelector
+                  viewMode={viewMode}
+                  offgridViewMode={offgridViewMode}
+                  showEVPanel={showEVPanel}
+                  isEVOwner={profile?.isEV || false}
+                  chargingStationsCount={chargingStations.length}
+                  onViewModeChange={(mode) => {
+                    setViewMode(mode);
+                    if (mode === 'offgrid') {
+                      setShowSettings(false);
+                      setShowGeocaches(false);
+                    }
+                  }}
+                  onOffgridViewModeChange={setOffgridViewMode}
+                  onEVPanelToggle={() => setShowEVPanel(!showEVPanel)}
+                />
               </div>
 
               {/* Scroll indicator - Arrow stays on right, direction flips when user scrolls */}
@@ -2007,122 +1808,29 @@ function App() {
 
                       return (
                         <>
-                          {/* Category Filter Chips - For Places Only */}
-                          {places.length > 0 && (
-                            <div className="mb-6 relative">
-                              {/* Horizontal scrolling container */}
-                              <div
-                                ref={categoriesScrollRef}
-                                className="overflow-x-auto scrollbar-hide"
-                                style={{
-                                  scrollbarWidth: 'none',
-                                  msOverflowStyle: 'none',
-                                  WebkitOverflowScrolling: 'touch'
-                                }}
-                              >
-                                <div className="flex gap-2 items-center">
-                                  {/* Active Text Search Indicator */}
-                                  {activeTextSearch && (
-                                    <div className="flex items-center gap-2 bg-sky-100 border-2 border-sky-300 px-4 py-2 rounded-full whitespace-nowrap">
-                                      <span className="text-sm font-bold text-gray-800">🔍 Searching:</span>
-                                      <span className="text-sm font-bold text-gray-800">"{activeTextSearch}"</span>
-                                      <button
-                                        onClick={() => {
-                                          setTextSearch('');
-                                          setActiveTextSearch('');
-                                          setRefreshKey(prev => prev + 1);
-                                        }}
-                                        className="ml-1 bg-white hover:bg-sky-200 text-gray-800 font-bold px-2 py-0.5 rounded-full transition-colors"
-                                      >
-                                        ✕
-                                      </button>
-                                    </div>
-                                  )}
+                          {/* Category Filter */}
+                          <CategoryFilter
+                            places={places}
+                            selectedCategory={selectedCategory}
+                            activeTextSearch={activeTextSearch}
+                            showFastFood={showFastFood}
+                            onCategoryChange={setSelectedCategory}
+                            onClearSearch={() => {
+                              setTextSearch('');
+                              setActiveTextSearch('');
+                              setRefreshKey(prev => prev + 1);
+                            }}
+                            onToggleFastFood={() => {
+                              setShowFastFood(!showFastFood);
+                              setRefreshKey(prev => prev + 1);
+                            }}
+                          />
 
-                                  <button
-                                    onClick={() => setSelectedCategory('all')}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                                      selectedCategory === 'all'
-                                        ? 'bg-ocean-bright text-white shadow-md'
-                                        : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
-                                    }`}
-                                  >
-                                    All Places ({places.length})
-                                  </button>
-                                  {allCategories
-                                    .sort((a, b) => {
-                                      // Sort alphabetically
-                                      const nameA = a.replace(/_/g, ' ');
-                                      const nameB = b.replace(/_/g, ' ');
-                                      return nameA.localeCompare(nameB);
-                                    })
-                                    .map(category => (
-                                      <button
-                                        key={category}
-                                        onClick={() => setSelectedCategory(category)}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                                          selectedCategory === category
-                                            ? 'bg-ocean-bright text-white shadow-md'
-                                            : 'bg-white border border-gray-300 text-gray-700 hover:border-ocean-bright'
-                                        }`}
-                                      >
-                                        <span>{getCategoryEmoji(category)}</span>
-                                        <span className="capitalize">{category.replace(/_/g, ' ')}</span>
-                                        <span className="text-xs opacity-75">({categoryCounts[category]})</span>
-                                      </button>
-                                    ))}
-
-                                  {/* Fast Food Toggle - Only show when viewing food/dining category */}
-                                  {selectedCategory === 'food_and_dining' && (
-                                    <button
-                                      onClick={() => {
-                                        setShowFastFood(!showFastFood);
-                                        setRefreshKey(prev => prev + 1);
-                                      }}
-                                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border whitespace-nowrap ${
-                                        showFastFood
-                                          ? 'bg-red-500 text-white border-red-600 shadow-sm'
-                                          : 'bg-white text-gray-600 border-gray-300 hover:border-red-400 hover:text-red-500'
-                                      }`}
-                                      title={showFastFood ? 'Hide chains & fast food' : 'Show chains & fast food'}
-                                    >
-                                      <span>🍔 Give me all the calories!</span>
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Scroll indicator - Arrow stays on right, direction flips when user scrolls */}
-                              {(canScrollRightCategories || canScrollLeftCategories) && (
-                                <div className="absolute -right-4 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent pointer-events-none flex items-center justify-end pr-4 z-10">
-                                  <span className="text-ocean-bright text-base animate-pulse font-bold">
-                                    {canScrollLeftCategories ? '←' : '→'}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Places Grid - Cards */}
-                          {displayPlaces.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mb-12">
-                              {displayPlaces.map((activity, index) => (
-                                <ActivityCard
-                                  key={activity.id || activity.activityId}
-                                  activity={activity}
-                                  index={index}
-                                  allActivities={displayPlaces}
-                                />
-                              ))}
-                            </div>
-                          )}
-
-                          {displayPlaces.length === 0 && places.length > 0 && (
-                            <div className="text-center py-12 mb-12">
-                              <div className="text-4xl mb-3">{getCategoryEmoji(selectedCategory)}</div>
-                              <p className="text-gray-600">No {selectedCategory.replace(/_/g, ' ')} places found</p>
-                            </div>
-                          )}
+                          {/* Places Grid */}
+                          <ActivityListView
+                            activities={displayPlaces}
+                            selectedCategory={selectedCategory !== 'all' && displayPlaces.length === 0 ? selectedCategory : undefined}
+                          />
 
                           {/* Events Section - Grouped by Genre (Top 3 per genre) */}
                           {sortedEvents.length > 0 && (() => {

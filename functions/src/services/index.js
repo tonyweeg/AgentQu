@@ -5,6 +5,8 @@
  */
 
 const ActivityService = require('./ActivityService');
+const ActivityDataFetcherService = require('./ActivityDataFetcherService');
+const ActivityUserInteractionService = require('./ActivityUserInteractionService');
 const LocationService = require('./LocationService');
 const TripService = require('./TripService');
 const CirqleService = require('./CirqleService');
@@ -13,6 +15,8 @@ const WeatherService = require('./WeatherService');
 
 module.exports = {
   ActivityService,
+  ActivityDataFetcherService,
+  ActivityUserInteractionService,
   LocationService,
   TripService,
   CirqleService,
