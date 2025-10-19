@@ -2,9 +2,10 @@
  * Category Filter Component
  *
  * Horizontal scrollable category chips for filtering activities
+ * Memoized to prevent unnecessary re-renders when activities haven't changed
  */
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, memo } from 'react';
 import { Activity } from '../lib/types';
 
 interface CategoryFilterProps {
@@ -17,7 +18,7 @@ interface CategoryFilterProps {
   onToggleFastFood: () => void;
 }
 
-const CategoryFilter: React.FC<CategoryFilterProps> = ({
+const CategoryFilter: React.FC<CategoryFilterProps> = memo(({
   places,
   selectedCategory,
   activeTextSearch,
@@ -201,6 +202,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
       )}
     </div>
   );
-};
+});
+
+CategoryFilter.displayName = 'CategoryFilter';
 
 export default CategoryFilter;

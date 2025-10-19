@@ -2,9 +2,10 @@
  * View Mode Selector Component
  *
  * Toggles between List, Map, and Off-Grid views with optional EV Charging button
+ * Memoized to prevent unnecessary re-renders
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 
 interface ViewModeSelectorProps {
   viewMode: 'list' | 'map' | 'offgrid' | 'trip-creation' | 'trips' | 'trip-detail' | 'cirqle' | 'been-there';
@@ -17,7 +18,7 @@ interface ViewModeSelectorProps {
   onEVPanelToggle: () => void;
 }
 
-const ViewModeSelector: React.FC<ViewModeSelectorProps> = ({
+const ViewModeSelector: React.FC<ViewModeSelectorProps> = memo(({
   viewMode,
   offgridViewMode,
   showEVPanel,
@@ -104,6 +105,8 @@ const ViewModeSelector: React.FC<ViewModeSelectorProps> = ({
       )}
     </div>
   );
-};
+});
+
+ViewModeSelector.displayName = 'ViewModeSelector';
 
 export default ViewModeSelector;

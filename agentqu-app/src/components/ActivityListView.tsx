@@ -2,9 +2,10 @@
  * Activity List View Component
  *
  * Displays activities in a responsive grid layout
+ * Memoized to prevent re-rendering when activity list hasn't changed
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 import ActivityCard from './ActivityCard';
 import { Activity } from '../lib/types';
 
@@ -13,7 +14,7 @@ interface ActivityListViewProps {
   selectedCategory?: string;
 }
 
-const ActivityListView: React.FC<ActivityListViewProps> = ({ activities, selectedCategory }) => {
+const ActivityListView: React.FC<ActivityListViewProps> = memo(({ activities, selectedCategory }) => {
   // Category emoji mapping for empty state
   const getCategoryEmoji = (cat: string) => {
     const emojiMap: Record<string, string> = {
@@ -60,6 +61,8 @@ const ActivityListView: React.FC<ActivityListViewProps> = ({ activities, selecte
       ))}
     </div>
   );
-};
+});
+
+ActivityListView.displayName = 'ActivityListView';
 
 export default ActivityListView;

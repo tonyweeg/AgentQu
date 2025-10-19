@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useMemo } from 'react';
 import { Activity } from '../lib/types';
 import ActivityDetails from './ActivityDetails';
 import { useAuth } from '../hooks/useAuth';
@@ -9,7 +9,7 @@ interface ActivityCardProps {
   allActivities: Activity[];
 }
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivities }) => {
+const ActivityCard: React.FC<ActivityCardProps> = memo(({ activity, index, allActivities }) => {
   const { profile } = useAuth();
   const [showDetails, setShowDetails] = useState(false);
   const [detailsIndex, setDetailsIndex] = useState(index);
@@ -17,9 +17,12 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
   const category = activity.primaryCategory || 'other';
   const score = activity.score || 0;
 
-  // Check if this place has been visited
-  const isVisited = profile?.visitedPlaces?.some(
-    p => p.activityId === (activity.id || activity.activityId)
+  // Check if this place has been visited (memoized to avoid recalculation on every render)
+  const isVisited = useMemo(
+    () => profile?.visitedPlaces?.some(
+      p => p.activityId === (activity.id || activity.activityId)
+    ),
+    [profile?.visitedPlaces, activity.id, activity.activityId]
   );
 
   const getCategoryEmoji = () => {
@@ -231,6 +234,8 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity, index, allActivit
       )}
     </>
   );
-};
+});
+
+ActivityCard.displayName = 'ActivityCard';
 
 export default ActivityCard;
