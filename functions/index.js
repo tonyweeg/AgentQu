@@ -13,6 +13,10 @@
 // Load environment variables from .env file
 require('dotenv').config();
 
+// Validate environment variables on startup (non-strict for development)
+const { validateEnvironment } = require('./src/config/validate-env');
+validateEnvironment({ strict: false });
+
 const functions = require('./src/functions');
 const { onRequest } = require('firebase-functions/v2/https');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
