@@ -122,7 +122,7 @@ export function normalizeActivity(activity: Activity): NormalizedActivity {
     address: activity.location?.address ?? activity.address,
     city: activity.location?.city ?? activity.city,
     state: activity.location?.state ?? activity.state,
-    country: activity.location?.['country'],
+    country: (activity.location as any)?.country,
   };
 
   // Extract description from details or root
@@ -209,7 +209,7 @@ export function normalizeActivity(activity: Activity): NormalizedActivity {
     website,
     source,
     createdAt: new Date(),
-    updatedAt: activity.location?.['updatedAt'] ? new Date(activity.location['updatedAt']) : undefined,
+    updatedAt: (activity.location as any)?.updatedAt ? new Date((activity.location as any).updatedAt) : undefined,
   };
 }
 
