@@ -20,7 +20,8 @@ const { calculateDistance, encodeGeohash } = require('../utils/distance');
 const { calculateFinalScore, passesMusicGenreFilter, passesRestaurantGenreFilter } = require('../utils/scoring');
 const { mapPlaceTypeToCategories } = require('../utils/mappings');
 const { validateCoordinates, validateRadius, validateUserId } = require('../utils/validation');
-const { RATE_LIMITS, KNOWN_CHAINS } = require('../config/constants');
+const { isKnownChain } = require('../config/chainConstants');
+const { RATE_LIMITS } = require('../config/constants');
 
 class ActivityService {
   constructor() {
@@ -115,7 +116,7 @@ class ActivityService {
 
       // Filter out corporate chains unless showFastFood is true
       if (!showFastFood) {
-        withinRadius = withinRadius.filter((a) => !this.isKnownChain(a.name));
+        withinRadius = withinRadius.filter((a) => !isKnownChain(a.name));
         this.logger.debug(`Filtered chains, ${withinRadius.length} activities remaining`);
       }
 
@@ -560,15 +561,7 @@ class ActivityService {
     return deduped;
   }
 
-  /**
-   * Check if place is a known corporate chain
-   * @private
-   */
-  isKnownChain(placeName) {
-    if (!placeName) return false;
-    const nameLower = placeName.toLowerCase();
-    return KNOWN_CHAINS.some((chain) => nameLower.includes(chain));
-  }
+  // Chain detection now uses imported isKnownChain() from chainConstants.js
 }
 
 module.exports = ActivityService;

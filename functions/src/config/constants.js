@@ -4,120 +4,13 @@
  * SOLID Principles Applied:
  * - Single Responsibility: Constants only
  * - DRY: Single source of truth for all constants
+ *
+ * Note: Chain detection moved to chainConstants.js
  */
 
 // ============================================================================
-// KNOWN CHAINS & FILTERS
+// FOOD FILTERS
 // ============================================================================
-
-const FAST_FOOD_CHAINS = [
-  'mcdonalds',
-  "mcdonald's",
-  'burger king',
-  "wendy's",
-  'wendys',
-  'taco bell',
-  'kfc',
-  'popeyes',
-  'chick-fil-a',
-  'chick fil a',
-  'sonic',
-  'dairy queen',
-  "arby's",
-  'arbys',
-  "carl's jr",
-  'carls jr',
-  "hardee's",
-  'hardees',
-  'jack in the box',
-  'white castle',
-  'five guys',
-  'in-n-out',
-  'shake shack',
-  'whataburger',
-];
-
-const KNOWN_CHAINS = [
-  ...FAST_FOOD_CHAINS,
-  // Pizza Chains
-  'pizza hut',
-  'dominos',
-  "domino's",
-  "papa john's",
-  'papa johns',
-  'little caesars',
-  "papa murphy's",
-  "marco's pizza",
-  // Sandwich/Sub Chains
-  'subway',
-  "jimmy john's",
-  'jimmy johns',
-  "jersey mike's",
-  'firehouse subs',
-  'quiznos',
-  'blimpie',
-  'potbelly',
-  // Coffee Chains
-  'starbucks',
-  'dunkin',
-  'dunkin donuts',
-  'tim hortons',
-  // Convenience Stores
-  'wawa',
-  '7-eleven',
-  '7 eleven',
-  'circle k',
-  'sheetz',
-  'cumberland farms',
-  'speedway',
-  'pilot',
-  'flying j',
-  "love's",
-  'loves',
-  'ta petro',
-  'am/pm',
-  'ampm',
-  // Casual Dining Chains
-  "applebee's",
-  'applebees',
-  "chili's",
-  'chilis',
-  "tgi friday's",
-  'red lobster',
-  'olive garden',
-  'outback steakhouse',
-  'texas roadhouse',
-  'longhorn steakhouse',
-  'cracker barrel',
-  "denny's",
-  'dennys',
-  'ihop',
-  'waffle house',
-  'bob evans',
-  'panera bread',
-  'panera',
-  'chipotle',
-  'qdoba',
-  "moe's southwest",
-  // Other Chains
-  'panda express',
-  'pei wei',
-  'noodles & company',
-  'buffalo wild wings',
-  'wingstop',
-  'hooters',
-  'golden corral',
-  "cici's pizza",
-  'cicis pizza',
-  // Big Box Stores
-  'walmart',
-  'target',
-  'costco',
-  "sam's club",
-  'sams club',
-  "bj's wholesale",
-  'bjs wholesale',
-];
 
 const HEALTHY_FOOD_INDICATORS = [
   // Place types
@@ -237,8 +130,6 @@ const VIBE_CATEGORIES = {
 };
 
 module.exports = {
-  FAST_FOOD_CHAINS,
-  KNOWN_CHAINS,
   HEALTHY_FOOD_INDICATORS,
   MUSIC_GENRE_FILTER_THRESHOLD,
   RESTAURANT_GENRE_FILTER_THRESHOLD,
