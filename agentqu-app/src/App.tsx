@@ -26,6 +26,7 @@ import EVPanel from './components/EVPanel';
 import BeenThereView from './components/BeenThereView';
 import { DiscoveryFilters, Activity } from './lib/types';
 import { isKnownChain, normalizeChainName } from './lib/chainConstants';
+import { createLogger } from './utils/logger';
 
 // Extended Activity type with grouped locations
 interface GroupedActivity extends Activity {
@@ -81,6 +82,9 @@ function groupActivitiesByChain(activities: Activity[], shouldGroup: boolean): G
 }
 
 function App() {
+  // Create logger for App component
+  const logger = createLogger('APP');
+
   // Check URL for special routes
   const urlPath = window.location.pathname;
   const urlParams = new URLSearchParams(window.location.search);
@@ -414,7 +418,7 @@ function App() {
 
   // Handle map drag to search new location
   const handleMapLocationChange = (lat: number, lng: number) => {
-    console.log('🗺️ Searching new location from map drag:', lat, lng);
+    logger.info('Searching new location from map drag', { lat, lng });
     setManualLocation({ lat, lng });
     setRefreshKey(prev => prev + 1);
   };
@@ -484,7 +488,7 @@ function App() {
           }
         }
       } catch (error) {
-        console.error('Error fetching location info:', error);
+        logger.error('Error fetching location info', error as Error);
         setWikiData(null);
       }
     };
