@@ -9,8 +9,20 @@
  * Features:
  * - Automatic retry with exponential backoff
  * - Rate limiting
- * - Response caching
+ * - Response caching (in-memory for function lifetime)
  * - Structured error handling
+ *
+ * Cache Design:
+ * This class uses in-memory Map for caching, which is CORRECT for Cloud Functions:
+ * - Cloud Functions are stateless and short-lived (seconds to minutes)
+ * - In-memory cache persists for the function instance lifetime
+ * - Multiple requests to same function instance benefit from cache
+ * - No need for external cache (Firestore/Redis) which adds cost/complexity
+ * - For persistent cross-function caching, use CacheRepository instead
+ *
+ * When to use each cache:
+ * - BaseApiClient cache: Fast, instance-level, automatic (API responses)
+ * - CacheRepository: Persistent, cross-function, manual (activity data)
  */
 
 const axios = require('axios');
