@@ -1,192 +1,141 @@
 /**
- * Yahoo Finance API Client
- *
- * SOLID Principles Applied:
- * - Single Responsibility: Yahoo Finance data retrieval only
- * - Open/Closed: Extensible without modification
- * - Liskov Substitution: Extends BaseApiClient
- *
- * Data Provided:
- * - Real-time stock quotes
- * - Historical price data (OHLCV)
- * - Financial statements
- * - Options data
- * - Market summary
- *
- * Note: Uses unofficial Yahoo Finance API (no key required)
- * Rate limit: Be respectful (~100 req/min recommended)
+ * Yahoo Finance Client
+ * Uses yahoo-finance2 npm package for reliable stock data
  */
 
-const BaseApiClient = require('./BaseApiClient');
+const YahooFinance = require('yahoo-finance2').default;
+const { createLogger } = require('../utils/logger');
 
-class YahooFinanceClient extends BaseApiClient {
+const logger = createLogger('YAHOO_FINANCE');
+
+class YahooFinanceClient {
   constructor() {
-    super({
-      name: 'YAHOO_FINANCE',
-      baseURL: 'https://query1.finance.yahoo.com/v8/finance',
-      timeout: 15000,
-      maxRetries: 3,
-      cacheTTL: 300, // 5 minutes for price data
-    });
+    // yahoo-finance2 v3.x requires instantiation
+    this.yf = new YahooFinance();
+    logger.info('YahooFinanceClient initialized');
   }
 
   /**
-   * Always ready (no API key required)
-   * @returns {boolean}
+   * Always ready
    */
   isReady() {
     return true;
   }
 
   /**
-   * Get stock quote with extended data
-   * @param {string} symbol - Stock symbol
-   * @returns {Promise<Object>} Quote data
+   * Get quote for a single symbol
    */
   async getQuote(symbol) {
     try {
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote`;
-      const response = await this.client.get(url, {
-        params: {
-          symbols: symbol.toUpperCase(),
-          modules: 'price,summaryDetail,financialData',
-        },
+      const upperSymbol = symbol.toUpperCase();
+      logger.info('Fetching quote', { symbol: upperSymbol });
+
+      // Debug: Log what yahoo-finance2 returns
+      const quote = await this.yf.quote(upperSymbol);
+      logger.info('Yahoo quote response', {
+        symbol: upperSymbol,
+        hasQuote: !!quote,
+        quoteType: quote?.quoteType,
+        price: quote?.regularMarketPrice
       });
 
-      const result = response.data?.quoteResponse?.result?.[0];
-      if (!result) return null;
+      if (!quote) {
+        logger.warn('No quote returned from Yahoo', { symbol: upperSymbol });
+        return null;
+      }
 
       return {
-        symbol: result.symbol,
-        shortName: result.shortName,
-        longName: result.longName,
-        // Price data
-        regularMarketPrice: result.regularMarketPrice,
-        regularMarketChange: result.regularMarketChange,
-        regularMarketChangePercent: result.regularMarketChangePercent,
-        regularMarketVolume: result.regularMarketVolume,
-        regularMarketOpen: result.regularMarketOpen,
-        regularMarketDayHigh: result.regularMarketDayHigh,
-        regularMarketDayLow: result.regularMarketDayLow,
-        regularMarketPreviousClose: result.regularMarketPreviousClose,
-        // Market info
-        marketCap: result.marketCap,
-        exchange: result.exchange,
-        quoteType: result.quoteType,
-        currency: result.currency,
-        // Extended hours
-        preMarketPrice: result.preMarketPrice,
-        preMarketChange: result.preMarketChange,
-        postMarketPrice: result.postMarketPrice,
-        postMarketChange: result.postMarketChange,
-        // 52 week
-        fiftyTwoWeekHigh: result.fiftyTwoWeekHigh,
-        fiftyTwoWeekLow: result.fiftyTwoWeekLow,
-        fiftyTwoWeekHighChange: result.fiftyTwoWeekHighChange,
-        fiftyTwoWeekHighChangePercent: result.fiftyTwoWeekHighChangePercent,
-        fiftyTwoWeekLowChange: result.fiftyTwoWeekLowChange,
-        fiftyTwoWeekLowChangePercent: result.fiftyTwoWeekLowChangePercent,
-        // Averages
-        fiftyDayAverage: result.fiftyDayAverage,
-        twoHundredDayAverage: result.twoHundredDayAverage,
-        fiftyDayAverageChange: result.fiftyDayAverageChange,
-        twoHundredDayAverageChange: result.twoHundredDayAverageChange,
-        // Trading info
-        averageDailyVolume3Month: result.averageDailyVolume3Month,
-        averageDailyVolume10Day: result.averageDailyVolume10Day,
-        sharesOutstanding: result.sharesOutstanding,
-        // Earnings
-        trailingPE: result.trailingPE,
-        forwardPE: result.forwardPE,
-        epsTrailingTwelveMonths: result.epsTrailingTwelveMonths,
-        epsForward: result.epsForward,
-        epsCurrentYear: result.epsCurrentYear,
-        // Dividends
-        trailingAnnualDividendRate: result.trailingAnnualDividendRate,
-        trailingAnnualDividendYield: result.trailingAnnualDividendYield,
-        dividendDate: result.dividendDate,
-        // Analyst
-        targetMeanPrice: result.targetMeanPrice,
-        numberOfAnalystOpinions: result.numberOfAnalystOpinions,
-        // Book value
-        bookValue: result.bookValue,
-        priceToBook: result.priceToBook,
+        symbol: quote.symbol,
+        shortName: quote.shortName,
+        longName: quote.longName,
+        regularMarketPrice: quote.regularMarketPrice,
+        regularMarketChange: quote.regularMarketChange,
+        regularMarketChangePercent: quote.regularMarketChangePercent,
+        regularMarketVolume: quote.regularMarketVolume,
+        regularMarketDayHigh: quote.regularMarketDayHigh,
+        regularMarketDayLow: quote.regularMarketDayLow,
+        regularMarketOpen: quote.regularMarketOpen,
+        regularMarketPreviousClose: quote.regularMarketPreviousClose,
+        marketCap: quote.marketCap,
+        fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
+        fiftyTwoWeekLow: quote.fiftyTwoWeekLow,
+        fiftyDayAverage: quote.fiftyDayAverage,
+        twoHundredDayAverage: quote.twoHundredDayAverage,
+        trailingPE: quote.trailingPE,
+        forwardPE: quote.forwardPE,
+        trailingAnnualDividendYield: quote.trailingAnnualDividendYield,
+        dividendYield: quote.dividendYield,
+        beta: quote.beta,
+        averageDailyVolume3Month: quote.averageDailyVolume3Month,
+        exchange: quote.exchange,
+        quoteType: quote.quoteType,
+        epsTrailingTwelveMonths: quote.epsTrailingTwelveMonths,
+        bookValue: quote.bookValue,
+        priceToBook: quote.priceToBook,
       };
     } catch (error) {
-      this.logger.error(`Failed to get Yahoo quote for ${symbol}`, error);
+      logger.error('Failed to fetch quote', {
+        symbol,
+        errorMessage: error.message,
+        errorName: error.name,
+        errorStack: error.stack?.substring(0, 500)
+      });
       return null;
     }
   }
 
   /**
-   * Get multiple quotes at once
-   * @param {Array<string>} symbols - Array of stock symbols
-   * @returns {Promise<Array>} Array of quote data
+   * Get quotes for multiple symbols
    */
   async getQuotes(symbols) {
     try {
-      const url = `https://query1.finance.yahoo.com/v7/finance/quote`;
-      const response = await this.client.get(url, {
-        params: {
-          symbols: symbols.map((s) => s.toUpperCase()).join(','),
-        },
-      });
-
-      const results = response.data?.quoteResponse?.result || [];
-      return results.map((result) => ({
-        symbol: result.symbol,
-        shortName: result.shortName,
-        regularMarketPrice: result.regularMarketPrice,
-        regularMarketChange: result.regularMarketChange,
-        regularMarketChangePercent: result.regularMarketChangePercent,
-        regularMarketVolume: result.regularMarketVolume,
-        marketCap: result.marketCap,
-        fiftyTwoWeekHigh: result.fiftyTwoWeekHigh,
-        fiftyTwoWeekLow: result.fiftyTwoWeekLow,
-        trailingPE: result.trailingPE,
-        forwardPE: result.forwardPE,
-        dividendYield: result.trailingAnnualDividendYield,
-      }));
+      logger.info('Fetching quotes', { count: symbols.length });
+      const results = await Promise.all(
+        symbols.map(s => this.getQuote(s))
+      );
+      return results.filter(q => q !== null);
     } catch (error) {
-      this.logger.error(`Failed to get Yahoo quotes for ${symbols.join(',')}`, error);
+      logger.error('Failed to fetch quotes', { error: error.message });
       return [];
     }
   }
 
   /**
-   * Get historical price data
-   * @param {string} symbol - Stock symbol
-   * @param {string} range - Time range ('1d', '5d', '1mo', '3mo', '6mo', '1y', '2y', '5y', 'max')
-   * @param {string} interval - Data interval ('1m', '5m', '15m', '30m', '60m', '1d', '1wk', '1mo')
-   * @returns {Promise<Object>} Historical price data
+   * Get historical prices
    */
   async getHistoricalPrices(symbol, range = '1y', interval = '1d') {
     try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}`;
-      const response = await this.client.get(url, {
-        params: {
-          range,
-          interval,
-          includePrePost: false,
-        },
+      logger.info('Fetching historical', { symbol, range });
+
+      const periodMap = {
+        '1d': 1,
+        '5d': 5,
+        '1mo': 30,
+        '3mo': 90,
+        '6mo': 180,
+        '1y': 365,
+        '2y': 730,
+      };
+
+      const days = periodMap[range] || 365;
+      const period1 = new Date();
+      period1.setDate(period1.getDate() - days);
+
+      const result = await this.yf.historical(symbol.toUpperCase(), {
+        period1,
+        interval,
       });
 
-      const result = response.data?.chart?.result?.[0];
-      if (!result) return null;
+      if (!result || result.length === 0) return null;
 
-      const timestamps = result.timestamp || [];
-      const quote = result.indicators?.quote?.[0] || {};
-      const adjClose = result.indicators?.adjclose?.[0]?.adjclose || [];
-
-      const prices = timestamps.map((ts, i) => ({
-        date: new Date(ts * 1000).toISOString(),
-        timestamp: ts * 1000,
-        open: quote.open?.[i],
-        high: quote.high?.[i],
-        low: quote.low?.[i],
-        close: quote.close?.[i],
-        adjustedClose: adjClose[i],
-        volume: quote.volume?.[i],
+      const prices = result.map(item => ({
+        date: item.date?.toISOString(),
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close,
+        volume: item.volume,
+        adjClose: item.adjClose,
       }));
 
       // Calculate returns
@@ -197,10 +146,10 @@ class YahooFinanceClient extends BaseApiClient {
         }
       }
 
-      // Calculate volatility (standard deviation of returns)
-      const avgReturn = returns.reduce((sum, r) => sum + r, 0) / returns.length;
-      const variance = returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length;
-      const volatility = Math.sqrt(variance) * Math.sqrt(252); // Annualized
+      // Volatility
+      const avgReturn = returns.length > 0 ? returns.reduce((a, b) => a + b, 0) / returns.length : 0;
+      const variance = returns.length > 0 ? returns.reduce((sum, r) => sum + Math.pow(r - avgReturn, 2), 0) / returns.length : 0;
+      const volatility = Math.sqrt(variance) * Math.sqrt(252);
 
       return {
         symbol: symbol.toUpperCase(),
@@ -208,171 +157,142 @@ class YahooFinanceClient extends BaseApiClient {
         interval,
         prices,
         stats: {
-          high: Math.max(...prices.filter((p) => p.high).map((p) => p.high)),
-          low: Math.min(...prices.filter((p) => p.low).map((p) => p.low)),
+          high: Math.max(...prices.filter(p => p.high).map(p => p.high)),
+          low: Math.min(...prices.filter(p => p.low).map(p => p.low)),
           avgVolume: prices.reduce((sum, p) => sum + (p.volume || 0), 0) / prices.length,
           volatility,
-          returns: {
-            '1d': this._calculateReturn(prices, 1),
-            '1w': this._calculateReturn(prices, 5),
-            '1m': this._calculateReturn(prices, 21),
-            '3m': this._calculateReturn(prices, 63),
-            '6m': this._calculateReturn(prices, 126),
-            '1y': this._calculateReturn(prices, 252),
-          },
         },
       };
     } catch (error) {
-      this.logger.error(`Failed to get historical prices for ${symbol}`, error);
+      logger.error('Failed to fetch historical', { symbol, error: error.message });
       return null;
     }
   }
 
   /**
-   * Get detailed company financial data
-   * @param {string} symbol - Stock symbol
-   * @returns {Promise<Object>} Financial data
+   * Get detailed financials via quoteSummary
    */
   async getFinancials(symbol) {
     try {
-      const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol.toUpperCase()}`;
-      const response = await this.client.get(url, {
-        params: {
-          modules: 'incomeStatementHistory,balanceSheetHistory,cashflowStatementHistory,financialData,defaultKeyStatistics',
-        },
+      logger.info('Fetching financials', { symbol });
+
+      const result = await this.yf.quoteSummary(symbol.toUpperCase(), {
+        modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData'],
       });
 
-      const result = response.data?.quoteSummary?.result?.[0];
       if (!result) return null;
 
-      const financialData = result.financialData || {};
-      const keyStats = result.defaultKeyStatistics || {};
+      const summary = result.summaryDetail || {};
+      const stats = result.defaultKeyStatistics || {};
+      const financials = result.financialData || {};
 
       return {
         symbol: symbol.toUpperCase(),
         financialData: {
-          currentPrice: financialData.currentPrice?.raw,
-          targetHighPrice: financialData.targetHighPrice?.raw,
-          targetLowPrice: financialData.targetLowPrice?.raw,
-          targetMeanPrice: financialData.targetMeanPrice?.raw,
-          recommendationMean: financialData.recommendationMean?.raw,
-          recommendationKey: financialData.recommendationKey,
-          numberOfAnalystOpinions: financialData.numberOfAnalystOpinions?.raw,
-          totalCash: financialData.totalCash?.raw,
-          totalDebt: financialData.totalDebt?.raw,
-          totalRevenue: financialData.totalRevenue?.raw,
-          ebitda: financialData.ebitda?.raw,
-          operatingCashflow: financialData.operatingCashflow?.raw,
-          freeCashflow: financialData.freeCashflow?.raw,
-          debtToEquity: financialData.debtToEquity?.raw,
-          currentRatio: financialData.currentRatio?.raw,
-          quickRatio: financialData.quickRatio?.raw,
-          returnOnAssets: financialData.returnOnAssets?.raw,
-          returnOnEquity: financialData.returnOnEquity?.raw,
-          grossMargins: financialData.grossMargins?.raw,
-          operatingMargins: financialData.operatingMargins?.raw,
-          profitMargins: financialData.profitMargins?.raw,
-          revenueGrowth: financialData.revenueGrowth?.raw,
-          earningsGrowth: financialData.earningsGrowth?.raw,
+          currentPrice: financials.currentPrice,
+          targetHighPrice: financials.targetHighPrice,
+          targetLowPrice: financials.targetLowPrice,
+          targetMeanPrice: financials.targetMeanPrice,
+          recommendationMean: financials.recommendationMean,
+          recommendationKey: financials.recommendationKey,
+          numberOfAnalystOpinions: financials.numberOfAnalystOpinions,
+          totalCash: financials.totalCash,
+          totalDebt: financials.totalDebt,
+          totalRevenue: financials.totalRevenue,
+          ebitda: financials.ebitda,
+          operatingCashflow: financials.operatingCashflow,
+          freeCashflow: financials.freeCashflow,
+          debtToEquity: financials.debtToEquity,
+          currentRatio: financials.currentRatio,
+          quickRatio: financials.quickRatio,
+          returnOnAssets: financials.returnOnAssets,
+          returnOnEquity: financials.returnOnEquity,
+          grossMargins: financials.grossMargins,
+          operatingMargins: financials.operatingMargins,
+          profitMargins: financials.profitMargins,
+          revenueGrowth: financials.revenueGrowth,
+          earningsGrowth: financials.earningsGrowth,
         },
         keyStats: {
-          beta: keyStats.beta?.raw,
-          forwardPE: keyStats.forwardPE?.raw,
-          trailingEps: keyStats.trailingEps?.raw,
-          forwardEps: keyStats.forwardEps?.raw,
-          pegRatio: keyStats.pegRatio?.raw,
-          enterpriseValue: keyStats.enterpriseValue?.raw,
-          enterpriseToRevenue: keyStats.enterpriseToRevenue?.raw,
-          enterpriseToEbitda: keyStats.enterpriseToEbitda?.raw,
-          bookValue: keyStats.bookValue?.raw,
-          priceToBook: keyStats.priceToBook?.raw,
-          sharesOutstanding: keyStats.sharesOutstanding?.raw,
-          sharesShort: keyStats.sharesShort?.raw,
-          shortRatio: keyStats.shortRatio?.raw,
-          shortPercentOfFloat: keyStats.shortPercentOfFloat?.raw,
-          heldPercentInsiders: keyStats.heldPercentInsiders?.raw,
-          heldPercentInstitutions: keyStats.heldPercentInstitutions?.raw,
+          beta: stats.beta,
+          forwardPE: stats.forwardPE,
+          trailingEps: stats.trailingEps,
+          forwardEps: stats.forwardEps,
+          pegRatio: stats.pegRatio,
+          enterpriseValue: stats.enterpriseValue,
+          enterpriseToRevenue: stats.enterpriseToRevenue,
+          enterpriseToEbitda: stats.enterpriseToEbitda,
+          bookValue: stats.bookValue,
+          priceToBook: stats.priceToBook,
+          sharesOutstanding: stats.sharesOutstanding,
+          sharesShort: stats.sharesShort,
+          shortRatio: stats.shortRatio,
+          shortPercentOfFloat: stats.shortPercentOfFloat,
+          heldPercentInsiders: stats.heldPercentInsiders,
+          heldPercentInstitutions: stats.heldPercentInstitutions,
+        },
+        summaryDetail: {
+          dividendYield: summary.dividendYield,
+          dividendRate: summary.dividendRate,
+          payoutRatio: summary.payoutRatio,
+          trailingPE: summary.trailingPE,
+          forwardPE: summary.forwardPE,
+          priceToSalesTrailing12Months: summary.priceToSalesTrailing12Months,
+          fiftyTwoWeekHigh: summary.fiftyTwoWeekHigh,
+          fiftyTwoWeekLow: summary.fiftyTwoWeekLow,
+          fiftyDayAverage: summary.fiftyDayAverage,
+          twoHundredDayAverage: summary.twoHundredDayAverage,
+          marketCap: summary.marketCap,
+          beta: summary.beta,
         },
       };
     } catch (error) {
-      this.logger.error(`Failed to get financials for ${symbol}`, error);
+      logger.error('Failed to fetch financials', { symbol, error: error.message });
       return null;
-    }
-  }
-
-  /**
-   * Get market movers (gainers, losers, most active)
-   * @param {string} type - 'gainers', 'losers', or 'mostactive'
-   * @returns {Promise<Array>} Market movers
-   */
-  async getMarketMovers(type = 'mostactive') {
-    try {
-      const url = `https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved`;
-      const response = await this.client.get(url, {
-        params: {
-          scrIds: `day_${type}`,
-          count: 25,
-        },
-      });
-
-      const results = response.data?.finance?.result?.[0]?.quotes || [];
-      return results.map((q) => ({
-        symbol: q.symbol,
-        shortName: q.shortName,
-        regularMarketPrice: q.regularMarketPrice,
-        regularMarketChange: q.regularMarketChange,
-        regularMarketChangePercent: q.regularMarketChangePercent,
-        regularMarketVolume: q.regularMarketVolume,
-        marketCap: q.marketCap,
-      }));
-    } catch (error) {
-      this.logger.error(`Failed to get market movers (${type})`, error);
-      return [];
     }
   }
 
   /**
    * Search for symbols
-   * @param {string} query - Search query
-   * @returns {Promise<Array>} Matching symbols
    */
   async search(query) {
     try {
-      const url = `https://query1.finance.yahoo.com/v1/finance/search`;
-      const response = await this.client.get(url, {
-        params: {
-          q: query,
-          quotesCount: 10,
-          newsCount: 0,
-        },
-      });
+      logger.info('Searching', { query });
+      const results = await this.yf.search(query);
 
-      const quotes = response.data?.quotes || [];
-      return quotes.map((q) => ({
-        symbol: q.symbol,
-        shortName: q.shortname,
-        longName: q.longname,
-        exchange: q.exchange,
-        quoteType: q.quoteType,
-        industry: q.industry,
-        sector: q.sector,
-      }));
+      return (results.quotes || [])
+        .filter(q => q.quoteType === 'EQUITY')
+        .slice(0, 10)
+        .map(q => ({
+          symbol: q.symbol,
+          shortName: q.shortname,
+          longName: q.longname,
+          exchange: q.exchange,
+          quoteType: q.quoteType,
+        }));
     } catch (error) {
-      this.logger.error(`Failed to search for "${query}"`, error);
+      logger.error('Search failed', { query, error: error.message });
       return [];
     }
   }
 
   /**
-   * Calculate return over a period
-   * @private
+   * Get trending symbols
    */
-  _calculateReturn(prices, days) {
-    if (prices.length < days + 1) return null;
-    const current = prices[prices.length - 1].close;
-    const past = prices[prices.length - 1 - days]?.close;
-    if (!current || !past) return null;
-    return ((current - past) / past) * 100;
+  async getMarketMovers() {
+    try {
+      logger.info('Fetching trending');
+      const results = await this.yf.trendingSymbols('US');
+      const symbols = (results.quotes || []).map(q => q.symbol).slice(0, 20);
+
+      if (symbols.length > 0) {
+        return this.getQuotes(symbols);
+      }
+      return [];
+    } catch (error) {
+      logger.error('Failed to fetch trending', { error: error.message });
+      return [];
+    }
   }
 }
 
