@@ -349,6 +349,7 @@ export interface DiscoverResponse {
   success: boolean;
   stocks: Stock[];
   metadata: {
+    mode?: string;
     totalAnalyzed: number;
     passedScreen: number;
     returned: number;
@@ -407,3 +408,6 @@ export interface ScreeningCriteria {
 
 // Analysis Focus
 export type AnalysisFocus = 'value' | 'growth' | 'income' | 'momentum' | 'safety' | null;
+
+// Discovery Mode
+export type DiscoveryMode = 'trending' | 'bluechip' | 'gainers' | 'losers';

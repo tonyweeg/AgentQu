@@ -3,7 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import { useStockDiscovery } from './hooks/useStockDiscovery';
 import { usePortfolio } from './hooks/usePortfolio';
 import Dashboard from './components/Dashboard';
-import { ViewType, ScreeningCriteria, AnalysisFocus } from './lib/types';
+import { ViewType, ScreeningCriteria, AnalysisFocus, DiscoveryMode } from './lib/types';
 import './App.css';
 
 /**
@@ -61,9 +61,10 @@ function App() {
       symbols?: string[],
       criteria?: ScreeningCriteria,
       focus?: AnalysisFocus,
-      limit?: number
+      limit?: number,
+      mode?: DiscoveryMode
     ) => {
-      await discoverStocks(symbols, criteria, focus, limit);
+      await discoverStocks(symbols, criteria, focus, limit, mode);
     },
     [discoverStocks]
   );

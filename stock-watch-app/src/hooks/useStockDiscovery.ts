@@ -4,6 +4,7 @@ import {
   Stock,
   ScreeningCriteria,
   AnalysisFocus,
+  DiscoveryMode,
   DiscoverResponse,
   AnalyzeResponse,
   SearchResult,
@@ -51,9 +52,10 @@ export function useStockDiscovery(userId: string | null) {
       symbols?: string[],
       criteria?: ScreeningCriteria,
       focus?: AnalysisFocus,
-      limit: number = 20
+      limit: number = 20,
+      mode: DiscoveryMode = 'trending'
     ) => {
-      console.log('📈 STOCKS_DISCOVERY: Starting discovery', { symbols, criteria, focus });
+      console.log('📈 STOCKS_DISCOVERY: Starting discovery', { symbols, criteria, focus, mode });
 
       setState((prev) => ({ ...prev, loading: true, error: null }));
 
@@ -63,6 +65,7 @@ export function useStockDiscovery(userId: string | null) {
           symbols,
           criteria,
           focus,
+          mode,
           limit,
         })) as DiscoverResponse;
 

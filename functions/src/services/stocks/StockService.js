@@ -35,6 +35,7 @@ class StockService {
    * @param {Array<string>} params.symbols - Specific symbols to analyze
    * @param {Object} params.criteria - Screening criteria
    * @param {string} params.focus - Analysis focus (value, growth, etc.)
+   * @param {string} params.mode - Discovery mode: 'trending', 'bluechip', 'gainers', 'losers'
    * @param {number} params.limit - Max results
    * @returns {Promise<Object>} Discovery results
    */
@@ -47,13 +48,19 @@ class StockService {
         symbols = [],
         criteria = {},
         focus = null,
+        mode = 'trending', // Default to dynamic trending
         limit = 20,
       } = params;
 
-      this.logger.info('Discovering stocks', { userId, symbolCount: symbols.length, focus });
+      this.logger.info('Discovering stocks', { userId, symbolCount: symbols.length, focus, mode });
 
-      // If no symbols provided, use default popular stocks
-      const targetSymbols = symbols.length > 0 ? symbols : await this._getDefaultSymbols();
+      // Get symbols based on mode
+      let targetSymbols;
+      if (symbols.length > 0) {
+        targetSymbols = symbols;
+      } else {
+        targetSymbols = await this._getSymbolsByMode(mode);
+      }
 
       // Build scoring context (user preferences + macro data)
       const macroData = await this.dataFetcher.fetchMacroData();
@@ -84,6 +91,7 @@ class StockService {
         success: true,
         stocks: topStocks,
         metadata: {
+          mode,
           totalAnalyzed: stocks.length,
           passedScreen: filteredStocks.length,
           returned: topStocks.length,
@@ -354,11 +362,70 @@ class StockService {
   }
 
   /**
-   * Get default stock symbols for discovery
+   * Get symbols based on discovery mode
    * @private
    */
-  async _getDefaultSymbols() {
-    // Popular stocks across sectors
+  async _getSymbolsByMode(mode) {
+    switch (mode) {
+      case 'bluechip':
+        return this._getBlueChipSymbols();
+
+      case 'gainers':
+        return this._getDynamicSymbols('gainers');
+
+      case 'losers':
+        return this._getDynamicSymbols('losers');
+
+      case 'trending':
+      default:
+        return this._getDynamicSymbols('trending');
+    }
+  }
+
+  /**
+   * Get dynamic symbols from Yahoo Finance (trending, gainers, losers)
+   * @private
+   */
+  async _getDynamicSymbols(type) {
+    try {
+      this.logger.info(`Fetching dynamic symbols: ${type}`);
+
+      const marketData = await this.dataFetcher.getMarketOverview();
+
+      let symbols = [];
+
+      if (type === 'gainers' && marketData.gainers?.length > 0) {
+        symbols = marketData.gainers.map(s => s.symbol).filter(Boolean);
+      } else if (type === 'losers' && marketData.losers?.length > 0) {
+        symbols = marketData.losers.map(s => s.symbol).filter(Boolean);
+      } else if (marketData.mostActive?.length > 0) {
+        // Trending = most active
+        symbols = marketData.mostActive.map(s => s.symbol).filter(Boolean);
+      }
+
+      // If we got symbols, add some blue chips to round out the list
+      if (symbols.length > 0) {
+        const blueChips = this._getBlueChipSymbols().slice(0, 10);
+        // Merge without duplicates
+        const combined = [...new Set([...symbols, ...blueChips])];
+        this.logger.info(`Dynamic symbols: ${symbols.length} ${type}, combined with blue chips: ${combined.length}`);
+        return combined.slice(0, 30);
+      }
+
+      // Fallback to blue chips if dynamic fetch fails
+      this.logger.warn(`No dynamic symbols for ${type}, falling back to blue chips`);
+      return this._getBlueChipSymbols();
+    } catch (error) {
+      this.logger.error(`Failed to fetch dynamic symbols: ${type}`, error);
+      return this._getBlueChipSymbols();
+    }
+  }
+
+  /**
+   * Get blue chip stock symbols (classic stable stocks)
+   * @private
+   */
+  _getBlueChipSymbols() {
     return [
       // Technology
       'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA',

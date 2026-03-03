@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Stock, ScreeningCriteria, AnalysisFocus } from '../lib/types';
+import { Stock, ScreeningCriteria, AnalysisFocus, DiscoveryMode } from '../lib/types';
 import StockCard from './StockCard';
 
 interface DashboardProps {
@@ -13,7 +13,8 @@ interface DashboardProps {
     symbols?: string[],
     criteria?: ScreeningCriteria,
     focus?: AnalysisFocus,
-    limit?: number
+    limit?: number,
+    mode?: DiscoveryMode
   ) => void;
   onStockSelect: (symbol: string) => void;
   onAddToWatchlist: (symbol: string) => void;
@@ -44,13 +45,22 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFocus, setSelectedFocus] = useState<AnalysisFocus>(null);
+  const [selectedMode, setSelectedMode] = useState<DiscoveryMode>('trending');
   const [showFilters, setShowFilters] = useState(false);
   const [criteria, setCriteria] = useState<ScreeningCriteria>({});
+
+  // Mode tabs - dynamic + blue chip
+  const modeTabs: Array<{ value: DiscoveryMode; label: string; icon: string }> = [
+    { value: 'trending', label: 'Trending', icon: '🔥' },
+    { value: 'gainers', label: 'Gainers', icon: '📈' },
+    { value: 'losers', label: 'Losers', icon: '📉' },
+    { value: 'bluechip', label: 'Blue Chip', icon: '💎' },
+  ];
 
   // Initial load - intentionally only runs on mount
   useEffect(() => {
     if (stocks.length === 0 && !loading) {
-      onDiscover(undefined, criteria, selectedFocus, 20);
+      onDiscover(undefined, criteria, selectedFocus, 20, selectedMode);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -80,7 +90,12 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const handleFocusChange = (focus: AnalysisFocus) => {
     setSelectedFocus(focus);
-    onDiscover(undefined, criteria, focus, 20);
+    onDiscover(undefined, criteria, focus, 20, selectedMode);
+  };
+
+  const handleModeChange = (mode: DiscoveryMode) => {
+    setSelectedMode(mode);
+    onDiscover(undefined, criteria, selectedFocus, 20, mode);
   };
 
   const handleSearchSelect = (symbol: string) => {
@@ -90,7 +105,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleRefresh = () => {
-    onDiscover(undefined, criteria, selectedFocus, 20);
+    onDiscover(undefined, criteria, selectedFocus, 20, selectedMode);
   };
 
   return (
@@ -127,8 +142,28 @@ const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
 
+          {/* Discovery Mode Selector */}
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+            {modeTabs.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => handleModeChange(tab.value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+                  selectedMode === tab.value
+                    ? tab.value === 'bluechip'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
           {/* Search Bar */}
-          <div className="mt-4 relative">
+          <div className="mt-3 relative">
             <input
               type="text"
               placeholder="Search stocks (e.g., AAPL, Apple)"
@@ -264,7 +299,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button
                   onClick={() => {
                     setCriteria({});
-                    onDiscover(undefined, {}, selectedFocus, 20);
+                    onDiscover(undefined, {}, selectedFocus, 20, selectedMode);
                   }}
                   className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
                 >
@@ -272,7 +307,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </button>
                 <button
                   onClick={() => {
-                    onDiscover(undefined, criteria, selectedFocus, 20);
+                    onDiscover(undefined, criteria, selectedFocus, 20, selectedMode);
                     setShowFilters(false);
                   }}
                   className="px-4 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
@@ -315,7 +350,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           <>
             <div className="flex items-center justify-between mb-4">
               <p className="text-sm text-gray-500">
-                Showing {stocks.length} stocks
+                Showing {stocks.length} {modeTabs.find(t => t.value === selectedMode)?.label || 'stocks'}
                 {selectedFocus && ` • ${selectedFocus.charAt(0).toUpperCase() + selectedFocus.slice(1)} focus`}
               </p>
               {loading && <span className="text-sm text-gray-400">Updating...</span>}
