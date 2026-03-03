@@ -13,6 +13,9 @@ const cirqles = require('./cirqles');
 const social = require('./social');
 const weather = require('./weather');
 
+// Stock Functions
+const stocks = require('./stocks');
+
 module.exports = {
   // Activity Functions
   discoverActivities: activities.discoverActivities,
@@ -47,4 +50,18 @@ module.exports = {
   getAirQuality: weather.getAirQuality,
   getSolarData: weather.getSolarData,
   getEnvironmentalData: weather.getEnvironmentalData,
+
+  // Stock Functions
+  discoverStocks: stocks.discoverStocks,
+  analyzeStock: stocks.analyzeStock,
+  searchStocks: stocks.searchStocks,
+  getMarketOverview: stocks.getMarketOverview,
+  getWatchlist: stocks.getWatchlist,
+  addToWatchlist: stocks.addToWatchlist,
+  removeFromWatchlist: stocks.removeFromWatchlist,
+  getPortfolio: stocks.getPortfolio,
+  addToPortfolio: stocks.addToPortfolio,
+  sellFromPortfolio: stocks.sellFromPortfolio,
+  saveStockPreferences: stocks.saveStockPreferences,
+  getStockPreferences: stocks.getStockPreferences,
 };

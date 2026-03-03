@@ -78,6 +78,23 @@ exports.getSolarData = functions.getSolarData;
 exports.getEnvironmentalData = functions.getEnvironmentalData;
 
 // ============================================================================
+// STOCK FUNCTIONS (AgentQu Stocks)
+// ============================================================================
+
+exports.discoverStocks = functions.discoverStocks;
+exports.analyzeStock = functions.analyzeStock;
+exports.searchStocks = functions.searchStocks;
+exports.getMarketOverview = functions.getMarketOverview;
+exports.getWatchlist = functions.getWatchlist;
+exports.addToWatchlist = functions.addToWatchlist;
+exports.removeFromWatchlist = functions.removeFromWatchlist;
+exports.getPortfolio = functions.getPortfolio;
+exports.addToPortfolio = functions.addToPortfolio;
+exports.sellFromPortfolio = functions.sellFromPortfolio;
+exports.saveStockPreferences = functions.saveStockPreferences;
+exports.getStockPreferences = functions.getStockPreferences;
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 

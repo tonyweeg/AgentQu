@@ -5,6 +5,7 @@
 !package-lock.json
 !tsconfig.json
 !firestore.indexes.json
+!manifest.json
 
 # Environment variables
 .env
@@ -33,3 +34,4 @@ firebase-debug.log
 # Firebase cache
 .firebase/
 functions/.env
+stock-watch/
