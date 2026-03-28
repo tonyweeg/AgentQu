@@ -16,18 +16,18 @@ interface LegendItem {
 const LEGEND_ITEMS: LegendItem[] = [
   {
     color: 'bg-shadow-approved',
-    label: 'shadow / bias flag',
-    description: 'Ambiguity surfaced in original text',
+    label: 'flagged bias',
+    description: 'Ambiguity identified in Shadow text',
   },
   {
     color: 'bg-shadow-compliant',
-    label: 'revised in V2.0',
-    description: 'Language updated for clarity',
+    label: 'revised',
+    description: 'Shadow text updated in V2.0',
   },
   {
     color: 'bg-shadow-revised',
-    label: 'new language added',
-    description: 'New text added in V2.0',
+    label: 'new in V2.0',
+    description: 'New language added to Revised',
   },
 ];
 

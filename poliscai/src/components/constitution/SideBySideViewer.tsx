@@ -200,9 +200,9 @@ export function SideBySideViewer({
           {/* Header */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
-              V1.0 — Original Constitution
+              Shadow
               <span className="text-gray-400 font-normal ml-1">
-                ({articleSection.includes('Amendment') ? `Ratified` : '1787 — present'})
+                — Original {articleSection.includes('Amendment') ? `(Ratified)` : '(1787)'}
               </span>
             </h3>
             <p className="text-poliscai-dark font-medium">
@@ -227,13 +227,13 @@ export function SideBySideViewer({
           {/* Header */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">
-              V2.0 — Revised
+              Revised
               <span className="text-gray-400 font-normal ml-1">
-                (PoliScai | Shadow surfaced)
+                — V2.0 (Community Draft)
               </span>
             </h3>
             <p className="text-poliscai-dark font-medium">
-              {articleSection} — V2.0 Revision
+              {articleSection}
             </p>
           </div>
 
