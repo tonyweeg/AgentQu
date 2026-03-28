@@ -9,6 +9,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { Home } from './pages/Home';
 import { ConstitutionV2 } from './pages/ConstitutionV2';
 import { Review } from './pages/Review';
+import { Query } from './pages/Query';
 import './index.css';
 
 function App() {
@@ -19,9 +20,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/constitution" element={<ConstitutionV2 />} />
           <Route path="/review" element={<Review />} />
-          {/* Phase 4+ routes */}
-          <Route path="/query" element={<ComingSoon title="Constitutionality Query" />} />
-          <Route path="/analysis" element={<ComingSoon title="AI Analysis" />} />
+          <Route path="/query" element={<Query />} />
+          {/* Phase 5+ routes */}
+          <Route path="/analysis" element={<ComingSoon title="Deep Analysis" />} />
           <Route path="/discover" element={<ComingSoon title="Discover Shadow Notes" />} />
           <Route path="/record/:id" element={<ComingSoon title="Public Record" />} />
         </Routes>
