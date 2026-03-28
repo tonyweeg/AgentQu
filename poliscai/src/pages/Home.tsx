@@ -38,6 +38,9 @@ export function Home() {
               A community-governed, AI-assisted constitutional scholarship platform.
               Surface hidden assumptions. Propose unambiguous language.
               Hold a mirror up to the Constitution.
+              <span className="block mt-4 text-poliscai-secondary font-semibold">
+                Collectively, we will help create Version 2.0 of the Constitution.
+              </span>
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
