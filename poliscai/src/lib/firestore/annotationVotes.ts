@@ -3,6 +3,7 @@
  * PoliScai - Democracy V2.0
  *
  * Simple voting system for shadow annotations
+ * Annotations become "canon" when they reach 75% approval with 3+ votes
  */
 
 import {
@@ -16,12 +17,20 @@ import {
 } from 'firebase/firestore';
 import { db, COLLECTIONS } from '../../config/firebase';
 
+// Approval thresholds
+export const CANON_THRESHOLD = 0.75; // 75% approval needed
+export const MIN_VOTES_FOR_CANON = 3; // Minimum votes before canon status can trigger
+
 interface AnnotationVote {
   annotationId: string;
   upVotes: number;
   downVotes: number;
   voters: Record<string, 'up' | 'down'>; // userId -> vote
   updatedAt: Timestamp;
+  // Canon status
+  isCanon?: boolean;
+  canonAt?: Timestamp;
+  canonApprovalPercent?: number;
 }
 
 /**
@@ -58,32 +67,46 @@ export function subscribeToAnnotationVotes(
 
 /**
  * Cast a vote on an annotation
+ * Automatically promotes to canon when threshold is met
  */
 export async function voteOnAnnotation(
   annotationId: string,
   userId: string,
   value: 'up' | 'down'
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; becameCanon?: boolean }> {
   const docRef = doc(db, COLLECTIONS.ANNOTATION_VOTES || 'annotationVotes', annotationId);
 
   try {
     const snapshot = await getDoc(docRef);
+    let newUpVotes = 0;
+    let newDownVotes = 0;
 
     if (!snapshot.exists()) {
       // Create new vote document
+      newUpVotes = value === 'up' ? 1 : 0;
+      newDownVotes = value === 'down' ? 1 : 0;
+
       await setDoc(docRef, {
         annotationId,
-        upVotes: value === 'up' ? 1 : 0,
-        downVotes: value === 'down' ? 1 : 0,
+        upVotes: newUpVotes,
+        downVotes: newDownVotes,
         voters: { [userId]: value },
         updatedAt: Timestamp.now(),
+        isCanon: false,
       });
     } else {
       const data = snapshot.data() as AnnotationVote;
       const previousVote = data.voters?.[userId];
 
+      // Calculate new vote counts
+      newUpVotes = data.upVotes || 0;
+      newDownVotes = data.downVotes || 0;
+
       if (previousVote === value) {
         // Same vote - remove it (toggle off)
+        if (value === 'up') newUpVotes--;
+        else newDownVotes--;
+
         await updateDoc(docRef, {
           [value === 'up' ? 'upVotes' : 'downVotes']: increment(-1),
           [`voters.${userId}`]: null,
@@ -91,6 +114,14 @@ export async function voteOnAnnotation(
         });
       } else if (previousVote) {
         // Changing vote
+        if (value === 'up') {
+          newUpVotes++;
+          newDownVotes--;
+        } else {
+          newUpVotes--;
+          newDownVotes++;
+        }
+
         await updateDoc(docRef, {
           upVotes: increment(value === 'up' ? 1 : -1),
           downVotes: increment(value === 'down' ? 1 : -1),
@@ -99,6 +130,9 @@ export async function voteOnAnnotation(
         });
       } else {
         // New vote
+        if (value === 'up') newUpVotes++;
+        else newDownVotes++;
+
         await updateDoc(docRef, {
           [value === 'up' ? 'upVotes' : 'downVotes']: increment(1),
           [`voters.${userId}`]: value,
@@ -107,7 +141,34 @@ export async function voteOnAnnotation(
       }
     }
 
-    return { success: true };
+    // Check for canon threshold
+    const totalVotes = newUpVotes + newDownVotes;
+    const approvalPercent = totalVotes > 0 ? newUpVotes / totalVotes : 0;
+    const meetsCanonThreshold = totalVotes >= MIN_VOTES_FOR_CANON && approvalPercent >= CANON_THRESHOLD;
+
+    // Update canon status if threshold met (and not already canon)
+    const currentData = (await getDoc(docRef)).data() as AnnotationVote;
+    if (meetsCanonThreshold && !currentData?.isCanon) {
+      await updateDoc(docRef, {
+        isCanon: true,
+        canonAt: Timestamp.now(),
+        canonApprovalPercent: Math.round(approvalPercent * 100),
+      });
+      console.log('POLISCAI_DEBUG: Annotation promoted to canon!', annotationId);
+      return { success: true, becameCanon: true };
+    }
+
+    // Remove canon status if it drops below threshold
+    if (!meetsCanonThreshold && currentData?.isCanon) {
+      await updateDoc(docRef, {
+        isCanon: false,
+        canonAt: null,
+        canonApprovalPercent: null,
+      });
+      console.log('POLISCAI_DEBUG: Annotation removed from canon', annotationId);
+    }
+
+    return { success: true, becameCanon: false };
   } catch (error: any) {
     console.error('POLISCAI_DEBUG: Error voting on annotation:', error);
     return { success: false, error: error.message };

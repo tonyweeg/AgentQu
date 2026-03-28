@@ -13,6 +13,7 @@ import {
   voteOnAnnotation,
   subscribeToAnnotationVotes,
   calculateApproval,
+  MIN_VOTES_FOR_CANON,
 } from '../../lib/firestore/annotationVotes';
 import {
   Flag,
@@ -29,6 +30,8 @@ import {
   ThumbsDown,
   Users,
   Loader2,
+  Crown,
+  PartyPopper,
 } from 'lucide-react';
 
 // Types for shadow annotations
@@ -45,6 +48,7 @@ interface AnnotationVoteData {
   upVotes: number;
   downVotes: number;
   voters: Record<string, 'up' | 'down'>;
+  isCanon?: boolean;
 }
 
 // Type badge configurations
@@ -108,6 +112,7 @@ export function SideBySideViewer({
   const [voteData, setVoteData] = useState<AnnotationVoteData | null>(null);
   const [isVoting, setIsVoting] = useState(false);
   const [voteSuccess, setVoteSuccess] = useState<string | null>(null);
+  const [showCanonCelebration, setShowCanonCelebration] = useState(false);
 
   // Subscribe to real-time vote updates when modal is open
   useEffect(() => {
@@ -122,9 +127,10 @@ export function SideBySideViewer({
           upVotes: votes.upVotes || 0,
           downVotes: votes.downVotes || 0,
           voters: votes.voters || {},
+          isCanon: votes.isCanon || false,
         });
       } else {
-        setVoteData({ upVotes: 0, downVotes: 0, voters: {} });
+        setVoteData({ upVotes: 0, downVotes: 0, voters: {}, isCanon: false });
       }
     });
 
@@ -141,6 +147,12 @@ export function SideBySideViewer({
     if (result.success) {
       setVoteSuccess(value);
       setTimeout(() => setVoteSuccess(null), 1500);
+
+      // Show celebration if this vote made it canon!
+      if (result.becameCanon) {
+        setShowCanonCelebration(true);
+        setTimeout(() => setShowCanonCelebration(false), 4000);
+      }
     }
     setIsVoting(false);
   };
@@ -561,9 +573,29 @@ export function SideBySideViewer({
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 px-6 py-4">
-              <h3 className="text-white font-bold text-lg">Flagged Bias</h3>
-              <p className="text-white/80 text-sm">Vote to approve or reject this flag</p>
+            <div className={`px-6 py-4 ${
+              voteData?.isCanon
+                ? 'bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600'
+                : 'bg-gradient-to-r from-red-500 to-rose-600'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                    {voteData?.isCanon && <Crown className="w-5 h-5" />}
+                    {voteData?.isCanon ? 'Canon' : 'Flagged Bias'}
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    {voteData?.isCanon
+                      ? 'Community approved - part of the official record'
+                      : 'Vote to approve or reject this flag'}
+                  </p>
+                </div>
+                {voteData?.isCanon && (
+                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <Crown className="w-6 h-6 text-white" />
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Content */}
@@ -593,20 +625,39 @@ export function SideBySideViewer({
                   </span>
                 </div>
 
+                {/* Canon Status Badge */}
+                {voteData?.isCanon && (
+                  <div className="mb-4 p-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-yellow-600" />
+                      <span className="font-bold text-yellow-800">Part of Canon</span>
+                      <span className="ml-auto text-sm text-yellow-600">Official Record</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Approval Bar */}
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-1">
-                    <span className={`font-medium ${approvalPercent >= 75 ? 'text-green-600' : 'text-gray-600'}`}>
+                    <span className={`font-medium ${voteData?.isCanon ? 'text-yellow-600' : approvalPercent >= 75 ? 'text-green-600' : 'text-gray-600'}`}>
                       {approvalPercent}% Approval
                     </span>
-                    <span className="text-gray-400 text-xs">
-                      75% needed for canon
-                    </span>
+                    {totalVotes < MIN_VOTES_FOR_CANON ? (
+                      <span className="text-blue-500 text-xs font-medium">
+                        {MIN_VOTES_FOR_CANON - totalVotes} more vote{MIN_VOTES_FOR_CANON - totalVotes !== 1 ? 's' : ''} needed
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">
+                        75% needed for canon
+                      </span>
+                    )}
                   </div>
                   <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        approvalPercent >= 75
+                        voteData?.isCanon
+                          ? 'bg-gradient-to-r from-yellow-500 to-amber-500'
+                          : approvalPercent >= 75
                           ? 'bg-gradient-to-r from-green-500 to-emerald-500'
                           : approvalPercent >= 50
                           ? 'bg-gradient-to-r from-yellow-500 to-amber-500'
@@ -689,6 +740,29 @@ export function SideBySideViewer({
               >
                 Done
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Canon Celebration Overlay */}
+      {showCanonCelebration && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+          <div className="animate-scale-in">
+            <div className="bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 text-white px-8 py-6 rounded-3xl shadow-2xl text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center animate-bounce">
+                  <Crown className="w-10 h-10" />
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <PartyPopper className="w-6 h-6" />
+                <h2 className="text-2xl font-bold">Promoted to Canon!</h2>
+                <PartyPopper className="w-6 h-6 scale-x-[-1]" />
+              </div>
+              <p className="text-white/80">
+                This flag is now part of the official record
+              </p>
             </div>
           </div>
         </div>
