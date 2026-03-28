@@ -30,8 +30,8 @@ module.exports = {
         }
       },
       fontFamily: {
-        'serif': ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'serif': ['Atkinson Hyperlegible', 'system-ui', 'sans-serif'],
+        'sans': ['Atkinson Hyperlegible', 'system-ui', 'sans-serif'],
         'mono': ['Fira Code', 'monospace'],
       },
       animation: {

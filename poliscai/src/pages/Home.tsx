@@ -29,7 +29,7 @@ export function Home() {
         <div className="max-w-6xl mx-auto px-4 py-20 sm:py-28">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold mb-6">
-              PoliScai
+              PoliSc<span className="text-poliscai-secondary">AI</span>
             </h1>
             <p className="text-xl sm:text-2xl text-poliscai-secondary font-medium mb-4">
               Democracy V2.0
@@ -82,7 +82,7 @@ export function Home() {
       <section className="py-16 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-serif font-bold text-center text-poliscai-dark mb-12">
-            What is PoliScai?
+            What is PoliSc<span className="text-poliscai-primary">AI</span>?
           </h2>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -230,7 +230,9 @@ export function Home() {
       {/* Footer */}
       <footer className="bg-poliscai-dark text-white py-8 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <p className="text-poliscai-secondary font-serif text-lg mb-2">PoliScai</p>
+          <p className="font-serif text-lg mb-2">
+            <span className="text-white">PoliSc</span><span className="text-poliscai-secondary">AI</span>
+          </p>
           <p className="text-white/60 text-sm">
             Democracy V2.0 — Political Science + AI
           </p>
