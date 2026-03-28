@@ -7,7 +7,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { Home } from './pages/Home';
-import { Constitution } from './pages/Constitution';
+import { ConstitutionV2 } from './pages/ConstitutionV2';
 import './index.css';
 
 function App() {
@@ -16,12 +16,13 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/constitution" element={<Constitution />} />
+          <Route path="/constitution" element={<ConstitutionV2 />} />
           {/* Phase 2+ routes */}
+          <Route path="/query" element={<ComingSoon title="Constitutionality Query" />} />
+          <Route path="/analysis" element={<ComingSoon title="AI Analysis" />} />
           <Route path="/discover" element={<ComingSoon title="Discover Shadow Notes" />} />
           <Route path="/submit" element={<ComingSoon title="Submit Ambiguity Flag" />} />
           <Route path="/review" element={<ComingSoon title="Community Review" />} />
-          <Route path="/query" element={<ComingSoon title="Constitutionality Query" />} />
           <Route path="/record/:id" element={<ComingSoon title="Public Record" />} />
         </Routes>
       </Router>
