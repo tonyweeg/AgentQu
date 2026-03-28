@@ -19,6 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/constitution" element={<ConstitutionV2 />} />
+          <Route path="/constitution/:clauseId" element={<ConstitutionV2 />} />
           <Route path="/review" element={<Review />} />
           <Route path="/query" element={<Query />} />
           {/* Phase 5+ routes */}

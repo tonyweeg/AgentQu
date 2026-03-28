@@ -3,9 +3,11 @@
  * PoliScai - Democracy V2.0
  *
  * Main constitution viewing page with V1.0/V2.0 side-by-side display
+ * Supports deep linking: /constitution/article-1-section-2
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { AppHeader } from '../components/layout/AppHeader';
 import { ClauseSelector } from '../components/constitution/ClauseSelector';
 import { SideBySideViewer } from '../components/constitution/SideBySideViewer';
@@ -18,10 +20,16 @@ import {
   BookOpen,
   Users,
   Sparkles,
+  Share2,
+  Check,
+  Link2,
 } from 'lucide-react';
 
 // Combine all clauses for lookup
 const ALL_CLAUSES = [...ALL_ARTICLES, ...ALL_AMENDMENTS];
+
+// Default clause if none specified
+const DEFAULT_CLAUSE_ID = 'article-1-section-2';
 
 // Create short navigation label from clause
 const getShortLabel = (clause: typeof ALL_CLAUSES[0]): string => {
@@ -71,8 +79,38 @@ const DEMO_REVISIONS: Record<string, string> = {
 };
 
 export function ConstitutionV2() {
-  const [selectedClauseId, setSelectedClauseId] = useState('article-1-section-2');
+  const { clauseId: urlClauseId } = useParams<{ clauseId?: string }>();
+  const navigate = useNavigate();
+
+  // Determine initial clause from URL or default
+  const initialClauseId = useMemo(() => {
+    if (urlClauseId && ALL_CLAUSES.find(c => c.id === urlClauseId)) {
+      return urlClauseId;
+    }
+    return DEFAULT_CLAUSE_ID;
+  }, [urlClauseId]);
+
+  const [selectedClauseId, setSelectedClauseId] = useState(initialClauseId);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showCopiedToast, setShowCopiedToast] = useState(false);
+
+  // Sync URL with selected clause
+  useEffect(() => {
+    // Only update URL if it differs from current selection
+    if (urlClauseId !== selectedClauseId) {
+      navigate(`/constitution/${selectedClauseId}`, { replace: true });
+    }
+  }, [selectedClauseId, urlClauseId, navigate]);
+
+  // Update state when URL changes (e.g., browser back/forward)
+  useEffect(() => {
+    if (urlClauseId && urlClauseId !== selectedClauseId) {
+      const clause = ALL_CLAUSES.find(c => c.id === urlClauseId);
+      if (clause) {
+        setSelectedClauseId(urlClauseId);
+      }
+    }
+  }, [urlClauseId, selectedClauseId]);
 
   const selectedClause = useMemo(() => {
     return ALL_CLAUSES.find((c) => c.id === selectedClauseId);
@@ -96,12 +134,32 @@ export function ConstitutionV2() {
     setTimeout(() => setShowSuccessToast(false), 5000);
   };
 
+  // Copy shareable link to clipboard
+  const handleShare = async () => {
+    const url = `${window.location.origin}/constitution/${selectedClauseId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setShowCopiedToast(true);
+      setTimeout(() => setShowCopiedToast(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+  };
+
   if (!selectedClause) {
     return (
       <div className="min-h-screen bg-poliscai-light">
         <AppHeader />
         <div className="flex items-center justify-center h-[60vh]">
-          <p className="text-gray-500">Clause not found</p>
+          <div className="text-center">
+            <p className="text-gray-500 mb-4">Clause not found</p>
+            <button
+              onClick={() => navigate('/constitution/' + DEFAULT_CLAUSE_ID)}
+              className="px-4 py-2 bg-poliscai-primary text-white rounded-lg hover:bg-poliscai-primary/90"
+            >
+              Go to Article I, Section 2
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -115,14 +173,35 @@ export function ConstitutionV2() {
       <div className="bg-gradient-to-r from-poliscai-primary via-poliscai-primary to-indigo-900 text-white">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-serif font-bold flex items-center gap-3">
-                <BookOpen className="w-8 h-8 text-poliscai-secondary" />
-                Constitution V2.0
-              </h1>
-              <p className="text-white/70 mt-1">
-                Community-driven constitutional scholarship
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-serif font-bold flex items-center gap-3">
+                  <BookOpen className="w-8 h-8 text-poliscai-secondary" />
+                  Constitution V2.0
+                </h1>
+                <p className="text-white/70 mt-1">
+                  Community-driven constitutional scholarship
+                </p>
+              </div>
+
+              {/* Share Button */}
+              <button
+                onClick={handleShare}
+                className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors border border-white/20"
+                title="Copy link to this clause"
+              >
+                {showCopiedToast ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-green-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4" />
+                    <span className="text-sm">Share</span>
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Clause Selector */}
@@ -165,7 +244,7 @@ export function ConstitutionV2() {
             )}
           </div>
 
-          <div className="w-1/3 text-center">
+          <div className="w-1/3 text-center flex justify-center gap-2">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
               <span className="text-sm font-medium text-gray-700">
                 {currentIndex + 1}
@@ -175,6 +254,19 @@ export function ConstitutionV2() {
                 {ALL_CLAUSES.length}
               </span>
             </div>
+
+            {/* Mobile share button */}
+            <button
+              onClick={handleShare}
+              className="md:hidden flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full hover:bg-poliscai-primary/10 transition-colors"
+              title="Copy link to this clause"
+            >
+              {showCopiedToast ? (
+                <Check className="w-4 h-4 text-green-600" />
+              ) : (
+                <Link2 className="w-4 h-4 text-gray-600" />
+              )}
+            </button>
           </div>
 
           <div className="w-1/3 flex justify-end">
@@ -213,6 +305,12 @@ export function ConstitutionV2() {
               <div>
                 <dt className="text-xs text-gray-500 uppercase tracking-wide">Title</dt>
                 <dd className="font-medium text-poliscai-dark">{selectedClause.title}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-gray-500 uppercase tracking-wide">Direct Link</dt>
+                <dd className="text-xs text-poliscai-primary break-all">
+                  /constitution/{selectedClauseId}
+                </dd>
               </div>
             </dl>
           </div>
@@ -293,6 +391,16 @@ export function ConstitutionV2() {
             >
               <X className="w-5 h-5" />
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Copied Toast (centered bottom) */}
+      {showCopiedToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
+          <div className="bg-gray-900 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-400" />
+            <span className="text-sm">Link copied to clipboard!</span>
           </div>
         </div>
       )}
