@@ -11,10 +11,24 @@ import { ClauseSelector } from '../components/constitution/ClauseSelector';
 import { Legend } from '../components/constitution/Legend';
 import { SideBySideViewer } from '../components/constitution/SideBySideViewer';
 import { ALL_ARTICLES, ALL_AMENDMENTS } from '../data';
-import { ChevronDown, CheckCircle, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, X } from 'lucide-react';
 
 // Combine all clauses for lookup
 const ALL_CLAUSES = [...ALL_ARTICLES, ...ALL_AMENDMENTS];
+
+// Create short navigation label from clause
+const getShortLabel = (clause: typeof ALL_CLAUSES[0]): string => {
+  // For amendments, use "Amendment I" etc.
+  if (clause.articleSection.includes('Amendment')) {
+    return clause.articleSection.replace('Amendment ', 'Amend. ');
+  }
+  // For articles, use "Art. I, §2" format
+  const match = clause.articleSection.match(/Article (\w+), Section (\d+)/);
+  if (match) {
+    return `Art. ${match[1]}, §${match[2]}`;
+  }
+  return clause.articleSection;
+};
 
 // Example shadow annotations for demo (Article I, Section 2)
 const DEMO_SHADOWS: Record<string, any[]> = {
@@ -52,13 +66,26 @@ const DEMO_REVISIONS: Record<string, string> = {
 };
 
 export function ConstitutionV2() {
-  const [selectedClauseId, setSelectedClauseId] = useState('article-1-section-2');
+  const [selectedClauseId, setSelectedClauseId] = useState('article-1-section-1');
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  // Get selected clause data
+  // Get selected clause data and navigation
   const selectedClause = useMemo(() => {
     return ALL_CLAUSES.find((c) => c.id === selectedClauseId);
   }, [selectedClauseId]);
+
+  const currentIndex = useMemo(() => {
+    return ALL_CLAUSES.findIndex((c) => c.id === selectedClauseId);
+  }, [selectedClauseId]);
+
+  const prevClause = currentIndex > 0 ? ALL_CLAUSES[currentIndex - 1] : null;
+  const nextClause = currentIndex < ALL_CLAUSES.length - 1 ? ALL_CLAUSES[currentIndex + 1] : null;
+
+  // Navigate to clause and scroll to top
+  const navigateTo = (clauseId: string) => {
+    setSelectedClauseId(clauseId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Handle successful flag submission
   const handleSubmissionSuccess = () => {
@@ -111,15 +138,45 @@ export function ConstitutionV2() {
           onSubmissionSuccess={handleSubmissionSuccess}
         />
 
-        {/* Scroll indicator */}
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
-            className="flex flex-col items-center text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <ChevronDown className="w-6 h-6 animate-bounce" />
-          </button>
-        </div>
+        {/* Navigation — Tufte minimal */}
+        <nav className="flex items-center justify-between mt-8 py-4 border-t border-gray-200">
+          {/* Previous */}
+          <div className="w-1/3">
+            {prevClause && (
+              <button
+                onClick={() => navigateTo(prevClause.id)}
+                className="group flex items-center gap-2 text-gray-500 hover:text-poliscai-primary transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                <span className="text-sm">
+                  Back to <span className="font-medium">{getShortLabel(prevClause)}</span>
+                </span>
+              </button>
+            )}
+          </div>
+
+          {/* Position indicator */}
+          <div className="w-1/3 text-center">
+            <span className="text-xs text-gray-400">
+              {currentIndex + 1} of {ALL_CLAUSES.length}
+            </span>
+          </div>
+
+          {/* Next */}
+          <div className="w-1/3 flex justify-end">
+            {nextClause && (
+              <button
+                onClick={() => navigateTo(nextClause.id)}
+                className="group flex items-center gap-2 text-gray-500 hover:text-poliscai-primary transition-colors"
+              >
+                <span className="text-sm">
+                  Next <span className="font-medium">{getShortLabel(nextClause)}</span>
+                </span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            )}
+          </div>
+        </nav>
 
         {/* Additional info section */}
         <div className="mt-12 grid md:grid-cols-2 gap-8">
