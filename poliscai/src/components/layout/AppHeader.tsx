@@ -17,6 +17,7 @@ interface NavTab {
 
 const NAV_TABS: NavTab[] = [
   { label: 'Constitution', path: '/constitution' },
+  { label: 'Review', path: '/review' },
   { label: 'Query', path: '/query' },
   { label: 'Analysis', path: '/analysis' },
 ];
