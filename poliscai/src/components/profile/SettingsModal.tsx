@@ -5,7 +5,7 @@
  * User settings and profile information
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import {
   X,
@@ -19,6 +19,7 @@ import {
   Bell,
   Moon,
   LogOut,
+  Loader2,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -27,13 +28,30 @@ interface SettingsModalProps {
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, updateUserSettings } = useAuth();
+  const [savingSettings, setSavingSettings] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSignOut = async () => {
     await signOut();
     onClose();
+  };
+
+  // Toggle email notifications
+  const handleToggleEmailNotifications = async () => {
+    if (savingSettings) return;
+
+    setSavingSettings(true);
+    try {
+      const currentValue = userProfile?.settings?.emailNotifications ?? false;
+      await updateUserSettings({ emailNotifications: !currentValue });
+      console.log('POLISCAI_DEBUG: Email notifications toggled to', !currentValue);
+    } catch (err) {
+      console.error('POLISCAI_DEBUG: Failed to update settings:', err);
+    } finally {
+      setSavingSettings(false);
+    }
   };
 
   // Format date
@@ -191,32 +209,59 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             </div>
           </div>
 
-          {/* Preferences (Coming Soon) */}
+          {/* Preferences */}
           <div className="p-6 border-b border-gray-100">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
               Preferences
-              <span className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-500 text-xs rounded">
-                Coming Soon
-              </span>
             </h3>
-            <div className="space-y-3 opacity-50">
+            <div className="space-y-3">
+              {/* Email Notifications - Functional */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Bell className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-700">Email Notifications</span>
+                  <Bell className="w-5 h-5 text-poliscai-primary" />
+                  <div>
+                    <span className="text-gray-700">Email Notifications</span>
+                    <p className="text-xs text-gray-500">Get notified when your flags are voted on</p>
+                  </div>
                 </div>
-                <div className="w-10 h-6 bg-gray-200 rounded-full relative">
-                  <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow" />
-                </div>
+                <button
+                  onClick={handleToggleEmailNotifications}
+                  disabled={savingSettings}
+                  className={`
+                    w-12 h-7 rounded-full relative transition-colors duration-200
+                    ${userProfile?.settings?.emailNotifications
+                      ? 'bg-poliscai-primary'
+                      : 'bg-gray-200'
+                    }
+                    ${savingSettings ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                >
+                  {savingSettings ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                    </div>
+                  ) : (
+                    <div
+                      className={`
+                        w-5 h-5 bg-white rounded-full absolute top-1 shadow-md transition-transform duration-200
+                        ${userProfile?.settings?.emailNotifications ? 'translate-x-6' : 'translate-x-1'}
+                      `}
+                    />
+                  )}
+                </button>
               </div>
 
-              <div className="flex items-center justify-between">
+              {/* Dark Mode - Coming Soon */}
+              <div className="flex items-center justify-between opacity-50">
                 <div className="flex items-center gap-3">
                   <Moon className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-700">Dark Mode</span>
+                  <div>
+                    <span className="text-gray-700">Dark Mode</span>
+                    <p className="text-xs text-gray-500">Coming soon</p>
+                  </div>
                 </div>
-                <div className="w-10 h-6 bg-gray-200 rounded-full relative">
-                  <div className="w-4 h-4 bg-white rounded-full absolute left-1 top-1 shadow" />
+                <div className="w-12 h-7 bg-gray-200 rounded-full relative cursor-not-allowed">
+                  <div className="w-5 h-5 bg-white rounded-full absolute left-1 top-1 shadow" />
                 </div>
               </div>
             </div>

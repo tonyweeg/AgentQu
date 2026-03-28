@@ -281,12 +281,32 @@ service cloud.firestore {
     // ========================================================================
 
     match /queries/{queryId} {
-      // Users can read their own queries, anonymous queries are ephemeral
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Users can read public queries OR their own queries
+      allow read: if resource.data.isPublic == true ||
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
 
-      // Queries are created via Cloud Functions only
-      allow create: if false;
+      // Authenticated users can create queries with their userId
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+
+      // No updates or deletions - immutable record
       allow update: if false;
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // POLISCAI: ANNOTATION VOTES
+    // ========================================================================
+
+    match /annotationVotes/{annotationId} {
+      // Anyone can read annotation votes (public transparency)
+      allow read: if true;
+
+      // Authenticated users can create/update annotation votes
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+
+      // No deletions
       allow delete: if false;
     }
 

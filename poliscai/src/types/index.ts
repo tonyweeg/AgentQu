@@ -46,5 +46,6 @@ export type {
 export type {
   UserRole,
   UserProfile,
+  UserSettings,
   ContributorStatus,
 } from './user';

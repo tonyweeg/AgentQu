@@ -11,6 +11,15 @@ export type UserRole =
   | 'admin';              // System admin
 
 /**
+ * UserSettings - User preferences
+ */
+export interface UserSettings {
+  emailNotifications: boolean;
+  // Future settings
+  darkMode?: boolean;
+}
+
+/**
  * UserProfile - Authenticated user profile
  */
 export interface UserProfile {
@@ -26,6 +35,9 @@ export interface UserProfile {
   votesCast: number;
   disputesSubmitted: number;
   queriesRun: number;
+
+  // Settings/Preferences
+  settings?: UserSettings;
 
   // Status
   isSuspended: boolean;

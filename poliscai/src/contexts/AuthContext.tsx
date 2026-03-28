@@ -14,7 +14,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider, COLLECTIONS } from '../config/firebase';
-import { UserProfile, UserRole } from '../types';
+import { UserProfile, UserRole, UserSettings } from '../types';
 
 interface AuthContextType {
   user: User | null;
@@ -23,6 +23,7 @@ interface AuthContextType {
   error: string | null;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateUserSettings: (settings: Partial<UserSettings>) => Promise<void>;
   isAuthenticated: boolean;
   isVerifiedContributor: boolean;
 }
@@ -132,6 +133,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Update user settings
+  const updateUserSettings = async (newSettings: Partial<UserSettings>) => {
+    if (!user) {
+      throw new Error('Must be signed in to update settings');
+    }
+
+    try {
+      console.log('POLISCAI_AUTH: Updating user settings...', newSettings);
+      const userRef = doc(db, COLLECTIONS.USERS, user.uid);
+
+      // Merge with existing settings
+      const currentSettings: UserSettings = userProfile?.settings || { emailNotifications: false };
+      const mergedSettings: UserSettings = {
+        emailNotifications: newSettings.emailNotifications ?? currentSettings.emailNotifications,
+        darkMode: newSettings.darkMode ?? currentSettings.darkMode,
+      };
+
+      await updateDoc(userRef, {
+        settings: mergedSettings,
+      });
+
+      // Update local state
+      if (userProfile) {
+        setUserProfile({
+          ...userProfile,
+          settings: mergedSettings,
+        });
+      }
+
+      console.log('POLISCAI_AUTH: Settings updated successfully');
+    } catch (err: any) {
+      console.error('POLISCAI_AUTH: Error updating settings:', err);
+      setError(err.message || 'Failed to update settings');
+      throw err;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     userProfile,
@@ -139,6 +177,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     error,
     signInWithGoogle,
     signOut,
+    updateUserSettings,
     isAuthenticated: !!user,
     isVerifiedContributor: (userProfile?.approvedSubmissionCount || 0) >= 5,
   };
