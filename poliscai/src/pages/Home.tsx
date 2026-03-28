@@ -44,16 +44,20 @@ export function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/constitution">
-                <Button size="lg" variant="secondary" icon={<BookOpen className="w-5 h-5" />}>
-                  Read the Constitution
-                </Button>
+              <Link
+                to="/constitution"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-medium rounded-lg bg-poliscai-secondary text-poliscai-dark hover:bg-poliscai-secondary/90 transition-colors"
+              >
+                <BookOpen className="w-5 h-5" />
+                Read the Constitution
               </Link>
               {isAuthenticated ? (
-                <Link to="/discover">
-                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" icon={<Search className="w-5 h-5" />}>
-                    Explore Shadow Notes
-                  </Button>
+                <Link
+                  to="/discover"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-medium rounded-lg border-2 border-white text-white hover:bg-white/10 transition-colors"
+                >
+                  <Search className="w-5 h-5" />
+                  Explore Shadow Notes
                 </Link>
               ) : (
                 <Button
@@ -210,11 +214,13 @@ export function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/constitution">
-              <Button size="lg" icon={<FileText className="w-5 h-5" />}>
-                Start Reading
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
+            <Link
+              to="/constitution"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 text-lg font-medium rounded-lg bg-poliscai-primary text-white hover:bg-poliscai-primary/90 transition-colors"
+            >
+              <FileText className="w-5 h-5" />
+              Start Reading
+              <ArrowRight className="w-5 h-5" />
             </Link>
             {!isAuthenticated && (
               <Button
