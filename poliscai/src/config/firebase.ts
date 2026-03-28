@@ -39,6 +39,7 @@ export const COLLECTIONS = {
   QUERIES: 'queries',
   USERS: 'users',
   AUDIT_LOG: 'auditLog',
+  ANNOTATION_VOTES: 'annotationVotes',
 } as const;
 
 export default app;

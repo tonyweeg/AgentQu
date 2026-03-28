@@ -3,12 +3,17 @@
  * PoliScai - Democracy V2.0
  *
  * Beautiful side-by-side display of Shadow (V1.0) and Revised (V2.0) text
- * with interactive highlights, tooltips, and visual connections
+ * with interactive highlights, tooltips, voting, and visual connections
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { FlagSubmissionModal } from './FlagSubmissionModal';
+import {
+  voteOnAnnotation,
+  subscribeToAnnotationVotes,
+  calculateApproval,
+} from '../../lib/firestore/annotationVotes';
 import {
   Flag,
   Sparkles,
@@ -20,6 +25,10 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  ThumbsUp,
+  ThumbsDown,
+  Users,
+  Loader2,
 } from 'lucide-react';
 
 // Types for shadow annotations
@@ -30,6 +39,12 @@ interface ShadowAnnotation {
   endIndex: number;
   description: string;
   type: string;
+}
+
+interface AnnotationVoteData {
+  upVotes: number;
+  downVotes: number;
+  voters: Record<string, 'up' | 'down'>;
 }
 
 // Type badge configurations
@@ -80,7 +95,7 @@ export function SideBySideViewer({
   shadowAnnotations = [],
   onSubmissionSuccess,
 }: SideBySideViewerProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [selectedText, setSelectedText] = useState<string | null>(null);
   const [selectedIndices, setSelectedIndices] = useState({ start: 0, end: 0 });
   const [showFlagTooltip, setShowFlagTooltip] = useState(false);
@@ -88,6 +103,50 @@ export function SideBySideViewer({
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [hoveredAnnotation, setHoveredAnnotation] = useState<string | null>(null);
   const [showAnnotationDetails, setShowAnnotationDetails] = useState<ShadowAnnotation | null>(null);
+
+  // Voting state
+  const [voteData, setVoteData] = useState<AnnotationVoteData | null>(null);
+  const [isVoting, setIsVoting] = useState(false);
+  const [voteSuccess, setVoteSuccess] = useState<string | null>(null);
+
+  // Subscribe to real-time vote updates when modal is open
+  useEffect(() => {
+    if (!showAnnotationDetails) {
+      setVoteData(null);
+      return;
+    }
+
+    const unsubscribe = subscribeToAnnotationVotes(showAnnotationDetails.id, (votes) => {
+      if (votes) {
+        setVoteData({
+          upVotes: votes.upVotes || 0,
+          downVotes: votes.downVotes || 0,
+          voters: votes.voters || {},
+        });
+      } else {
+        setVoteData({ upVotes: 0, downVotes: 0, voters: {} });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [showAnnotationDetails]);
+
+  // Handle voting
+  const handleVote = async (value: 'up' | 'down') => {
+    if (!user || !showAnnotationDetails) return;
+
+    setIsVoting(true);
+    const result = await voteOnAnnotation(showAnnotationDetails.id, user.uid, value);
+
+    if (result.success) {
+      setVoteSuccess(value);
+      setTimeout(() => setVoteSuccess(null), 1500);
+    }
+    setIsVoting(false);
+  };
+
+  // Get user's current vote
+  const userVote = user && voteData?.voters?.[user.uid];
 
   // Handle text selection in Shadow panel
   const handleMouseUp = useCallback(() => {
@@ -203,6 +262,7 @@ export function SideBySideViewer({
                   {typeConfig.label}
                 </span>
                 <span className="block mt-1">{annotation.description}</span>
+                <span className="block mt-2 text-white/60 text-[10px]">Click to vote</span>
               </span>
               <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
             </span>
@@ -248,8 +308,6 @@ export function SideBySideViewer({
     ];
 
     // Build highlighted segments
-
-    // Simple highlighting of inclusive terms
     const segments: React.ReactNode[] = [];
     let remainingText = revisedText;
     let keyIndex = 0;
@@ -283,6 +341,10 @@ export function SideBySideViewer({
 
   // Calculate revision progress
   const progressPercent = revisedText ? 100 : Math.min(shadowAnnotations.length * 33, 99);
+
+  // Calculate approval for current annotation
+  const approvalPercent = voteData ? calculateApproval(voteData.upVotes, voteData.downVotes) : 0;
+  const totalVotes = voteData ? voteData.upVotes + voteData.downVotes : 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
@@ -330,7 +392,7 @@ export function SideBySideViewer({
           </div>
           <div className="flex items-center gap-2 text-gray-400">
             <Info className="w-4 h-4" />
-            <span className="text-xs">Click highlighted text for details</span>
+            <span className="text-xs">Click highlighted text to vote</span>
           </div>
         </div>
       </div>
@@ -488,7 +550,7 @@ export function SideBySideViewer({
         </div>
       )}
 
-      {/* Annotation Details Modal */}
+      {/* Annotation Details Modal with Voting */}
       {showAnnotationDetails && (
         <div
           className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
@@ -498,10 +560,13 @@ export function SideBySideViewer({
             className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in"
             onClick={e => e.stopPropagation()}
           >
+            {/* Header */}
             <div className="bg-gradient-to-r from-red-500 to-rose-600 px-6 py-4">
               <h3 className="text-white font-bold text-lg">Flagged Bias</h3>
-              <p className="text-white/80 text-sm">Community-identified issue</p>
+              <p className="text-white/80 text-sm">Vote to approve or reject this flag</p>
             </div>
+
+            {/* Content */}
             <div className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-2xl font-serif font-bold text-red-800 bg-red-100 px-3 py-1 rounded-lg">
@@ -511,14 +576,118 @@ export function SideBySideViewer({
                   {getTypeConfig(showAnnotationDetails.type).label}
                 </span>
               </div>
-              <p className="text-gray-700 leading-relaxed">
+
+              <p className="text-gray-700 leading-relaxed mb-6">
                 {showAnnotationDetails.description}
               </p>
+
+              {/* Voting Section */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Users className="w-4 h-4" />
+                    <span className="text-sm font-medium">Community Vote</span>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {totalVotes} vote{totalVotes !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {/* Approval Bar */}
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span className={`font-medium ${approvalPercent >= 75 ? 'text-green-600' : 'text-gray-600'}`}>
+                      {approvalPercent}% Approval
+                    </span>
+                    <span className="text-gray-400 text-xs">
+                      75% needed for canon
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        approvalPercent >= 75
+                          ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                          : approvalPercent >= 50
+                          ? 'bg-gradient-to-r from-yellow-500 to-amber-500'
+                          : 'bg-gradient-to-r from-red-500 to-rose-500'
+                      }`}
+                      style={{ width: `${approvalPercent}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Vote Buttons */}
+                {isAuthenticated ? (
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleVote('up')}
+                      disabled={isVoting}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
+                        userVote === 'up'
+                          ? 'bg-green-500 text-white shadow-lg'
+                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-green-500 hover:text-green-600'
+                      } ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isVoting ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <ThumbsUp className={`w-5 h-5 ${userVote === 'up' ? 'fill-current' : ''}`} />
+                          <span>Approve</span>
+                          {voteData && <span className="text-sm opacity-75">({voteData.upVotes})</span>}
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => handleVote('down')}
+                      disabled={isVoting}
+                      className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
+                        userVote === 'down'
+                          ? 'bg-red-500 text-white shadow-lg'
+                          : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-red-500 hover:text-red-600'
+                      } ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {isVoting ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <ThumbsDown className={`w-5 h-5 ${userVote === 'down' ? 'fill-current' : ''}`} />
+                          <span>Reject</span>
+                          {voteData && <span className="text-sm opacity-75">({voteData.downVotes})</span>}
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-3 text-gray-500 text-sm">
+                    <a href="#" className="text-poliscai-primary font-medium hover:underline">
+                      Sign in
+                    </a>{' '}
+                    to vote on this flag
+                  </div>
+                )}
+
+                {/* Vote Success Indicator */}
+                {voteSuccess && (
+                  <div className="mt-3 text-center animate-fade-in">
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${
+                      voteSuccess === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      <CheckCircle2 className="w-4 h-4" />
+                      Vote recorded!
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Close Button */}
               <button
                 onClick={() => setShowAnnotationDetails(null)}
-                className="mt-6 w-full py-3 bg-gradient-to-r from-poliscai-primary to-indigo-800 text-white font-medium rounded-xl hover:shadow-lg transition-shadow"
+                className="w-full py-3 bg-gradient-to-r from-poliscai-primary to-indigo-800 text-white font-medium rounded-xl hover:shadow-lg transition-shadow"
               >
-                Got it
+                Done
               </button>
             </div>
           </div>
