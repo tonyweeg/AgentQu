@@ -8,6 +8,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { FlagSubmissionModal } from './FlagSubmissionModal';
 
 // Types for shadow annotations
 interface ShadowAnnotation {
@@ -35,6 +36,7 @@ interface SideBySideViewerProps {
   shadowAnnotations?: ShadowAnnotation[];
   v2Revisions?: V2Revision[];
   onTextSelect?: (selection: { text: string; startIndex: number; endIndex: number }) => void;
+  onSubmissionSuccess?: () => void;
 }
 
 export function SideBySideViewer({
@@ -46,11 +48,14 @@ export function SideBySideViewer({
   shadowAnnotations = [],
   v2Revisions = [],
   onTextSelect,
+  onSubmissionSuccess,
 }: SideBySideViewerProps) {
   const { isAuthenticated } = useAuth();
   const [selectedText, setSelectedText] = useState<string | null>(null);
+  const [selectedIndices, setSelectedIndices] = useState({ start: 0, end: 0 });
   const [showFlagTooltip, setShowFlagTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [showFlagModal, setShowFlagModal] = useState(false);
 
   // Handle text selection in V1.0 panel
   const handleMouseUp = useCallback(() => {
@@ -66,17 +71,41 @@ export function SideBySideViewer({
       return;
     }
 
+    // Calculate actual indices in the original text
+    const startIndex = originalText.indexOf(text);
+    const endIndex = startIndex !== -1 ? startIndex + text.length : text.length;
+
     // Get selection position for tooltip
     const range = selection.getRangeAt(0);
     const rect = range.getBoundingClientRect();
 
     setSelectedText(text);
+    setSelectedIndices({ start: startIndex !== -1 ? startIndex : 0, end: endIndex });
     setTooltipPosition({
       x: rect.left + rect.width / 2,
       y: rect.top - 10,
     });
     setShowFlagTooltip(true);
-  }, []);
+  }, [originalText]);
+
+  // Handle opening the flag modal
+  const handleOpenFlagModal = () => {
+    setShowFlagTooltip(false);
+    setShowFlagModal(true);
+    // Clear the selection
+    window.getSelection()?.removeAllRanges();
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setShowFlagModal(false);
+    setSelectedText(null);
+  };
+
+  // Handle successful submission
+  const handleSubmissionSuccess = () => {
+    onSubmissionSuccess?.();
+  };
 
   // Render V1.0 text with shadow highlights
   const renderOriginalText = () => {
@@ -223,14 +252,7 @@ export function SideBySideViewer({
         >
           <div className="bg-poliscai-dark text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-3">
             <button
-              onClick={() => {
-                onTextSelect?.({
-                  text: selectedText,
-                  startIndex: 0, // TODO: Calculate actual index
-                  endIndex: selectedText.length,
-                });
-                setShowFlagTooltip(false);
-              }}
+              onClick={handleOpenFlagModal}
               className="text-sm font-medium hover:text-poliscai-secondary transition-colors"
             >
               Flag as ambiguity
@@ -249,6 +271,18 @@ export function SideBySideViewer({
           </div>
         </div>
       )}
+
+      {/* Flag Submission Modal */}
+      <FlagSubmissionModal
+        isOpen={showFlagModal}
+        onClose={handleModalClose}
+        clauseId={clauseId}
+        clauseRef={articleSection}
+        flaggedText={selectedText || ''}
+        flaggedTextStart={selectedIndices.start}
+        flaggedTextEnd={selectedIndices.end}
+        onSubmitSuccess={handleSubmissionSuccess}
+      />
     </div>
   );
 }

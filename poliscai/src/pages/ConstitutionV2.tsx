@@ -11,7 +11,7 @@ import { ClauseSelector } from '../components/constitution/ClauseSelector';
 import { Legend } from '../components/constitution/Legend';
 import { SideBySideViewer } from '../components/constitution/SideBySideViewer';
 import { ALL_ARTICLES, ALL_AMENDMENTS } from '../data';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, CheckCircle, X } from 'lucide-react';
 
 // Combine all clauses for lookup
 const ALL_CLAUSES = [...ALL_ARTICLES, ...ALL_AMENDMENTS];
@@ -53,17 +53,19 @@ const DEMO_REVISIONS: Record<string, string> = {
 
 export function ConstitutionV2() {
   const [selectedClauseId, setSelectedClauseId] = useState('article-1-section-2');
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   // Get selected clause data
   const selectedClause = useMemo(() => {
     return ALL_CLAUSES.find((c) => c.id === selectedClauseId);
   }, [selectedClauseId]);
 
-  // Handle text selection for flagging
-  const handleTextSelect = (selection: { text: string; startIndex: number; endIndex: number }) => {
-    console.log('POLISCAI_DEBUG: Text selected for flagging:', selection);
-    // TODO: Open flag submission modal
-    alert(`Selected text: "${selection.text}"\n\nFlag submission form coming in Phase 3!`);
+  // Handle successful flag submission
+  const handleSubmissionSuccess = () => {
+    console.log('POLISCAI_DEBUG: Flag submission successful');
+    setShowSuccessToast(true);
+    // Auto-hide toast after 5 seconds
+    setTimeout(() => setShowSuccessToast(false), 5000);
   };
 
   if (!selectedClause) {
@@ -106,7 +108,7 @@ export function ConstitutionV2() {
           originalText={selectedClause.originalText}
           revisedText={DEMO_REVISIONS[selectedClauseId]}
           shadowAnnotations={DEMO_SHADOWS[selectedClauseId] || []}
-          onTextSelect={handleTextSelect}
+          onSubmissionSuccess={handleSubmissionSuccess}
         />
 
         {/* Scroll indicator */}
@@ -178,6 +180,27 @@ export function ConstitutionV2() {
           </div>
         </div>
       </main>
+
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
+          <div className="bg-green-600 text-white px-6 py-4 rounded-xl shadow-lg flex items-center gap-4">
+            <CheckCircle className="w-6 h-6 flex-shrink-0" />
+            <div>
+              <p className="font-semibold">Flag Submitted!</p>
+              <p className="text-sm text-green-100">
+                Your submission is now in community review.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessToast(false)}
+              className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
