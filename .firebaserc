@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "agentqu-platform"
+  },
+  "targets": {
+    "agentqu-platform": {
+      "hosting": {
+        "agentqu": [
+          "agentqu-platform"
+        ],
+        "poliscai": [
+          "poliscai-democracy"
+        ]
+      }
+    }
   }
 }
