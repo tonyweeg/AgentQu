@@ -217,44 +217,46 @@ export function ConstitutionV2() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Top Navigation */}
         <nav className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-          <div className="w-1/3">
-            {prevClause ? (
+          <div className="flex-1">
+            {prevClause && (
               <button
-                onClick={() => navigateTo(prevClause.id)}
-                className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-poliscai-primary/5 transition-all"
+                type="button"
+                onClick={() => {
+                  console.log('POLISCAI_DEBUG: Navigating to previous:', prevClause.id);
+                  navigateTo(prevClause.id);
+                }}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-100 hover:bg-poliscai-primary hover:text-white transition-all cursor-pointer"
               >
-                <ChevronLeft className="w-5 h-5 text-poliscai-primary" />
-                <div className="text-left hidden sm:block">
-                  <p className="text-xs text-gray-500">Previous</p>
-                  <p className="text-sm font-medium text-poliscai-dark">{getShortLabel(prevClause)}</p>
+                <ChevronLeft className="w-5 h-5" />
+                <div className="text-left">
+                  <p className="text-xs opacity-70">Previous</p>
+                  <p className="text-sm font-medium">{getShortLabel(prevClause)}</p>
                 </div>
               </button>
-            ) : (
-              <div />
             )}
           </div>
 
-          <div className="w-1/3 text-center">
-            <div className="inline-block">
-              <p className="text-lg font-serif font-bold text-poliscai-dark">{selectedClause.articleSection}</p>
-              <p className="text-sm text-gray-500">{selectedClause.title}</p>
-            </div>
+          <div className="flex-1 text-center px-4">
+            <p className="text-lg font-serif font-bold text-poliscai-dark">{selectedClause.articleSection}</p>
+            <p className="text-sm text-gray-500">{selectedClause.title}</p>
           </div>
 
-          <div className="w-1/3 flex justify-end">
-            {nextClause ? (
+          <div className="flex-1 flex justify-end">
+            {nextClause && (
               <button
-                onClick={() => navigateTo(nextClause.id)}
-                className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-poliscai-primary/5 transition-all"
+                type="button"
+                onClick={() => {
+                  console.log('POLISCAI_DEBUG: Navigating to next:', nextClause.id);
+                  navigateTo(nextClause.id);
+                }}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gray-100 hover:bg-poliscai-primary hover:text-white transition-all cursor-pointer"
               >
-                <div className="text-right hidden sm:block">
-                  <p className="text-xs text-gray-500">Next</p>
-                  <p className="text-sm font-medium text-poliscai-dark">{getShortLabel(nextClause)}</p>
+                <div className="text-right">
+                  <p className="text-xs opacity-70">Next</p>
+                  <p className="text-sm font-medium">{getShortLabel(nextClause)}</p>
                 </div>
-                <ChevronRight className="w-5 h-5 text-poliscai-primary" />
+                <ChevronRight className="w-5 h-5" />
               </button>
-            ) : (
-              <div />
             )}
           </div>
         </nav>
