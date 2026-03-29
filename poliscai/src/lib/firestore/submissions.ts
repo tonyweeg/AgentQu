@@ -36,7 +36,8 @@ export async function createSubmission(data: {
   userId: string;
   userDisplayName: string;
 }): Promise<string> {
-  const submissionData: Omit<AmbiguitySubmission, 'id'> = {
+  // Build submission data, excluding undefined optional fields (Firestore doesn't accept undefined)
+  const submissionData: Record<string, any> = {
     clauseId: data.clauseId,
     clauseRef: data.clauseRef,
     flaggedText: data.flaggedText,
@@ -44,9 +45,6 @@ export async function createSubmission(data: {
     flaggedTextEnd: data.flaggedTextEnd,
     type: data.type,
     shadowDescription: data.shadowDescription,
-    citation: data.citation,
-    eraOperative: data.eraOperative,
-    communityNote: data.communityNote,
     submittedBy: data.userId,
     submittedByDisplayName: data.userDisplayName,
     submittedAt: Timestamp.now(),
@@ -70,6 +68,11 @@ export async function createSubmission(data: {
     responses: [],
     isCanon: false,
   };
+
+  // Only add optional fields if they have values
+  if (data.citation) submissionData.citation = data.citation;
+  if (data.eraOperative) submissionData.eraOperative = data.eraOperative;
+  if (data.communityNote) submissionData.communityNote = data.communityNote;
 
   const docRef = await addDoc(collection(db, COLLECTIONS.SUBMISSIONS), submissionData);
   return docRef.id;
