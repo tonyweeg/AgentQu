@@ -99,6 +99,7 @@ export interface AmbiguitySubmission {
 
   type: AmbiguityType;
   shadowDescription: string;                     // what this text assumes or excludes (max 500 chars)
+  proposedRevision?: string;                     // user's suggested V2.0 replacement text (max 500 chars)
   citation?: string;                             // historical source or legal reference
   eraOperative?: string;                         // e.g. "1787–1870"
 

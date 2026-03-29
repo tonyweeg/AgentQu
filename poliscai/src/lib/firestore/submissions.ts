@@ -30,6 +30,7 @@ export async function createSubmission(data: {
   flaggedTextEnd: number;
   type: AmbiguityType;
   shadowDescription: string;
+  proposedRevision?: string;
   citation?: string;
   eraOperative?: string;
   communityNote?: string;
@@ -70,6 +71,7 @@ export async function createSubmission(data: {
   };
 
   // Only add optional fields if they have values
+  if (data.proposedRevision) submissionData.proposedRevision = data.proposedRevision;
   if (data.citation) submissionData.citation = data.citation;
   if (data.eraOperative) submissionData.eraOperative = data.eraOperative;
   if (data.communityNote) submissionData.communityNote = data.communityNote;
@@ -82,17 +84,25 @@ export async function createSubmission(data: {
  * Get submissions for a specific clause
  */
 export async function getSubmissionsForClause(clauseId: string): Promise<AmbiguitySubmission[]> {
+  // Simple query without orderBy to avoid index requirement
+  // Sort client-side until index is built
   const q = query(
     collection(db, COLLECTIONS.SUBMISSIONS),
-    where('clauseId', '==', clauseId),
-    orderBy('submittedAt', 'desc')
+    where('clauseId', '==', clauseId)
   );
 
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
+  const submissions = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
   })) as AmbiguitySubmission[];
+
+  // Sort by submittedAt descending (client-side)
+  return submissions.sort((a, b) => {
+    const aTime = a.submittedAt?.toMillis?.() || 0;
+    const bTime = b.submittedAt?.toMillis?.() || 0;
+    return bTime - aTime;
+  });
 }
 
 /**

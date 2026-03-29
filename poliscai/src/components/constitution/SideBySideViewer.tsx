@@ -41,7 +41,12 @@ interface ShadowAnnotation {
   startIndex: number;
   endIndex: number;
   description: string;
+  proposedRevision?: string;
   type: string;
+  // Metadata from real submissions
+  submittedBy?: string;
+  status?: string;
+  isCanon?: boolean;
 }
 
 interface AnnotationVoteData {
@@ -88,6 +93,137 @@ interface SideBySideViewerProps {
   revisedText?: string;
   shadowAnnotations?: ShadowAnnotation[];
   onSubmissionSuccess?: () => void;
+}
+
+// ProposalCard component for individual proposal voting
+function ProposalCard({
+  annotation,
+  isAuthenticated,
+  userId,
+}: {
+  annotation: ShadowAnnotation;
+  isAuthenticated: boolean;
+  userId?: string;
+}) {
+  const [votes, setVotes] = useState<AnnotationVoteData | null>(null);
+  const [isVoting, setIsVoting] = useState(false);
+
+  // Subscribe to votes for this proposal
+  useEffect(() => {
+    if (!annotation.proposedRevision) return;
+
+    const proposalId = `proposal_${annotation.id}`;
+    const unsubscribe = subscribeToAnnotationVotes(proposalId, (voteData) => {
+      setVotes(voteData);
+    });
+
+    return () => unsubscribe();
+  }, [annotation.id, annotation.proposedRevision]);
+
+  const handleVote = async (voteType: 'up' | 'down') => {
+    if (!isAuthenticated || !userId || isVoting) return;
+
+    setIsVoting(true);
+    try {
+      const proposalId = `proposal_${annotation.id}`;
+      await voteOnAnnotation(proposalId, userId, voteType);
+    } catch (error) {
+      console.error('POLISCAI_DEBUG: Error voting on proposal:', error);
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const totalVotes = (votes?.upVotes || 0) + (votes?.downVotes || 0);
+  const approvalPercent = totalVotes > 0 ? Math.round((votes?.upVotes || 0) / totalVotes * 100) : 0;
+  const userVote = userId && votes?.voters?.[userId];
+  const isApproved = votes?.isCanon || (totalVotes >= 3 && approvalPercent >= 75);
+
+  return (
+    <div className={`p-4 rounded-xl border ${
+      isApproved
+        ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300'
+        : 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+    }`}>
+      {/* Approved badge */}
+      {isApproved && (
+        <div className="flex items-center gap-2 mb-3 text-yellow-700">
+          <Crown className="w-4 h-4" />
+          <span className="text-xs font-bold uppercase">Community Approved</span>
+        </div>
+      )}
+
+      {/* Submitter */}
+      {annotation.submittedBy && (
+        <div className="flex items-center gap-2 mb-2 text-gray-500 text-xs">
+          <Users className="w-3 h-3" />
+          <span>Proposed by <strong className="text-gray-700">{annotation.submittedBy}</strong></span>
+        </div>
+      )}
+
+      {/* Replace text */}
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-xs font-medium text-gray-500">Replace:</span>
+        <span className="text-red-700 font-medium text-sm line-through">"{annotation.text}"</span>
+      </div>
+
+      {/* With text */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xs font-medium text-gray-500">With:</span>
+        <span className="text-green-800 font-serif italic">"{annotation.proposedRevision}"</span>
+      </div>
+
+      {/* Voting section */}
+      <div className="pt-3 border-t border-green-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span className={`font-medium ${approvalPercent >= 75 ? 'text-green-600' : ''}`}>
+              {approvalPercent}% Approval
+            </span>
+            <span className="text-gray-400">·</span>
+            <span>{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</span>
+          </div>
+          {totalVotes < 3 && (
+            <span className="text-xs text-blue-500">{3 - totalVotes} more needed</span>
+          )}
+        </div>
+
+        {/* Vote buttons */}
+        {isAuthenticated ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleVote('up')}
+              disabled={isVoting}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                userVote === 'up'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-green-100 text-green-700 hover:bg-green-200'
+              } ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ThumbsUp className="w-4 h-4" />
+              Approve ({votes?.upVotes || 0})
+            </button>
+            <button
+              onClick={() => handleVote('down')}
+              disabled={isVoting}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                userVote === 'down'
+                  ? 'bg-red-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              } ${isVoting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ThumbsDown className="w-4 h-4" />
+              Reject ({votes?.downVotes || 0})
+            </button>
+          </div>
+        ) : (
+          <p className="text-center text-sm text-gray-500 py-2">
+            Sign in to vote on proposals
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function SideBySideViewer({
@@ -274,6 +410,12 @@ export function SideBySideViewer({
                   {typeConfig.label}
                 </span>
                 <span className="block mt-1">{annotation.description}</span>
+                {annotation.proposedRevision && (
+                  <span className="block mt-2 pt-2 border-t border-white/20">
+                    <span className="text-green-400 font-semibold text-[10px]">V2.0 PROPOSAL:</span>
+                    <span className="block mt-0.5 text-green-200 italic">"{annotation.proposedRevision}"</span>
+                  </span>
+                )}
                 <span className="block mt-2 text-white/60 text-[10px]">Click to vote</span>
               </span>
               <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
@@ -520,6 +662,27 @@ export function SideBySideViewer({
             {renderRevisedText()}
           </div>
 
+          {/* Community Proposals Section */}
+          {shadowAnnotations.some(a => a.proposedRevision) && (
+            <div className="mt-6 space-y-3">
+              <div className="flex items-center gap-2 text-green-700">
+                <Sparkles className="w-4 h-4" />
+                <span className="font-semibold text-sm">Community Proposals</span>
+                <span className="text-xs text-gray-400 ml-2">Vote to add to V2.0</span>
+              </div>
+              {shadowAnnotations
+                .filter(a => a.proposedRevision)
+                .map(a => (
+                  <ProposalCard
+                    key={a.id}
+                    annotation={a}
+                    isAuthenticated={isAuthenticated}
+                    userId={user?.uid}
+                  />
+                ))}
+            </div>
+          )}
+
           {/* Arrow indicator when both panels have content */}
           {revisedText && (
             <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
@@ -609,9 +772,22 @@ export function SideBySideViewer({
                 </span>
               </div>
 
-              <p className="text-gray-700 leading-relaxed mb-6">
+              <p className="text-gray-700 leading-relaxed mb-4">
                 {showAnnotationDetails.description}
               </p>
+
+              {/* Proposed Revision */}
+              {showAnnotationDetails.proposedRevision && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-4 h-4 text-green-600" />
+                    <span className="font-semibold text-green-800 text-sm">Proposed V2.0 Language</span>
+                  </div>
+                  <p className="text-green-900 font-serif italic">
+                    "{showAnnotationDetails.proposedRevision}"
+                  </p>
+                </div>
+              )}
 
               {/* Voting Section */}
               <div className="bg-gray-50 rounded-xl p-4 mb-4">

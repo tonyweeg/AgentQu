@@ -12,6 +12,8 @@ import { AppHeader } from '../components/layout/AppHeader';
 import { ClauseSelector } from '../components/constitution/ClauseSelector';
 import { SideBySideViewer } from '../components/constitution/SideBySideViewer';
 import { ALL_ARTICLES, ALL_AMENDMENTS } from '../data';
+import { getSubmissionsForClause } from '../lib/firestore/submissions';
+import { AmbiguitySubmission } from '../types/submission';
 import {
   ChevronLeft,
   ChevronRight,
@@ -84,6 +86,8 @@ export function ConstitutionV2() {
 
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [showCopiedToast, setShowCopiedToast] = useState(false);
+  const [realSubmissions, setRealSubmissions] = useState<AmbiguitySubmission[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(false);
 
   // URL is the single source of truth - derive everything from it
   const selectedClauseId = useMemo(() => {
@@ -99,6 +103,52 @@ export function ConstitutionV2() {
       navigate(`/constitution/${DEFAULT_CLAUSE_ID}`, { replace: true });
     }
   }, [urlClauseId, navigate]);
+
+  // Fetch real submissions from Firestore when clauseId changes
+  useEffect(() => {
+    async function fetchSubmissions() {
+      if (!selectedClauseId) return;
+
+      setLoadingSubmissions(true);
+      try {
+        console.log('POLISCAI_DEBUG: Fetching submissions for clause:', selectedClauseId);
+        const submissions = await getSubmissionsForClause(selectedClauseId);
+        console.log('POLISCAI_DEBUG: Fetched submissions:', submissions.length);
+        setRealSubmissions(submissions);
+      } catch (error) {
+        console.error('POLISCAI_DEBUG: Error fetching submissions:', error);
+        setRealSubmissions([]);
+      } finally {
+        setLoadingSubmissions(false);
+      }
+    }
+
+    fetchSubmissions();
+  }, [selectedClauseId]);
+
+  // Transform Firestore submissions to shadow annotation format
+  const transformedSubmissions = useMemo(() => {
+    return realSubmissions.map((sub) => ({
+      id: sub.id,
+      text: sub.flaggedText,
+      startIndex: sub.flaggedTextStart,
+      endIndex: sub.flaggedTextEnd,
+      description: sub.shadowDescription,
+      proposedRevision: sub.proposedRevision,
+      type: sub.type,
+      // Include metadata for display
+      submittedBy: sub.submittedByDisplayName,
+      votes: sub.votes,
+      status: sub.status,
+      isCanon: sub.isCanon,
+    }));
+  }, [realSubmissions]);
+
+  // Combine demo shadows with real submissions
+  const allShadowAnnotations = useMemo(() => {
+    const demoShadows = DEMO_SHADOWS[selectedClauseId] || [];
+    return [...demoShadows, ...transformedSubmissions];
+  }, [selectedClauseId, transformedSubmissions]);
 
   const selectedClause = useMemo(() => {
     return ALL_CLAUSES.find((c) => c.id === selectedClauseId);
@@ -118,10 +168,19 @@ export function ConstitutionV2() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSubmissionSuccess = () => {
+  const handleSubmissionSuccess = async () => {
     console.log('POLISCAI_DEBUG: Flag submission successful');
     setShowSuccessToast(true);
     setTimeout(() => setShowSuccessToast(false), 5000);
+
+    // Refresh submissions to show the new flag
+    try {
+      const submissions = await getSubmissionsForClause(selectedClauseId);
+      console.log('POLISCAI_DEBUG: Refreshed submissions after submit:', submissions.length);
+      setRealSubmissions(submissions);
+    } catch (error) {
+      console.error('POLISCAI_DEBUG: Error refreshing submissions:', error);
+    }
   };
 
   // Copy shareable link to clipboard
@@ -257,7 +316,7 @@ export function ConstitutionV2() {
           title={selectedClause.title}
           originalText={selectedClause.originalText}
           revisedText={DEMO_REVISIONS[selectedClauseId]}
-          shadowAnnotations={DEMO_SHADOWS[selectedClauseId] || []}
+          shadowAnnotations={allShadowAnnotations}
           onSubmissionSuccess={handleSubmissionSuccess}
         />
 
@@ -362,7 +421,7 @@ export function ConstitutionV2() {
             <dl className="space-y-3">
               <div className="flex items-center justify-between">
                 <dt className="text-sm text-gray-500">Flagged Biases</dt>
-                <dd className="font-bold text-red-600">{DEMO_SHADOWS[selectedClauseId]?.length || 0}</dd>
+                <dd className="font-bold text-red-600">{allShadowAnnotations.length}</dd>
               </div>
               <div className="flex items-center justify-between">
                 <dt className="text-sm text-gray-500">V2.0 Status</dt>

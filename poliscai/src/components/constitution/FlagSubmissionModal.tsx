@@ -88,6 +88,7 @@ export function FlagSubmissionModal({
   const { user } = useAuth();
   const [type, setType] = useState<AmbiguityType>('other');
   const [shadowDescription, setShadowDescription] = useState('');
+  const [proposedRevision, setProposedRevision] = useState('');
   const [citation, setCitation] = useState('');
   const [eraOperative, setEraOperative] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,6 +126,7 @@ export function FlagSubmissionModal({
         flaggedTextEnd,
         type,
         shadowDescription: shadowDescription.trim(),
+        proposedRevision: proposedRevision.trim() || undefined,
         citation: citation.trim() || undefined,
         eraOperative: eraOperative.trim() || undefined,
         userId: user.uid,
@@ -134,6 +136,7 @@ export function FlagSubmissionModal({
       // Reset form
       setType('other');
       setShadowDescription('');
+      setProposedRevision('');
       setCitation('');
       setEraOperative('');
 
@@ -221,6 +224,27 @@ export function FlagSubmissionModal({
             />
             <p className="text-xs text-gray-500 mt-1">
               Be specific about who was excluded and how this language enabled that exclusion.
+            </p>
+          </div>
+
+          {/* Proposed Revision (Optional) */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Proposed V2.0 Language
+              <span className="text-gray-400 font-normal ml-2">
+                (optional, {proposedRevision.length}/500)
+              </span>
+            </label>
+            <textarea
+              value={proposedRevision}
+              onChange={(e) => setProposedRevision(e.target.value)}
+              placeholder={`Suggest replacement text for "${flaggedText.substring(0, 30)}${flaggedText.length > 30 ? '...' : ''}"...`}
+              rows={3}
+              maxLength={500}
+              className="w-full px-4 py-3 border border-green-300 bg-green-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Suggest inclusive, unambiguous replacement text for V2.0 of the Constitution.
             </p>
           </div>
 
