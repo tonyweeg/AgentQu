@@ -82,35 +82,23 @@ export function ConstitutionV2() {
   const { clauseId: urlClauseId } = useParams<{ clauseId?: string }>();
   const navigate = useNavigate();
 
-  // Determine initial clause from URL or default
-  const initialClauseId = useMemo(() => {
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showCopiedToast, setShowCopiedToast] = useState(false);
+
+  // URL is the single source of truth - derive everything from it
+  const selectedClauseId = useMemo(() => {
     if (urlClauseId && ALL_CLAUSES.find(c => c.id === urlClauseId)) {
       return urlClauseId;
     }
     return DEFAULT_CLAUSE_ID;
   }, [urlClauseId]);
 
-  const [selectedClauseId, setSelectedClauseId] = useState(initialClauseId);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [showCopiedToast, setShowCopiedToast] = useState(false);
-
-  // Sync URL with selected clause
+  // Redirect to default if no clause in URL
   useEffect(() => {
-    // Only update URL if it differs from current selection
-    if (urlClauseId !== selectedClauseId) {
-      navigate(`/constitution/${selectedClauseId}`, { replace: true });
+    if (!urlClauseId) {
+      navigate(`/constitution/${DEFAULT_CLAUSE_ID}`, { replace: true });
     }
-  }, [selectedClauseId, urlClauseId, navigate]);
-
-  // Update state when URL changes (e.g., browser back/forward)
-  useEffect(() => {
-    if (urlClauseId && urlClauseId !== selectedClauseId) {
-      const clause = ALL_CLAUSES.find(c => c.id === urlClauseId);
-      if (clause) {
-        setSelectedClauseId(urlClauseId);
-      }
-    }
-  }, [urlClauseId, selectedClauseId]);
+  }, [urlClauseId, navigate]);
 
   const selectedClause = useMemo(() => {
     return ALL_CLAUSES.find((c) => c.id === selectedClauseId);
@@ -123,8 +111,10 @@ export function ConstitutionV2() {
   const prevClause = currentIndex > 0 ? ALL_CLAUSES[currentIndex - 1] : null;
   const nextClause = currentIndex < ALL_CLAUSES.length - 1 ? ALL_CLAUSES[currentIndex + 1] : null;
 
+  // Navigate by changing URL - no local state to sync
   const navigateTo = (clauseId: string) => {
-    setSelectedClauseId(clauseId);
+    console.log('POLISCAI_DEBUG: navigateTo called with:', clauseId);
+    navigate(`/constitution/${clauseId}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -207,7 +197,7 @@ export function ConstitutionV2() {
             {/* Clause Selector */}
             <ClauseSelector
               selectedId={selectedClauseId}
-              onSelect={setSelectedClauseId}
+              onSelect={navigateTo}
             />
           </div>
         </div>
