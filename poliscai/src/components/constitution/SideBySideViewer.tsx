@@ -243,6 +243,7 @@ export function SideBySideViewer({
   const [showFlagModal, setShowFlagModal] = useState(false);
   const [hoveredAnnotation, setHoveredAnnotation] = useState<string | null>(null);
   const [showAnnotationDetails, setShowAnnotationDetails] = useState<ShadowAnnotation | null>(null);
+  const [showProposalModal, setShowProposalModal] = useState<ShadowAnnotation | null>(null);
 
   // Voting state
   const [voteData, setVoteData] = useState<AnnotationVoteData | null>(null);
@@ -440,7 +441,10 @@ export function SideBySideViewer({
 
   // Render Revised text with beautiful highlights showing improvements
   const renderRevisedText = () => {
-    if (!revisedText) {
+    // Get proposals that have proposed revision text
+    const proposals = shadowAnnotations.filter(a => a.proposedRevision);
+
+    if (!revisedText && proposals.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-4">
@@ -454,41 +458,111 @@ export function SideBySideViewer({
       );
     }
 
-    // Highlight new inclusive language in green
-    const inclusiveTerms = [
-      'eligible persons',
-      'without distinction',
-      'citizenship status',
-    ];
+    // If we have official revised text, show it with green highlights
+    if (revisedText) {
+      // Highlight new inclusive language in green
+      const inclusiveTerms = [
+        'eligible persons',
+        'without distinction',
+        'citizenship status',
+      ];
 
-    // Build highlighted segments
-    const segments: React.ReactNode[] = [];
-    let remainingText = revisedText;
-    let keyIndex = 0;
+      // Build highlighted segments
+      const segments: React.ReactNode[] = [];
+      let remainingText = revisedText;
+      let keyIndex = 0;
 
-    inclusiveTerms.forEach(term => {
-      const parts = remainingText.split(term);
-      if (parts.length > 1) {
-        segments.push(<span key={`seg-${keyIndex++}`}>{parts[0]}</span>);
-        segments.push(
-          <span
-            key={`term-${keyIndex++}`}
-            className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 font-medium border-b-2 border-emerald-400"
-          >
-            {term}
-          </span>
-        );
-        remainingText = parts.slice(1).join(term);
+      inclusiveTerms.forEach(term => {
+        const parts = remainingText.split(term);
+        if (parts.length > 1) {
+          segments.push(<span key={`seg-${keyIndex++}`}>{parts[0]}</span>);
+          segments.push(
+            <span
+              key={`term-${keyIndex++}`}
+              className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 font-medium border-b-2 border-emerald-400"
+            >
+              {term}
+            </span>
+          );
+          remainingText = parts.slice(1).join(term);
+        }
+      });
+
+      if (remainingText) {
+        segments.push(<span key={`seg-${keyIndex}`}>{remainingText}</span>);
+      }
+
+      return (
+        <p className="text-gray-800 leading-relaxed font-serif text-lg">
+          {segments.length > 0 ? segments : revisedText}
+        </p>
+      );
+    }
+
+    // If no official revised text but we have proposals, show original with blue proposal highlights
+    // Start with the original text and replace flagged terms with their proposed revisions
+    let workingText = originalText;
+    const replacements: { original: string; proposal: ShadowAnnotation }[] = [];
+
+    // Collect all proposals
+    proposals.forEach(p => {
+      if (p.proposedRevision && workingText.includes(p.text)) {
+        replacements.push({ original: p.text, proposal: p });
       }
     });
 
-    if (remainingText) {
-      segments.push(<span key={`seg-${keyIndex}`}>{remainingText}</span>);
+    // Sort by position in text (to replace from end to start to preserve indices)
+    replacements.sort((a, b) => workingText.lastIndexOf(b.original) - workingText.lastIndexOf(a.original));
+
+    // Build the display with highlighted proposals
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let tempText = originalText;
+
+    // Find all proposals and their positions
+    const positions: { start: number; end: number; proposal: ShadowAnnotation }[] = [];
+    proposals.forEach(p => {
+      if (p.proposedRevision) {
+        const idx = originalText.indexOf(p.text);
+        if (idx !== -1) {
+          positions.push({ start: idx, end: idx + p.text.length, proposal: p });
+        }
+      }
+    });
+
+    // Sort by position
+    positions.sort((a, b) => a.start - b.start);
+
+    // Build parts with highlights
+    positions.forEach((pos, i) => {
+      // Add text before this proposal
+      if (pos.start > lastIndex) {
+        parts.push(<span key={`text-${i}`}>{originalText.slice(lastIndex, pos.start)}</span>);
+      }
+
+      // Add the proposal highlight (show proposed text in blue)
+      parts.push(
+        <span
+          key={`proposal-${i}`}
+          onClick={() => setShowProposalModal(pos.proposal)}
+          className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 font-medium border-b-2 border-blue-400 cursor-pointer hover:from-blue-200 hover:to-sky-200 transition-all"
+          title={`Click to vote: Replace "${pos.proposal.text}" with "${pos.proposal.proposedRevision}"`}
+        >
+          {pos.proposal.proposedRevision}
+        </span>
+      );
+
+      lastIndex = pos.end;
+    });
+
+    // Add remaining text
+    if (lastIndex < originalText.length) {
+      parts.push(<span key="text-end">{originalText.slice(lastIndex)}</span>);
     }
 
     return (
       <p className="text-gray-800 leading-relaxed font-serif text-lg">
-        {segments.length > 0 ? segments : revisedText}
+        {parts.length > 0 ? parts : originalText}
       </p>
     );
   };
@@ -662,24 +736,18 @@ export function SideBySideViewer({
             {renderRevisedText()}
           </div>
 
-          {/* Community Proposals Section */}
+          {/* Community Proposals Summary */}
           {shadowAnnotations.some(a => a.proposedRevision) && (
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center gap-2 text-green-700">
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl border border-blue-200">
+              <div className="flex items-center gap-2 text-blue-700 mb-2">
                 <Sparkles className="w-4 h-4" />
-                <span className="font-semibold text-sm">Community Proposals</span>
-                <span className="text-xs text-gray-400 ml-2">Vote to add to V2.0</span>
+                <span className="font-semibold text-sm">
+                  {shadowAnnotations.filter(a => a.proposedRevision).length} Community Proposal{shadowAnnotations.filter(a => a.proposedRevision).length !== 1 ? 's' : ''}
+                </span>
               </div>
-              {shadowAnnotations
-                .filter(a => a.proposedRevision)
-                .map(a => (
-                  <ProposalCard
-                    key={a.id}
-                    annotation={a}
-                    isAuthenticated={isAuthenticated}
-                    userId={user?.uid}
-                  />
-                ))}
+              <p className="text-sm text-blue-600">
+                Click the <span className="px-1 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium">blue highlighted text</span> above to view details and vote
+              </p>
             </div>
           )}
 
@@ -939,6 +1007,94 @@ export function SideBySideViewer({
               <p className="text-white/80">
                 This flag is now part of the official record
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proposal Voting Modal */}
+      {showProposalModal && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowProposalModal(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-scale-in"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-sky-600 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-bold text-lg flex items-center gap-2">
+                    <Sparkles className="w-5 h-5" />
+                    V2.0 Proposal
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    Vote to add this revision to V2.0
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Submitter */}
+              {showProposalModal.submittedBy && (
+                <div className="flex items-center gap-2 mb-4 text-gray-500 text-sm">
+                  <Users className="w-4 h-4" />
+                  <span>Proposed by <strong className="text-gray-700">{showProposalModal.submittedBy}</strong></span>
+                </div>
+              )}
+
+              {/* Original vs Proposed */}
+              <div className="space-y-4 mb-6">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2 text-red-600 text-xs font-semibold uppercase">
+                    <AlertCircle className="w-3 h-3" />
+                    Original V1.0 Text
+                  </div>
+                  <p className="text-red-800 font-serif line-through">
+                    "{showProposalModal.text}"
+                  </p>
+                </div>
+
+                <div className="flex justify-center">
+                  <ArrowRight className="w-5 h-5 text-gray-400" />
+                </div>
+
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center gap-2 mb-2 text-blue-600 text-xs font-semibold uppercase">
+                    <Sparkles className="w-3 h-3" />
+                    Proposed V2.0 Text
+                  </div>
+                  <p className="text-blue-800 font-serif font-medium">
+                    "{showProposalModal.proposedRevision}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                <p className="text-sm text-gray-600 italic">
+                  "{showProposalModal.description}"
+                </p>
+              </div>
+
+              {/* Embedded ProposalCard for voting */}
+              <ProposalCard
+                annotation={showProposalModal}
+                isAuthenticated={isAuthenticated}
+                userId={user?.uid}
+              />
+
+              {/* Close Button */}
+              <button
+                onClick={() => setShowProposalModal(null)}
+                className="w-full mt-4 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-medium rounded-xl hover:shadow-lg transition-shadow"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
