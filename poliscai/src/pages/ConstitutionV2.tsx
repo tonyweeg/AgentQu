@@ -215,6 +215,50 @@ export function ConstitutionV2() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
+        {/* Top Navigation */}
+        <nav className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+          <div className="w-1/3">
+            {prevClause ? (
+              <button
+                onClick={() => navigateTo(prevClause.id)}
+                className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-poliscai-primary/5 transition-all"
+              >
+                <ChevronLeft className="w-5 h-5 text-poliscai-primary" />
+                <div className="text-left hidden sm:block">
+                  <p className="text-xs text-gray-500">Previous</p>
+                  <p className="text-sm font-medium text-poliscai-dark">{getShortLabel(prevClause)}</p>
+                </div>
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+
+          <div className="w-1/3 text-center">
+            <div className="inline-block">
+              <p className="text-lg font-serif font-bold text-poliscai-dark">{selectedClause.articleSection}</p>
+              <p className="text-sm text-gray-500">{selectedClause.title}</p>
+            </div>
+          </div>
+
+          <div className="w-1/3 flex justify-end">
+            {nextClause ? (
+              <button
+                onClick={() => navigateTo(nextClause.id)}
+                className="group flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-poliscai-primary/5 transition-all"
+              >
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs text-gray-500">Next</p>
+                  <p className="text-sm font-medium text-poliscai-dark">{getShortLabel(nextClause)}</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-poliscai-primary" />
+              </button>
+            ) : (
+              <div />
+            )}
+          </div>
+        </nav>
+
         <SideBySideViewer
           clauseId={selectedClause.id}
           articleSection={selectedClause.articleSection}
