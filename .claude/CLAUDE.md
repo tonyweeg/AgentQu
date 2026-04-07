@@ -520,6 +520,22 @@ curl https://healthcheck-gnr47betrq-uc.a.run.app
 
 ---
 
+#### 🎵 no-vocals
+**Auto-invoke when user says:**
+- "remove vocals", "vocal removal", "karaoke", "instrumental"
+- "separate vocals", "extract vocals", "isolate vocals"
+- "download youtube audio", "rip audio from youtube", "youtube mp3"
+- "demucs", "audio separation", "backing track"
+
+**Examples:**
+- "Remove vocals from docs/Audio/song.mp3" → Separate vocals
+- "Download audio from https://youtube.com/..." → Extract MP3
+- "Make karaoke from this YouTube link" → Download + remove vocals
+
+**Tool Location:** `tools/audio_tools.py` with venv at `tools/vocal-remover-venv/`
+
+---
+
 ### Skill Chaining
 
 **Deploy Flow:**
@@ -569,6 +585,7 @@ test user → agentqu-user-profile
 API/keys → agentqu-api-verify
 score/why → agentqu-score-explain
 cache/stale → agentqu-cache-manager
+vocals/karaoke/youtube → no-vocals
 ```
 
 **Remember:** Skills are workflow accelerators - use them proactively to save time!

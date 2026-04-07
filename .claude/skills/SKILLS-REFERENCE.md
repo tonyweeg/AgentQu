@@ -363,6 +363,55 @@ Based on the logs, the problem is...
 
 ---
 
+## 🎵 no-vocals
+
+### When to Use (Auto-invoke)
+- User mentions: "remove vocals", "vocal removal", "karaoke", "instrumental"
+- User asks: "separate vocals", "extract vocals", "isolate vocals"
+- User mentions: "demucs", "audio separation", "backing track"
+- User provides: YouTube URL for audio download
+- User asks: "download audio from YouTube", "rip audio", "extract audio"
+- User provides an audio file path for vocal processing
+
+### Trigger Keywords
+```
+remove vocals, vocal removal, karaoke, instrumental,
+separate vocals, extract vocals, isolate vocals,
+demucs, audio separation, backing track, no vocals,
+youtube audio, download youtube, rip audio, youtube mp3,
+extract audio from youtube
+```
+
+### Example Requests
+- "Remove vocals from this song"
+- "I want to make a karaoke track"
+- "Separate the vocals from docs/Audio/song.mp3"
+- "Create an instrumental version"
+- "Extract vocals from this audio file"
+- "Download audio from this YouTube video"
+- "Rip the audio from https://youtube.com/watch?v=..."
+- "Make a karaoke track from this YouTube link"
+
+### Auto-invoke Pattern
+```
+User: "Download audio from https://youtube.com/watch?v=xyz"
+Claude: [Automatically invokes no-vocals skill]
+        Downloading audio from YouTube...
+
+        ✅ Complete! MP3 saved to docs/Audio/
+
+User: "Make a karaoke track from this YouTube video"
+Claude: [Automatically invokes no-vocals skill]
+        Downloading and removing vocals...
+
+        ✅ Complete! Files saved:
+        - Song.mp3 (downloaded)
+        - vocals.wav
+        - no_vocals.wav
+```
+
+---
+
 ## Quick Reference
 
 ```
@@ -373,6 +422,7 @@ test user → agentqu-user-profile
 API/keys → agentqu-api-verify
 score/why → agentqu-score-explain
 cache/stale → agentqu-cache-manager
+vocals/karaoke/youtube → no-vocals
 ```
 
 ---

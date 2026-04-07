@@ -35,3 +35,7 @@ firebase-debug.log
 .firebase/
 functions/.env
 stock-watch/
+
+# Vocal Remover Tool
+tools/vocal-remover-venv/
+docs/Audio/separated/
