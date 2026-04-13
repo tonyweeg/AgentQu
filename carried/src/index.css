@@ -30,6 +30,10 @@ html.dark body {
   @apply text-gray-100;
 }
 
+.dark .text-gray-800 {
+  @apply text-gray-200;
+}
+
 .dark .text-gray-700 {
   @apply text-gray-300;
 }
