@@ -13,8 +13,12 @@
         ],
         "opendocumentproject": [
           "opendocumentproject"
+        ],
+        "portal": [
+          "agentqu-portal"
         ]
       }
     }
-  }
+  },
+  "etags": {}
 }
