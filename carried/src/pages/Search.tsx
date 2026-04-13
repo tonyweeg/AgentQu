@@ -270,7 +270,7 @@ export function Search() {
             <Database className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Search {groupName ? `${groupName}'s` : ''} Records
+            Search {groupName && groupName !== 'All Groups' ? `${groupName}'s` : 'Meeting'} Records
           </h1>
           <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
             Ask questions in natural language. AI will answer based only on your meeting records.
