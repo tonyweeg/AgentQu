@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import {
   ArrowLeft,
   FileText,
@@ -16,6 +16,8 @@ import {
   Upload as UploadIcon,
   File,
   X,
+  AlertTriangle,
+  ExternalLink,
 } from 'lucide-react';
 import { db, COLLECTIONS } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -24,7 +26,7 @@ import { AppHeader } from '../components/layout/AppHeader';
 import { Button } from '../components/ui/Button';
 import { Textarea } from '../components/ui/Input';
 import { Loading } from '../components/ui/Loading';
-import { Group, MeetingSource, SegmentType, SEGMENT_TYPE_INFO } from '../types';
+import { Group, Meeting, MeetingSource, SegmentType, SEGMENT_TYPE_INFO } from '../types';
 import { extractSegments, extractMeetingMetadata } from '../lib/ai/extraction';
 import { saveSegments } from '../lib/firestore/segments';
 import { parseFile, validateFile, getFileType } from '../lib/parsers/fileParser';
@@ -56,6 +58,11 @@ export function Upload() {
   const [parsingFile, setParsingFile] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Duplicate detection state
+  const [duplicateMeeting, setDuplicateMeeting] = useState<Meeting | null>(null);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
 
   // Auto-detect title and date when text is pasted
   const handleMinutesChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -233,10 +240,116 @@ export function Upload() {
     }
   }, [membershipLoading, canAddMeetings, loading, navigate, groupId]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Check for duplicate meetings
+  const checkForDuplicates = async (): Promise<Meeting | null> => {
+    if (!groupId || !date) return null;
+
+    try {
+      setCheckingDuplicates(true);
+      console.log('CARRIED_DEBUG: Checking for duplicates...');
+
+      // Query meetings with same date in this group
+      const meetingsRef = collection(db, COLLECTIONS.MEETINGS);
+      const meetingDate = new Date(date);
+
+      // Create date range for the same day
+      const startOfDay = new Date(meetingDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(meetingDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const q = query(
+        meetingsRef,
+        where('groupId', '==', groupId),
+        where('meetingDate', '>=', startOfDay),
+        where('meetingDate', '<=', endOfDay)
+      );
+
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        // Check for title similarity
+        const trimmedTitle = title.trim().toLowerCase();
+
+        for (const docSnap of snapshot.docs) {
+          const meeting = { id: docSnap.id, ...docSnap.data() } as Meeting;
+          const existingTitle = (meeting.title || '').toLowerCase();
+
+          // Check for exact match or high similarity
+          if (
+            existingTitle === trimmedTitle ||
+            existingTitle.includes(trimmedTitle) ||
+            trimmedTitle.includes(existingTitle) ||
+            calculateSimilarity(existingTitle, trimmedTitle) > 0.7
+          ) {
+            console.log('CARRIED_DEBUG: Found potential duplicate:', meeting.title);
+            return meeting;
+          }
+        }
+
+        // Even if titles don't match, same date is suspicious
+        if (snapshot.docs.length > 0) {
+          const firstMatch = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Meeting;
+          console.log('CARRIED_DEBUG: Found meeting on same date:', firstMatch.title);
+          return firstMatch;
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error('CARRIED_DEBUG: Error checking duplicates:', error);
+      return null;
+    } finally {
+      setCheckingDuplicates(false);
+    }
+  };
+
+  // Simple string similarity (Dice coefficient)
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    if (str1 === str2) return 1;
+    if (str1.length < 2 || str2.length < 2) return 0;
+
+    const bigrams1 = new Set<string>();
+    const bigrams2 = new Set<string>();
+
+    for (let i = 0; i < str1.length - 1; i++) {
+      bigrams1.add(str1.substring(i, i + 2));
+    }
+    for (let i = 0; i < str2.length - 1; i++) {
+      bigrams2.add(str2.substring(i, i + 2));
+    }
+
+    let intersection = 0;
+    bigrams1.forEach((bigram) => {
+      if (bigrams2.has(bigram)) intersection++;
+    });
+
+    return (2 * intersection) / (bigrams1.size + bigrams2.size);
+  };
+
+  // Handle form submission with duplicate check
+  const handleSubmitWithDuplicateCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !groupId || !title.trim() || !minutes.trim()) return;
 
+    // First check for duplicates
+    const duplicate = await checkForDuplicates();
+    if (duplicate) {
+      setDuplicateMeeting(duplicate);
+      setShowDuplicateWarning(true);
+      return;
+    }
+
+    // No duplicate found, proceed with submission
+    await processSubmission();
+  };
+
+  // Process the actual submission (called directly or after duplicate warning)
+  const processSubmission = async () => {
+    if (!user || !groupId || !title.trim() || !minutes.trim()) return;
+
+    setShowDuplicateWarning(false);
+    setDuplicateMeeting(null);
     setError('');
     setProcessingStep('creating');
 
@@ -404,7 +517,7 @@ export function Upload() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmitWithDuplicateCheck} className="space-y-6">
             {/* Step 1: Upload File OR Paste Minutes */}
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -616,14 +729,89 @@ The AI will automatically detect the meeting title and date from your text.`}
               </Button>
               <Button
                 type="submit"
-                disabled={!title.trim() || !minutes.trim() || detectingMetadata || parsingFile}
+                disabled={!title.trim() || !minutes.trim() || detectingMetadata || parsingFile || checkingDuplicates}
               >
-                {parsingFile ? 'Parsing File...' : detectingMetadata ? 'Detecting...' : 'Upload & Extract Content'}
+                {checkingDuplicates ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Checking for duplicates...
+                  </>
+                ) : parsingFile ? (
+                  'Parsing File...'
+                ) : detectingMetadata ? (
+                  'Detecting...'
+                ) : (
+                  'Upload & Extract Content'
+                )}
               </Button>
             </div>
           </form>
         </div>
       </div>
+
+      {/* Duplicate Warning Modal */}
+      {showDuplicateWarning && duplicateMeeting && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Possible Duplicate Detected</h3>
+                <p className="text-sm text-gray-500">A similar meeting may already exist</p>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-600 mb-2">Existing meeting found:</p>
+              <div className="flex items-start gap-3">
+                <FileText className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-gray-900">{duplicateMeeting.title}</p>
+                  <p className="text-sm text-gray-500">
+                    {duplicateMeeting.meetingDate?.toDate
+                      ? duplicateMeeting.meetingDate.toDate().toLocaleDateString()
+                      : 'Date unknown'}
+                    {duplicateMeeting.segmentCount !== undefined && (
+                      <span className="ml-2">• {duplicateMeeting.segmentCount} segments</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setShowDuplicateWarning(false);
+                  navigate(`/groups/${groupId}/meetings/${duplicateMeeting.id}`);
+                }}
+                className="w-full justify-center"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                View Existing Meeting
+              </Button>
+              <Button
+                onClick={() => processSubmission()}
+                className="w-full justify-center"
+              >
+                Upload Anyway
+              </Button>
+              <button
+                onClick={() => {
+                  setShowDuplicateWarning(false);
+                  setDuplicateMeeting(null);
+                }}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
