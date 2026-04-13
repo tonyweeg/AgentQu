@@ -10,6 +10,7 @@ export interface Activity {
   name: string;
   type: 'cache' | 'volunteer' | 'hike' | 'venue' | 'event' | 'permanent';
   description?: string;
+  source?: 'google_places' | 'ticketmaster' | 'custom_search' | string; // Data source
 
   // Location (supports both old and new formats)
   lat: number;

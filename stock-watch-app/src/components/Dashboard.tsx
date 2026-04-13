@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Stock, ScreeningCriteria, AnalysisFocus, DiscoveryMode } from '../lib/types';
+import { useTheme } from '../contexts/ThemeContext';
 import StockCard from './StockCard';
+import MarketTicker from './MarketTicker';
 
 interface DashboardProps {
   userId: string | null;
@@ -26,7 +28,7 @@ interface DashboardProps {
 
 /**
  * Dashboard Component
- * Main view for stock discovery
+ * Main view for stock discovery - Supports Light/Dark Theme
  */
 const Dashboard: React.FC<DashboardProps> = ({
   userId,
@@ -43,21 +45,38 @@ const Dashboard: React.FC<DashboardProps> = ({
   searchResults,
   onClearSearch,
 }) => {
+  const { isDark } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFocus, setSelectedFocus] = useState<AnalysisFocus>(null);
   const [selectedMode, setSelectedMode] = useState<DiscoveryMode>('trending');
   const [showFilters, setShowFilters] = useState(false);
   const [criteria, setCriteria] = useState<ScreeningCriteria>({});
 
-  // Mode tabs - dynamic + blue chip
-  const modeTabs: Array<{ value: DiscoveryMode; label: string; icon: string }> = [
-    { value: 'trending', label: 'Trending', icon: '🔥' },
-    { value: 'gainers', label: 'Gainers', icon: '📈' },
-    { value: 'losers', label: 'Losers', icon: '📉' },
-    { value: 'bluechip', label: 'Blue Chip', icon: '💎' },
+  // Mode tabs
+  const modeTabs: Array<{ value: DiscoveryMode; label: string; icon: React.ReactNode; activeClass: string }> = [
+    { value: 'trending', label: 'Trending', activeClass: 'from-orange-500 to-amber-500', icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+      </svg>
+    )},
+    { value: 'gainers', label: 'Gainers', activeClass: 'from-emerald-500 to-green-500', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    )},
+    { value: 'losers', label: 'Losers', activeClass: 'from-red-500 to-rose-500', icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+      </svg>
+    )},
+    { value: 'bluechip', label: 'Blue Chip', activeClass: 'from-indigo-500 to-purple-500', icon: (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+      </svg>
+    )},
   ];
 
-  // Initial load - intentionally only runs on mount
+  // Initial load
   useEffect(() => {
     if (stocks.length === 0 && !loading) {
       onDiscover(undefined, criteria, selectedFocus, 20, selectedMode);
@@ -74,7 +93,6 @@ const Dashboard: React.FC<DashboardProps> = ({
         onClearSearch();
       }
     }, 300);
-
     return () => clearTimeout(timer);
   }, [searchQuery, onSearch, onClearSearch]);
 
@@ -109,91 +127,99 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <div className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
+      {/* Market Ticker */}
+      <MarketTicker />
+
+      {/* Controls Section */}
+      <div className={`backdrop-blur-xl border-b ${
+        isDark ? 'bg-slate-900/80 border-slate-700/50' : 'bg-white/80 border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">AgentQu Stocks</h1>
-              <p className="text-sm text-gray-500">AI-Powered Stock Recommendations</p>
+          {/* Discovery Mode Selector */}
+          <div className="flex items-center gap-3 overflow-x-auto pb-3 scrollbar-hide">
+            <div className={`flex items-center rounded-xl p-1 border ${
+              isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-100 border-gray-200'
+            }`}>
+              {modeTabs.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => handleModeChange(tab.value)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                    selectedMode === tab.value
+                      ? `bg-gradient-to-r ${tab.activeClass} text-white shadow-lg`
+                      : isDark
+                        ? 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
             </div>
 
             {/* Macro Indicator */}
             {macroScore !== undefined && macroSignal && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Market:</span>
-                <span
-                  className={`px-2 py-1 rounded text-sm font-medium ${
-                    macroSignal.signal === 'very_bullish'
-                      ? 'bg-green-100 text-green-700'
-                      : macroSignal.signal === 'bullish'
-                      ? 'bg-green-50 text-green-600'
-                      : macroSignal.signal === 'neutral'
-                      ? 'bg-yellow-50 text-yellow-700'
-                      : macroSignal.signal === 'bearish'
-                      ? 'bg-orange-50 text-orange-600'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {macroSignal.label}
-                </span>
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                macroSignal.signal === 'very_bullish' || macroSignal.signal === 'bullish'
+                  ? isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-green-50 border-green-200 text-green-700'
+                  : macroSignal.signal === 'neutral'
+                  ? isDark ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-400' : 'bg-yellow-50 border-yellow-200 text-yellow-700'
+                  : isDark ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-red-50 border-red-200 text-red-700'
+              }`}>
+                <span className={`text-xs ${isDark ? 'text-slate-500' : 'text-gray-500'}`}>Market:</span>
+                <span className="text-sm font-medium">{macroSignal.label}</span>
               </div>
             )}
           </div>
 
-          {/* Discovery Mode Selector */}
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-            {modeTabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => handleModeChange(tab.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
-                  selectedMode === tab.value
-                    ? tab.value === 'bluechip'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
           {/* Search Bar */}
-          <div className="mt-3 relative">
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg className={`w-5 h-5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <input
               type="text"
               placeholder="Search stocks (e.g., AAPL, Apple)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`w-full pl-12 pr-10 py-3 border rounded-xl transition-all ${
+                isDark
+                  ? 'bg-slate-800/50 border-slate-700/50 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500'
+              }`}
             />
             {searchQuery && (
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  onClearSearch();
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onClick={() => { setSearchQuery(''); onClearSearch(); }}
+                className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all ${
+                  isDark ? 'text-slate-500 hover:text-white hover:bg-slate-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}
               >
-                ✕
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             )}
 
             {/* Search Results Dropdown */}
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto z-20">
+              <div className={`absolute top-full left-0 right-0 border rounded-xl shadow-2xl mt-2 max-h-64 overflow-y-auto z-20 ${
+                isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-200'
+              }`}>
                 {searchResults.map((result) => (
                   <button
                     key={result.symbol}
                     onClick={() => handleSearchSelect(result.symbol)}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center justify-between"
+                    className={`w-full px-4 py-3 text-left flex items-center justify-between transition-colors first:rounded-t-xl last:rounded-b-xl ${
+                      isDark ? 'hover:bg-slate-700/50' : 'hover:bg-gray-50'
+                    }`}
                   >
-                    <span className="font-medium">{result.symbol}</span>
-                    <span className="text-sm text-gray-500 truncate max-w-[200px]">
+                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{result.symbol}</span>
+                    <span className={`text-sm truncate max-w-[200px] ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                       {result.name}
                     </span>
                   </button>
@@ -202,115 +228,140 @@ const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
 
-          {/* Focus Tabs */}
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          {/* Focus Tabs & Actions */}
+          <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {focusTabs.map((tab) => (
               <button
                 key={tab.value || 'all'}
                 onClick={() => handleFocusChange(tab.value)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 border ${
                   selectedFocus === tab.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? isDark
+                      ? 'bg-slate-700 text-white border-slate-600'
+                      : 'bg-blue-600 text-white border-blue-600'
+                    : isDark
+                      ? 'text-slate-400 hover:text-white hover:bg-slate-800/50 border-transparent'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border-transparent'
                 }`}
               >
                 {tab.label}
               </button>
             ))}
 
+            <div className={`w-px h-6 mx-2 ${isDark ? 'bg-slate-700' : 'bg-gray-300'}`}></div>
+
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                showFilters ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 border ${
+                showFilters
+                  ? isDark
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    : 'bg-blue-50 text-blue-600 border-blue-200'
+                  : isDark
+                    ? 'text-slate-400 hover:text-white hover:bg-slate-800/50 border-transparent'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 border-transparent'
               }`}
             >
-              🔍 Filters
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
             </button>
 
             {/* Refresh Button */}
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-transparent disabled:opacity-50 transition-all duration-200 ${
+                isDark
+                  ? 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
             >
-              {loading ? '⏳' : '🔄'} Refresh
+              <svg className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {loading ? 'Loading...' : 'Refresh'}
             </button>
           </div>
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <div className={`mt-4 p-4 rounded-xl border ${
+              isDark ? 'bg-slate-800/50 border-slate-700/50' : 'bg-gray-50 border-gray-200'
+            }`}>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Max P/E</label>
+                  <label className={`block text-xs mb-1.5 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Max P/E</label>
                   <input
                     type="number"
                     placeholder="30"
                     value={criteria.maxPE || ''}
-                    onChange={(e) =>
-                      setCriteria({ ...criteria, maxPE: e.target.value ? Number(e.target.value) : undefined })
-                    }
-                    className="w-full px-2 py-1 border rounded"
+                    onChange={(e) => setCriteria({ ...criteria, maxPE: e.target.value ? Number(e.target.value) : undefined })}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      isDark
+                        ? 'bg-slate-900/50 border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Min Dividend %</label>
+                  <label className={`block text-xs mb-1.5 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Min Dividend %</label>
                   <input
                     type="number"
                     placeholder="2"
                     value={criteria.minDividendYield || ''}
-                    onChange={(e) =>
-                      setCriteria({
-                        ...criteria,
-                        minDividendYield: e.target.value ? Number(e.target.value) : undefined,
-                      })
-                    }
-                    className="w-full px-2 py-1 border rounded"
+                    onChange={(e) => setCriteria({ ...criteria, minDividendYield: e.target.value ? Number(e.target.value) : undefined })}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      isDark
+                        ? 'bg-slate-900/50 border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Max Beta</label>
+                  <label className={`block text-xs mb-1.5 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Max Beta</label>
                   <input
                     type="number"
                     placeholder="1.5"
                     step="0.1"
                     value={criteria.maxBeta || ''}
-                    onChange={(e) =>
-                      setCriteria({ ...criteria, maxBeta: e.target.value ? Number(e.target.value) : undefined })
-                    }
-                    className="w-full px-2 py-1 border rounded"
+                    onChange={(e) => setCriteria({ ...criteria, maxBeta: e.target.value ? Number(e.target.value) : undefined })}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      isDark
+                        ? 'bg-slate-900/50 border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Min ROE %</label>
+                  <label className={`block text-xs mb-1.5 uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>Min ROE %</label>
                   <input
                     type="number"
                     placeholder="15"
                     value={criteria.minROE || ''}
-                    onChange={(e) =>
-                      setCriteria({ ...criteria, minROE: e.target.value ? Number(e.target.value) : undefined })
-                    }
-                    className="w-full px-2 py-1 border rounded"
+                    onChange={(e) => setCriteria({ ...criteria, minROE: e.target.value ? Number(e.target.value) : undefined })}
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      isDark
+                        ? 'bg-slate-900/50 border-slate-700 text-white placeholder-slate-600 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500'
+                    }`}
                   />
                 </div>
               </div>
-              <div className="mt-3 flex justify-end gap-2">
+              <div className="mt-4 flex justify-end gap-3">
                 <button
-                  onClick={() => {
-                    setCriteria({});
-                    onDiscover(undefined, {}, selectedFocus, 20, selectedMode);
-                  }}
-                  className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+                  onClick={() => { setCriteria({}); onDiscover(undefined, {}, selectedFocus, 20, selectedMode); }}
+                  className={`px-4 py-2 text-sm transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Clear
                 </button>
                 <button
-                  onClick={() => {
-                    onDiscover(undefined, criteria, selectedFocus, 20, selectedMode);
-                    setShowFilters(false);
-                  }}
-                  className="px-4 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                  onClick={() => { onDiscover(undefined, criteria, selectedFocus, 20, selectedMode); setShowFilters(false); }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isDark ? 'bg-emerald-500 text-white hover:bg-emerald-600' : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
                 >
                   Apply Filters
                 </button>
@@ -318,19 +369,18 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           )}
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div className={`px-4 py-3 rounded-xl mb-6 ${
+            isDark ? 'bg-red-500/10 border border-red-500/30 text-red-400' : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
             <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
-            <button
-              onClick={handleRefresh}
-              className="mt-2 text-sm text-red-600 underline"
-            >
+            <p className="text-sm opacity-80">{error}</p>
+            <button onClick={handleRefresh} className="mt-2 text-sm underline hover:no-underline">
               Try again
             </button>
           </div>
@@ -338,10 +388,15 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Loading State */}
         {loading && stocks.length === 0 && (
-          <div className="text-center py-12">
-            <div className="animate-spin text-4xl mb-4">📊</div>
-            <p className="text-gray-600">Analyzing stocks with AI...</p>
-            <p className="text-sm text-gray-400 mt-1">Running 10 Wall Street analysis frameworks</p>
+          <div className="text-center py-16">
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-gray-100'}`}>
+              <svg className={`w-8 h-8 animate-spin ${isDark ? 'text-emerald-400' : 'text-blue-500'}`} fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+            <p className={`font-medium ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>Analyzing stocks with AI...</p>
+            <p className={`text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Running 10 Wall Street analysis frameworks</p>
           </div>
         )}
 
@@ -349,11 +404,19 @@ const Dashboard: React.FC<DashboardProps> = ({
         {stocks.length > 0 && (
           <>
             <div className="flex items-center justify-between mb-4">
-              <p className="text-sm text-gray-500">
+              <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
                 Showing {stocks.length} {modeTabs.find(t => t.value === selectedMode)?.label || 'stocks'}
                 {selectedFocus && ` • ${selectedFocus.charAt(0).toUpperCase() + selectedFocus.slice(1)} focus`}
               </p>
-              {loading && <span className="text-sm text-gray-400">Updating...</span>}
+              {loading && (
+                <span className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Updating...
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -373,10 +436,14 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Empty State */}
         {!loading && stocks.length === 0 && !error && (
-          <div className="text-center py-12">
-            <p className="text-4xl mb-4">📈</p>
-            <p className="text-gray-600">No stocks found</p>
-            <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+          <div className="text-center py-16">
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${isDark ? 'bg-slate-800' : 'bg-gray-100'}`}>
+              <svg className={`w-8 h-8 ${isDark ? 'text-slate-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <p className={`font-medium ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>No stocks found</p>
+            <p className={`text-sm mt-1 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Try adjusting your filters</p>
           </div>
         )}
       </main>

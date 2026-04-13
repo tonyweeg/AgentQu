@@ -32,15 +32,15 @@ const handleCors = (req, res) => {
  * Discover and rank stocks
  *
  * POST /discoverStocks
- * Body: { userId?, symbols?, criteria?, focus?, limit? }
+ * Body: { userId?, symbols?, criteria?, focus?, mode?, limit? }
  */
 const discoverStocks = onRequest(async (req, res) => {
   if (handleCors(req, res)) return;
 
   try {
-    const { userId, symbols, criteria, focus, limit } = req.body;
+    const { userId, symbols, criteria, focus, mode, limit } = req.body;
 
-    logger.info('discoverStocks called', { userId, symbolCount: symbols?.length });
+    logger.info('discoverStocks called', { userId, mode, symbolCount: symbols?.length });
 
     const stockService = new StockService();
     const result = await stockService.discoverStocks({
@@ -48,6 +48,7 @@ const discoverStocks = onRequest(async (req, res) => {
       symbols,
       criteria,
       focus,
+      mode,
       limit,
     });
 
@@ -448,11 +449,150 @@ const getStockPreferences = onRequest(async (req, res) => {
   }
 });
 
+/**
+ * Get Market Indices
+ *
+ * GET /getMarketIndices
+ * Returns major market indices, global markets, and key indicators
+ */
+const getMarketIndices = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
+
+  try {
+    logger.info('getMarketIndices called');
+
+    // Index symbols to fetch
+    const indexSymbols = [
+      // US Markets
+      '^GSPC',   // S&P 500
+      '^DJI',    // Dow Jones
+      '^IXIC',   // Nasdaq
+      '^RUT',    // Russell 2000
+      // Volatility
+      '^VIX',    // VIX Fear Index
+      // Global Markets
+      '^FTSE',   // FTSE 100
+      '^GDAXI',  // DAX
+      '^N225',   // Nikkei 225
+      '^HSI',    // Hang Seng
+      // Commodities
+      'GC=F',    // Gold
+      'CL=F',    // Crude Oil
+      // Crypto
+      'BTC-USD', // Bitcoin
+    ];
+
+    const stockService = new StockService();
+    const indices = await stockService.getMarketIndices(indexSymbols);
+
+    res.status(200).json({
+      success: true,
+      indices,
+      lastUpdated: Date.now(),
+    });
+  } catch (error) {
+    logger.error('getMarketIndices failed', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * Finnhub Webhook Handler
+ *
+ * POST /finnhubWebhook
+ * Receives real-time events from Finnhub (earnings, news, filings, etc.)
+ * Header: X-Finnhub-Secret must match configured secret
+ */
+const FINNHUB_WEBHOOK_SECRET = process.env.FINNHUB_WEBHOOK_SECRET || 'd6l006hr01qmopd2dcu0';
+
+const finnhubWebhook = onRequest(async (req, res) => {
+  // Only accept POST requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Validate Finnhub secret header
+  const receivedSecret = req.headers['x-finnhub-secret'];
+  if (receivedSecret !== FINNHUB_WEBHOOK_SECRET) {
+    logger.warn('Finnhub webhook: Invalid secret', {
+      received: receivedSecret ? 'present but invalid' : 'missing',
+    });
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  // Acknowledge receipt IMMEDIATELY (Finnhub requires fast 2xx response)
+  res.status(200).json({ received: true });
+
+  // Process event asynchronously after acknowledgment
+  try {
+    const event = req.body;
+    logger.info('Finnhub webhook received', {
+      type: event.type || 'unknown',
+      symbol: event.symbol || event.data?.symbol,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Handle different event types
+    switch (event.type) {
+      case 'earnings':
+        logger.info('Finnhub earnings event', {
+          symbol: event.symbol,
+          eps: event.data?.eps,
+          revenue: event.data?.revenue,
+        });
+        // TODO: Store in Firestore, trigger notifications, etc.
+        break;
+
+      case 'news':
+        logger.info('Finnhub news event', {
+          symbol: event.symbol,
+          headline: event.data?.headline,
+        });
+        // TODO: Store news, update stock sentiment, etc.
+        break;
+
+      case 'sec_filing':
+        logger.info('Finnhub SEC filing event', {
+          symbol: event.symbol,
+          formType: event.data?.formType,
+        });
+        break;
+
+      case 'price_target':
+        logger.info('Finnhub price target event', {
+          symbol: event.symbol,
+          target: event.data?.targetPrice,
+        });
+        break;
+
+      case 'recommendation':
+        logger.info('Finnhub recommendation event', {
+          symbol: event.symbol,
+          rating: event.data?.rating,
+        });
+        break;
+
+      default:
+        logger.info('Finnhub webhook: Unhandled event type', { event });
+    }
+  } catch (error) {
+    // Log error but don't fail - we already acknowledged
+    logger.error('Finnhub webhook processing error', {
+      error: error.message,
+      stack: error.stack?.substring(0, 500),
+    });
+  }
+});
+
 module.exports = {
   discoverStocks,
   analyzeStock,
   searchStocks,
   getMarketOverview,
+  getMarketIndices,
   getWatchlist,
   addToWatchlist,
   removeFromWatchlist,
@@ -461,4 +601,5 @@ module.exports = {
   sellFromPortfolio,
   saveStockPreferences,
   getStockPreferences,
+  finnhubWebhook,
 };

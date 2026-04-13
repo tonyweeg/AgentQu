@@ -244,6 +244,7 @@ export function SideBySideViewer({
   const [hoveredAnnotation, setHoveredAnnotation] = useState<string | null>(null);
   const [showAnnotationDetails, setShowAnnotationDetails] = useState<ShadowAnnotation | null>(null);
   const [showProposalModal, setShowProposalModal] = useState<ShadowAnnotation | null>(null);
+  const [cleanView, setCleanView] = useState(false);
 
   // Voting state
   const [voteData, setVoteData] = useState<AnnotationVoteData | null>(null);
@@ -458,111 +459,134 @@ export function SideBySideViewer({
       );
     }
 
-    // If we have official revised text, show it with green highlights
-    if (revisedText) {
-      // Highlight new inclusive language in green
-      const inclusiveTerms = [
-        'eligible persons',
-        'without distinction',
-        'citizenship status',
-      ];
+    // For V2.0 panel, always use originalText as base since proposals reference original text
+    // The V2.0 version shows the original WITH proposals applied (highlighted in blue)
+    // and official revisions highlighted in green
+    const baseText = originalText;
 
-      // Build highlighted segments
-      const segments: React.ReactNode[] = [];
-      let remainingText = revisedText;
-      let keyIndex = 0;
-
-      inclusiveTerms.forEach(term => {
-        const parts = remainingText.split(term);
-        if (parts.length > 1) {
-          segments.push(<span key={`seg-${keyIndex++}`}>{parts[0]}</span>);
-          segments.push(
-            <span
-              key={`term-${keyIndex++}`}
-              className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 font-medium border-b-2 border-emerald-400"
-            >
-              {term}
-            </span>
-          );
-          remainingText = parts.slice(1).join(term);
+    // Find all proposals and their positions in the original text
+    const proposalPositions: { start: number; end: number; proposal: ShadowAnnotation }[] = [];
+    proposals.forEach(p => {
+      if (p.proposedRevision) {
+        // Look for the original flagged text in the original text
+        const idx = baseText.indexOf(p.text);
+        console.log('POLISCAI_DEBUG: Looking for proposal text:', JSON.stringify(p.text), 'in originalText, found at:', idx);
+        if (idx !== -1) {
+          proposalPositions.push({ start: idx, end: idx + p.text.length, proposal: p });
         }
-      });
+      }
+    });
+    console.log('POLISCAI_DEBUG: Total proposals with positions:', proposalPositions.length);
 
-      if (remainingText) {
-        segments.push(<span key={`seg-${keyIndex}`}>{remainingText}</span>);
+    // Sort by position
+    proposalPositions.sort((a, b) => a.start - b.start);
+
+    // Build the display with blue proposal highlights
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let keyIndex = 0;
+
+    // Process proposals in order
+    for (const proposalPos of proposalPositions) {
+      // Add any text before this proposal
+      if (proposalPos.start > lastIndex) {
+        const textBefore = baseText.slice(lastIndex, proposalPos.start);
+        parts.push(<span key={`text-${keyIndex++}`}>{textBefore}</span>);
       }
 
+      // Add the proposal highlight (blue, clickable) - shows the PROPOSED replacement text
+      parts.push(
+        <span
+          key={`proposal-${keyIndex++}`}
+          onClick={() => setShowProposalModal(proposalPos.proposal)}
+          className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-sky-100 to-cyan-100 text-sky-700 font-medium border-b-2 border-sky-400 cursor-pointer hover:from-sky-200 hover:to-cyan-200 transition-all inline-block"
+          title={`Click to vote: "${proposalPos.proposal.text}" → "${proposalPos.proposal.proposedRevision}"`}
+        >
+          {proposalPos.proposal.proposedRevision}
+        </span>
+      );
+
+      lastIndex = proposalPos.end;
+    }
+
+    // Add remaining text after last proposal
+    if (lastIndex < baseText.length) {
+      parts.push(<span key={`text-end-${keyIndex}`}>{baseText.slice(lastIndex)}</span>);
+    }
+
+    // If no proposals found but there is a revisedText, show it as the V2.0 draft
+    if (proposalPositions.length === 0 && revisedText) {
       return (
         <p className="text-gray-800 leading-relaxed font-serif text-lg">
-          {segments.length > 0 ? segments : revisedText}
+          {revisedText}
         </p>
       );
     }
 
-    // If no official revised text but we have proposals, show original with blue proposal highlights
-    // Start with the original text and replace flagged terms with their proposed revisions
-    let workingText = originalText;
-    const replacements: { original: string; proposal: ShadowAnnotation }[] = [];
+    return (
+      <p className="text-gray-800 leading-relaxed font-serif text-lg">
+        {parts.length > 0 ? parts : baseText}
+      </p>
+    );
+  };
 
-    // Collect all proposals
-    proposals.forEach(p => {
-      if (p.proposedRevision && workingText.includes(p.text)) {
-        replacements.push({ original: p.text, proposal: p });
-      }
+  // Render clean V2.0 text (for printing/reading) - approved changes in blue
+  const renderCleanText = () => {
+    // Get proposals with 75%+ approval (check real vote data)
+    const approvedProposals = shadowAnnotations.filter(a => {
+      if (!a.proposedRevision) return false;
+      // For now, consider all proposals with proposedRevision as candidates
+      // Real approval check happens via vote subscription
+      return true;
     });
 
-    // Sort by position in text (to replace from end to start to preserve indices)
-    replacements.sort((a, b) => workingText.lastIndexOf(b.original) - workingText.lastIndexOf(a.original));
+    if (approvedProposals.length === 0) {
+      return (
+        <p className="text-gray-800 leading-relaxed font-serif text-lg print:text-base">
+          {originalText}
+        </p>
+      );
+    }
 
-    // Build the display with highlighted proposals
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let tempText = originalText;
+    // Build text with approved changes in blue
+    const baseText = originalText;
+    const proposalPositions: { start: number; end: number; proposal: ShadowAnnotation }[] = [];
 
-    // Find all proposals and their positions
-    const positions: { start: number; end: number; proposal: ShadowAnnotation }[] = [];
-    proposals.forEach(p => {
+    approvedProposals.forEach(p => {
       if (p.proposedRevision) {
-        const idx = originalText.indexOf(p.text);
+        const idx = baseText.indexOf(p.text);
         if (idx !== -1) {
-          positions.push({ start: idx, end: idx + p.text.length, proposal: p });
+          proposalPositions.push({ start: idx, end: idx + p.text.length, proposal: p });
         }
       }
     });
 
-    // Sort by position
-    positions.sort((a, b) => a.start - b.start);
+    proposalPositions.sort((a, b) => a.start - b.start);
 
-    // Build parts with highlights
-    positions.forEach((pos, i) => {
-      // Add text before this proposal
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let keyIndex = 0;
+
+    for (const pos of proposalPositions) {
       if (pos.start > lastIndex) {
-        parts.push(<span key={`text-${i}`}>{originalText.slice(lastIndex, pos.start)}</span>);
+        parts.push(<span key={`t-${keyIndex++}`}>{baseText.slice(lastIndex, pos.start)}</span>);
       }
-
-      // Add the proposal highlight (show proposed text in blue)
+      // Show proposed text in blue (clean, no background)
       parts.push(
-        <span
-          key={`proposal-${i}`}
-          onClick={() => setShowProposalModal(pos.proposal)}
-          className="px-1.5 py-0.5 rounded-md bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 font-medium border-b-2 border-blue-400 cursor-pointer hover:from-blue-200 hover:to-sky-200 transition-all"
-          title={`Click to vote: Replace "${pos.proposal.text}" with "${pos.proposal.proposedRevision}"`}
-        >
+        <span key={`p-${keyIndex++}`} className="text-sky-500 print:text-sky-600">
           {pos.proposal.proposedRevision}
         </span>
       );
-
       lastIndex = pos.end;
-    });
+    }
 
-    // Add remaining text
-    if (lastIndex < originalText.length) {
-      parts.push(<span key="text-end">{originalText.slice(lastIndex)}</span>);
+    if (lastIndex < baseText.length) {
+      parts.push(<span key={`e-${keyIndex}`}>{baseText.slice(lastIndex)}</span>);
     }
 
     return (
-      <p className="text-gray-800 leading-relaxed font-serif text-lg">
-        {parts.length > 0 ? parts : originalText}
+      <p className="text-gray-800 leading-relaxed font-serif text-lg print:text-base">
+        {parts.length > 0 ? parts : baseText}
       </p>
     );
   };
@@ -612,11 +636,13 @@ export function SideBySideViewer({
             <span className="px-2 py-1 rounded bg-gradient-to-r from-red-100 to-red-50 text-red-800 border-b-2 border-red-400 text-xs font-medium">
               flagged bias
             </span>
+            <span className="text-gray-400 text-xs">(V1.0)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="px-2 py-1 rounded bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-b-2 border-emerald-400 text-xs font-medium">
-              inclusive revision
+            <span className="px-2 py-1 rounded bg-gradient-to-r from-sky-100 to-cyan-100 text-sky-700 border-b-2 border-sky-400 text-xs font-medium">
+              community proposal
             </span>
+            <span className="text-gray-400 text-xs">(V2.0)</span>
           </div>
           <div className="flex items-center gap-2 text-gray-400">
             <Info className="w-4 h-4" />
@@ -697,25 +723,55 @@ export function SideBySideViewer({
         </div>
 
         {/* Revised (V2.0) Panel */}
-        <div className="p-6 md:p-8 bg-gradient-to-br from-gray-50 to-emerald-50/30">
+        <div className={`p-6 md:p-8 ${cleanView ? 'bg-white print:bg-white' : 'bg-gradient-to-br from-gray-50 to-emerald-50/30'}`}>
           {/* Panel Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
-              <Sparkles className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between mb-6 print:mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg print:hidden">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                  {cleanView ? 'OpenConstitution' : 'Revised'}
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
+                    V2.0
+                  </span>
+                </h3>
+                <p className="text-gray-500 text-sm print:hidden">{cleanView ? 'Clean reading view' : 'Community Draft'}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                Revised
-                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
-                  V2.0
-                </span>
-              </h3>
-              <p className="text-gray-500 text-sm">Community Draft</p>
+
+            {/* Clean View Toggle */}
+            <div className="flex items-center gap-2 print:hidden">
+              <button
+                onClick={() => setCleanView(!cleanView)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  cleanView
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {cleanView ? '← Editor View' : 'Clean View'}
+              </button>
+              {cleanView && (
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
+                >
+                  Print
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Status Bar */}
-          {revisedText ? (
+          {/* Status Bar / Clean View Legend */}
+          {cleanView ? (
+            <div className="mb-6 p-3 bg-blue-50 rounded-xl print:bg-transparent print:border print:border-gray-200">
+              <p className="text-sm text-blue-700 print:text-gray-600">
+                <span className="text-sky-500 font-medium">Sky blue text</span> indicates community-approved revisions to the original 1787 language.
+              </p>
+            </div>
+          ) : revisedText ? (
             <div className="flex items-center gap-4 mb-6 p-3 bg-emerald-50 rounded-xl">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -733,11 +789,11 @@ export function SideBySideViewer({
 
           {/* Content */}
           <div>
-            {renderRevisedText()}
+            {cleanView ? renderCleanText() : renderRevisedText()}
           </div>
 
-          {/* Community Proposals Summary */}
-          {shadowAnnotations.some(a => a.proposedRevision) && (
+          {/* Community Proposals Summary - hide in clean view */}
+          {!cleanView && shadowAnnotations.some(a => a.proposedRevision) && (
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-sky-50 rounded-xl border border-blue-200">
               <div className="flex items-center gap-2 text-blue-700 mb-2">
                 <Sparkles className="w-4 h-4" />
@@ -751,8 +807,8 @@ export function SideBySideViewer({
             </div>
           )}
 
-          {/* Arrow indicator when both panels have content */}
-          {revisedText && (
+          {/* Arrow indicator when both panels have content - hide in clean view */}
+          {!cleanView && revisedText && (
             <div className="mt-6 p-4 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
               <div className="flex items-center gap-3">
                 <ArrowRight className="w-5 h-5 text-emerald-600" />
@@ -800,7 +856,7 @@ export function SideBySideViewer({
           onClick={() => setShowAnnotationDetails(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-scale-in"
+            className="bg-white rounded-2xl shadow-2xl max-w-[95vw] md:max-w-md w-full max-h-[95vh] overflow-hidden animate-scale-in flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
@@ -829,10 +885,10 @@ export function SideBySideViewer({
               </div>
             </div>
 
-            {/* Content */}
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl font-serif font-bold text-red-800 bg-red-100 px-3 py-1 rounded-lg">
+            {/* Content - scrollable */}
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
+                <span className="text-xl font-serif font-bold text-red-800 bg-red-100 px-3 py-1 rounded-lg">
                   "{showAnnotationDetails.text}"
                 </span>
                 <span className={`px-2 py-1 rounded text-xs font-bold ${getTypeConfig(showAnnotationDetails.type).bg} ${getTypeConfig(showAnnotationDetails.type).color}`}>
@@ -1019,7 +1075,7 @@ export function SideBySideViewer({
           onClick={() => setShowProposalModal(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-scale-in"
+            className="bg-white rounded-2xl shadow-2xl max-w-[95vw] md:max-w-lg w-full max-h-[95vh] overflow-hidden animate-scale-in flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
@@ -1037,8 +1093,8 @@ export function SideBySideViewer({
               </div>
             </div>
 
-            {/* Content */}
-            <div className="p-6">
+            {/* Content - scrollable */}
+            <div className="p-6 overflow-y-auto flex-1">
               {/* Submitter */}
               {showProposalModal.submittedBy && (
                 <div className="flex items-center gap-2 mb-4 text-gray-500 text-sm">

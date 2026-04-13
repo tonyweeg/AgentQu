@@ -161,7 +161,7 @@ export function FlagSubmissionModal({
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-[95vw] md:max-w-2xl w-full max-h-[95vh] overflow-hidden">
         {/* Header */}
         <div className="bg-poliscai-primary text-white px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -177,7 +177,7 @@ export function FlagSubmissionModal({
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
           {/* Selected Text */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">

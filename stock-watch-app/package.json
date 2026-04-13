@@ -6,6 +6,7 @@
   "description": "AgentQu Stocks - AI-Powered Stock Trading Suggestions",
   "dependencies": {
     "firebase": "^10.7.1",
+    "lightweight-charts": "^5.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"

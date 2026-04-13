@@ -171,3 +171,62 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Print styles for OpenConstitution V2.0 */
+@media print {
+  /* Hide non-essential elements */
+  header, nav, footer, button, .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Clean background */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Single column layout */
+  .grid {
+    display: block !important;
+  }
+
+  /* Clean page margins */
+  @page {
+    margin: 1in;
+    size: letter;
+  }
+
+  /* Preserve sky blue text for revisions */
+  .text-sky-500, .text-sky-600 {
+    color: #0ea5e9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Clean typography */
+  .font-serif {
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+
+  /* Section breaks */
+  .p-6, .p-8 {
+    padding: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  /* Hide shadows and decorative elements */
+  .shadow-lg, .shadow-xl, .shadow-2xl {
+    box-shadow: none !important;
+  }
+
+  .rounded-xl, .rounded-2xl {
+    border-radius: 0 !important;
+  }
+
+  /* Clean borders */
+  .border {
+    border-color: #e5e7eb !important;
+  }
+}

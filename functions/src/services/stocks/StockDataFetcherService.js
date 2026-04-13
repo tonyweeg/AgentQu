@@ -230,6 +230,56 @@ class StockDataFetcherService {
   }
 
   /**
+   * Get historical price data for charts
+   * @param {string} symbol - Stock symbol
+   * @param {string} range - Time range ('1y', '6mo', '3mo', etc.)
+   * @returns {Promise<Object>} Historical prices with OHLCV data
+   */
+  async fetchHistoricalPrices(symbol, range = '1y') {
+    try {
+      this.logger.info(`Fetching historical prices for ${symbol}`, { range });
+      const data = await this.yahoo.getHistoricalPrices(symbol, range, '1d');
+      return data;
+    } catch (error) {
+      this.logger.error(`Failed to fetch historical prices for ${symbol}`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Fetch market indices (S&P 500, Dow, global markets, commodities)
+   * @param {Array<string>} symbols - Index symbols
+   * @returns {Promise<Array>} Index quotes
+   */
+  async fetchMarketIndices(symbols) {
+    try {
+      this.logger.info('Fetching market indices', { count: symbols.length });
+
+      const quotes = await this.yahoo.getQuotes(symbols);
+
+      // Map to simplified format
+      const indices = quotes.map((q) => ({
+        symbol: q.symbol,
+        name: q.shortName || q.longName || q.symbol,
+        price: q.regularMarketPrice || 0,
+        change: q.regularMarketChange || 0,
+        changePercent: q.regularMarketChangePercent || 0,
+        previousClose: q.regularMarketPreviousClose,
+        dayHigh: q.regularMarketDayHigh,
+        dayLow: q.regularMarketDayLow,
+        volume: q.regularMarketVolume,
+      }));
+
+      this.logger.info('Market indices fetched', { count: indices.length });
+
+      return indices;
+    } catch (error) {
+      this.logger.error('Failed to fetch market indices', error);
+      return [];
+    }
+  }
+
+  /**
    * Get news for a stock
    * @param {string} symbol - Stock symbol
    * @param {number} days - Days to look back

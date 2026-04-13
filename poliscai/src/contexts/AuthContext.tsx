@@ -3,6 +3,7 @@
  * PoliScai - Democracy V2.0
  *
  * Provides Google SSO authentication via Firebase
+ * Also supports OpenClaw service account access via URL key
  */
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
@@ -15,6 +16,12 @@ import {
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db, googleProvider, COLLECTIONS } from '../config/firebase';
 import { UserProfile, UserRole, UserSettings } from '../types';
+
+// OpenClaw Service Account Key
+// Usage: ?openclaw_key=3a94571d-cbd3-46bb-a2f6-f2dccceb60ec
+const OPENCLAW_KEY = '3a94571d-cbd3-46bb-a2f6-f2dccceb60ec';
+const OPENCLAW_USER_ID = 'openclaw-sirchenjin-ai';
+const OPENCLAW_DISPLAY_NAME = 'SirChenJin AI';
 
 interface AuthContextType {
   user: User | null;
@@ -85,8 +92,66 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Check for OpenClaw service account key in URL
+  const checkOpenClawAccess = (): boolean => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const openclawKey = urlParams.get('openclaw_key');
+
+    if (openclawKey === OPENCLAW_KEY) {
+      console.log('POLISCAI_AUTH: OpenClaw service account authenticated');
+
+      // Create mock user for OpenClaw
+      const mockUser = {
+        uid: OPENCLAW_USER_ID,
+        email: 'sirchenjin@openclaw.ai',
+        displayName: OPENCLAW_DISPLAY_NAME,
+        photoURL: null,
+        emailVerified: true,
+        isAnonymous: false,
+        // Add minimal required User interface properties
+        metadata: {},
+        providerData: [],
+        refreshToken: '',
+        tenantId: null,
+        delete: async () => {},
+        getIdToken: async () => '',
+        getIdTokenResult: async () => ({} as any),
+        reload: async () => {},
+        toJSON: () => ({}),
+        phoneNumber: null,
+        providerId: 'openclaw',
+      } as unknown as User;
+
+      const mockProfile: UserProfile = {
+        id: OPENCLAW_USER_ID,
+        email: 'sirchenjin@openclaw.ai',
+        displayName: OPENCLAW_DISPLAY_NAME,
+        role: 'scholar' as UserRole,
+        submissionCount: 0,
+        approvedSubmissionCount: 10, // Verified contributor
+        votesCast: 0,
+        disputesSubmitted: 0,
+        queriesRun: 0,
+        isSuspended: false,
+        createdAt: { toDate: () => new Date() } as any,
+        lastLoginAt: { toDate: () => new Date() } as any,
+      };
+
+      setUser(mockUser);
+      setUserProfile(mockProfile);
+      setLoading(false);
+      return true;
+    }
+    return false;
+  };
+
   // Listen for auth state changes
   useEffect(() => {
+    // First check for OpenClaw access
+    if (checkOpenClawAccess()) {
+      return; // OpenClaw authenticated, skip Firebase auth
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log('POLISCAI_AUTH: Auth state changed:', firebaseUser?.email || 'signed out');
 

@@ -24,6 +24,8 @@ import BiomeRenderer from './biomes/core/BiomeRenderer';
 import LocalFlavorColumn from './components/LocalFlavorColumn';
 import EVPanel from './components/EVPanel';
 import BeenThereView from './components/BeenThereView';
+import TicketmasterView from './components/TicketmasterView';
+import TicketmasterPreview from './components/TicketmasterPreview';
 import LoadingScreen from './components/LoadingScreen';
 import LocationErrorScreen from './components/LocationErrorScreen';
 import ViewModeSelector from './components/ViewModeSelector';
@@ -103,7 +105,7 @@ function App() {
 
   const [filters, setFilters] = useState<DiscoveryFilters>({ maxDistance: 10 });
   const [radius, setRadius] = useState(10); // miles
-  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'trip-creation' | 'trips' | 'trip-detail' | 'cirqle' | 'been-there'>(
+  const [viewMode, setViewMode] = useState<'list' | 'map' | 'offgrid' | 'ticketmaster' | 'trip-creation' | 'trips' | 'trip-detail' | 'cirqle' | 'been-there'>(
     (urlView as any) || 'list'
   );
   const [showSettings, setShowSettings] = useState(false);
@@ -1678,6 +1680,18 @@ function App() {
                   />
                 )}
 
+                {/* Ticketmaster View */}
+                {viewMode === 'ticketmaster' && activeLocation && (
+                  <TicketmasterView
+                    location={activeLocation}
+                    userId={user?.uid || null}
+                    onBack={() => {
+                      setViewMode('list');
+                      window.history.pushState({}, '', '/');
+                    }}
+                  />
+                )}
+
                 {/* Off Grid View */}
                 {viewMode === 'offgrid' && (
                   <OffGridView
@@ -1823,6 +1837,15 @@ function App() {
                             onToggleFastFood={() => {
                               setShowFastFood(!showFastFood);
                               setRefreshKey(prev => prev + 1);
+                            }}
+                          />
+
+                          {/* Ticketmaster Preview - Top 5 Events */}
+                          <TicketmasterPreview
+                            activities={activities}
+                            onViewMore={() => {
+                              setViewMode('ticketmaster');
+                              window.history.pushState({}, '', '/?view=ticketmaster');
                             }}
                           />
 

@@ -1,6 +1,6 @@
 /**
  * AppHeader Component
- * PoliScAI - Democracy V2.0
+ * The Open Document Project - Powered by PoliScAI
  *
  * Main navigation header with tabs, profile dropdown, and AI indicator
  */
@@ -27,7 +27,7 @@ interface NavTab {
 }
 
 const NAV_TABS: NavTab[] = [
-  { label: 'Constitution', path: '/constitution' },
+  { label: 'Documents', path: '/documents' },
   { label: 'Review', path: '/review' },
   { label: 'Query', path: '/query' },
 ];
@@ -63,11 +63,15 @@ export function AppHeader() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-              <span className="text-2xl font-serif font-bold text-poliscai-dark">
-                PoliSc<span className="text-poliscai-primary">AI</span>
-              </span>
-              <span className="hidden sm:block text-sm text-gray-500">Democracy V2.0</span>
-              <span className="px-2 py-0.5 bg-poliscai-secondary/20 text-poliscai-secondary text-xs font-semibold rounded">
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-slate-800 leading-tight">
+                  Open Document Project
+                </span>
+                <span className="text-[10px] text-gray-500 leading-tight">
+                  Powered by <span className="font-semibold text-sky-600">PoliScAI</span>
+                </span>
+              </div>
+              <span className="px-2 py-0.5 bg-sky-100 text-sky-700 text-xs font-semibold rounded">
                 Beta
               </span>
             </Link>
@@ -75,7 +79,8 @@ export function AppHeader() {
             {/* Navigation Tabs - Desktop */}
             <nav className="hidden md:flex items-center gap-1">
               {NAV_TABS.map((tab) => {
-                const isActive = location.pathname.startsWith(tab.path);
+                const isActive = location.pathname === tab.path ||
+                  (tab.path === '/documents' && location.pathname.startsWith('/documents'));
                 return (
                   <Link
                     key={tab.path}
@@ -83,7 +88,7 @@ export function AppHeader() {
                     className={`
                       px-4 py-2 rounded-lg font-medium transition-colors
                       ${isActive
-                        ? 'bg-poliscai-primary text-white'
+                        ? 'bg-slate-800 text-white'
                         : 'text-gray-600 hover:bg-gray-100'
                       }
                     `}
@@ -114,10 +119,10 @@ export function AppHeader() {
                       <img
                         src={user.photoURL}
                         alt={user.displayName || 'User'}
-                        className="w-8 h-8 rounded-full ring-2 ring-poliscai-primary/20"
+                        className="w-8 h-8 rounded-full ring-2 ring-sky-500/20"
                       />
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-poliscai-primary to-indigo-600 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
                         <span className="text-white font-bold text-sm">
                           {user?.displayName?.[0] || 'U'}
                         </span>
@@ -133,7 +138,7 @@ export function AppHeader() {
                   {showProfileMenu && (
                     <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-scale-in z-50">
                       {/* User Info Header */}
-                      <div className="px-4 py-4 bg-gradient-to-r from-poliscai-primary to-indigo-800">
+                      <div className="px-4 py-4 bg-gradient-to-r from-slate-700 to-slate-900">
                         <div className="flex items-center gap-3">
                           {user?.photoURL ? (
                             <img
@@ -161,11 +166,11 @@ export function AppHeader() {
                       <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
                         <div className="flex items-center justify-between text-sm">
                           <div className="text-center">
-                            <p className="font-bold text-poliscai-dark">{userProfile?.submissionCount || 0}</p>
+                            <p className="font-bold text-slate-800">{userProfile?.submissionCount || 0}</p>
                             <p className="text-gray-500 text-xs">Flags</p>
                           </div>
                           <div className="text-center">
-                            <p className="font-bold text-poliscai-dark">{userProfile?.votesCast || 0}</p>
+                            <p className="font-bold text-slate-800">{userProfile?.votesCast || 0}</p>
                             <p className="text-gray-500 text-xs">Votes</p>
                           </div>
                           <div className="text-center">
@@ -225,7 +230,7 @@ export function AppHeader() {
               ) : (
                 <button
                   onClick={signInWithGoogle}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-poliscai-primary to-indigo-700 text-white rounded-xl hover:shadow-lg transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl hover:bg-slate-700 hover:shadow-lg transition-all"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>Sign In</span>
@@ -247,7 +252,8 @@ export function AppHeader() {
             <div className="md:hidden py-4 border-t border-gray-100 animate-fade-in">
               <nav className="flex flex-col gap-1">
                 {NAV_TABS.map((tab) => {
-                  const isActive = location.pathname.startsWith(tab.path);
+                  const isActive = location.pathname === tab.path ||
+                    (tab.path === '/documents' && location.pathname.startsWith('/documents'));
                   return (
                     <Link
                       key={tab.path}
@@ -256,7 +262,7 @@ export function AppHeader() {
                       className={`
                         px-4 py-3 rounded-lg font-medium transition-colors
                         ${isActive
-                          ? 'bg-poliscai-primary text-white'
+                          ? 'bg-slate-800 text-white'
                           : 'text-gray-600 hover:bg-gray-100'
                         }
                       `}

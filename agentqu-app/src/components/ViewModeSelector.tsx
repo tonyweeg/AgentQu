@@ -8,12 +8,12 @@
 import React, { memo } from 'react';
 
 interface ViewModeSelectorProps {
-  viewMode: 'list' | 'map' | 'offgrid' | 'trip-creation' | 'trips' | 'trip-detail' | 'cirqle' | 'been-there';
+  viewMode: 'list' | 'map' | 'offgrid' | 'ticketmaster' | 'trip-creation' | 'trips' | 'trip-detail' | 'cirqle' | 'been-there';
   offgridViewMode: 'list' | 'map';
   showEVPanel: boolean;
   isEVOwner: boolean;
   chargingStationsCount: number;
-  onViewModeChange: (mode: 'list' | 'map' | 'offgrid') => void;
+  onViewModeChange: (mode: 'list' | 'map' | 'offgrid' | 'ticketmaster') => void;
   onOffgridViewModeChange: (mode: 'list' | 'map') => void;
   onEVPanelToggle: () => void;
 }
@@ -28,8 +28,8 @@ const ViewModeSelector: React.FC<ViewModeSelectorProps> = memo(({
   onOffgridViewModeChange,
   onEVPanelToggle,
 }) => {
-  // Only show for list/map/offgrid modes
-  if (viewMode !== 'list' && viewMode !== 'map' && viewMode !== 'offgrid') {
+  // Only show for list/map/offgrid/ticketmaster modes
+  if (viewMode !== 'list' && viewMode !== 'map' && viewMode !== 'offgrid' && viewMode !== 'ticketmaster') {
     return null;
   }
 
@@ -84,6 +84,19 @@ const ViewModeSelector: React.FC<ViewModeSelectorProps> = memo(({
       >
         <span className="text-base">🏕️</span>
         <span>Off-Grid</span>
+      </button>
+
+      {/* Ticketmaster Now! Button */}
+      <button
+        onClick={() => onViewModeChange('ticketmaster')}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all border backdrop-blur-sm whitespace-nowrap ${
+          viewMode === 'ticketmaster'
+            ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md border-blue-700'
+            : 'bg-white/80 text-gray-700 hover:bg-blue-50 border-gray-200'
+        }`}
+      >
+        <span className="text-base">🎟️</span>
+        <span>Ticketmaster Now!</span>
       </button>
 
       {/* EV Charging Button - Only show for EV owners with stations */}

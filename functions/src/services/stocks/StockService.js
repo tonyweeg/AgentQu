@@ -72,11 +72,48 @@ class StockService {
       // Apply screening criteria
       let filteredStocks = this.scoringService.screenStocks(stocks, criteria);
 
-      // Score and rank stocks
+      // Score stocks (always calculate scores for analysis)
       const scoredStocks = this.scoringService.scoreAndRankStocks(filteredStocks, context);
 
+      // Sort based on mode - gainers/losers should sort by % change, not score
+      let sortedStocks;
+      if (mode === 'gainers') {
+        // Sort by biggest gain (highest positive %)
+        sortedStocks = [...scoredStocks].sort((a, b) => {
+          const changeA = a.quote?.regularMarketChangePercent || 0;
+          const changeB = b.quote?.regularMarketChangePercent || 0;
+          return changeB - changeA; // Descending (biggest gainers first)
+        });
+        this.logger.info('Sorted gainers by % change', {
+          top3: sortedStocks.slice(0, 3).map(s => `${s.symbol}: ${s.quote?.regularMarketChangePercent?.toFixed(2)}%`)
+        });
+      } else if (mode === 'losers') {
+        // Sort by biggest loss (most negative %)
+        sortedStocks = [...scoredStocks].sort((a, b) => {
+          const changeA = a.quote?.regularMarketChangePercent || 0;
+          const changeB = b.quote?.regularMarketChangePercent || 0;
+          return changeA - changeB; // Ascending (biggest losers first - most negative)
+        });
+        this.logger.info('Sorted losers by % change', {
+          top3: sortedStocks.slice(0, 3).map(s => `${s.symbol}: ${s.quote?.regularMarketChangePercent?.toFixed(2)}%`)
+        });
+      } else if (mode === 'trending') {
+        // Sort by volume (most actively traded)
+        sortedStocks = [...scoredStocks].sort((a, b) => {
+          const volA = a.quote?.regularMarketVolume || 0;
+          const volB = b.quote?.regularMarketVolume || 0;
+          return volB - volA; // Descending (highest volume first)
+        });
+        this.logger.info('Sorted trending by volume', {
+          top3: sortedStocks.slice(0, 3).map(s => `${s.symbol}: ${(s.quote?.regularMarketVolume / 1000000).toFixed(1)}M vol`)
+        });
+      } else {
+        // Default (bluechip, etc.) - sort by AI score
+        sortedStocks = scoredStocks;
+      }
+
       // Apply limit
-      const topStocks = scoredStocks.slice(0, limit);
+      const topStocks = sortedStocks.slice(0, limit);
 
       const queryTime = Date.now() - startTime;
 
@@ -118,19 +155,21 @@ class StockService {
     try {
       this.logger.info(`Analyzing ${symbol}`, { userId });
 
-      // Fetch comprehensive data
-      const [stockData, technicalData, insiderData, newsData, macroData] = await Promise.all([
+      // Fetch comprehensive data including historical for charts
+      const [stockData, technicalData, insiderData, newsData, macroData, historicalData] = await Promise.all([
         this.dataFetcher.fetchStockData(symbol),
         this.dataFetcher.fetchTechnicalData(symbol),
         this.dataFetcher.fetchInsiderData(symbol),
         this.dataFetcher.fetchNews(symbol, 7),
         this.dataFetcher.fetchMacroData(),
+        this.dataFetcher.fetchHistoricalPrices(symbol, '1y'),
       ]);
 
       // Add technical data to stock
       stockData.technical = technicalData;
       stockData.insider = insiderData;
       stockData.news = newsData;
+      stockData.historical = historicalData;
 
       // Build context and score
       const context = await this.scoringService.buildUserContext(userId, macroData);
@@ -187,6 +226,26 @@ class StockService {
       market: marketData,
       macro: macroData,
     };
+  }
+
+  /**
+   * Get market indices (S&P 500, Dow, Nasdaq, global markets, commodities)
+   * @param {Array<string>} symbols - Index symbols to fetch
+   * @returns {Promise<Array>} Index quotes
+   */
+  async getMarketIndices(symbols) {
+    try {
+      this.logger.info('Fetching market indices', { count: symbols.length });
+
+      const indices = await this.dataFetcher.fetchMarketIndices(symbols);
+
+      this.logger.info('Market indices fetched', { returned: indices.length });
+
+      return indices;
+    } catch (error) {
+      this.logger.error('Failed to fetch market indices', error);
+      return [];
+    }
   }
 
   /**
@@ -396,23 +455,31 @@ class StockService {
 
       if (type === 'gainers' && marketData.gainers?.length > 0) {
         symbols = marketData.gainers.map(s => s.symbol).filter(Boolean);
+        this.logger.info(`Got ${symbols.length} gainers: ${symbols.slice(0, 5).join(', ')}...`);
       } else if (type === 'losers' && marketData.losers?.length > 0) {
         symbols = marketData.losers.map(s => s.symbol).filter(Boolean);
+        this.logger.info(`Got ${symbols.length} losers: ${symbols.slice(0, 5).join(', ')}...`);
       } else if (marketData.mostActive?.length > 0) {
         // Trending = most active
         symbols = marketData.mostActive.map(s => s.symbol).filter(Boolean);
+        this.logger.info(`Got ${symbols.length} most active: ${symbols.slice(0, 5).join(', ')}...`);
       }
 
-      // If we got symbols, add some blue chips to round out the list
-      if (symbols.length > 0) {
-        const blueChips = this._getBlueChipSymbols().slice(0, 10);
-        // Merge without duplicates
-        const combined = [...new Set([...symbols, ...blueChips])];
-        this.logger.info(`Dynamic symbols: ${symbols.length} ${type}, combined with blue chips: ${combined.length}`);
+      // Return ONLY the dynamic symbols if we have enough (no blue chip mixing!)
+      if (symbols.length >= 10) {
+        this.logger.info(`Returning ${symbols.length} pure ${type} symbols (no blue chips mixed in)`);
+        return symbols.slice(0, 30);
+      }
+
+      // Only add blue chips if we don't have enough dynamic symbols
+      if (symbols.length > 0 && symbols.length < 10) {
+        const blueChips = this._getBlueChipSymbols().slice(0, 10 - symbols.length);
+        const combined = [...symbols, ...blueChips.filter(s => !symbols.includes(s))];
+        this.logger.info(`Padded ${symbols.length} ${type} with ${blueChips.length} blue chips = ${combined.length} total`);
         return combined.slice(0, 30);
       }
 
-      // Fallback to blue chips if dynamic fetch fails
+      // Fallback to blue chips if dynamic fetch fails completely
       this.logger.warn(`No dynamic symbols for ${type}, falling back to blue chips`);
       return this._getBlueChipSymbols();
     } catch (error) {

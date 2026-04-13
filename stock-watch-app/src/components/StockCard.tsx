@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import { Stock } from '../lib/types';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface StockCardProps {
   stock: Stock;
@@ -10,20 +11,18 @@ interface StockCardProps {
 }
 
 /**
- * StockCard Component
- * Displays a stock with key metrics and score
+ * StockCard Component - Supports Light/Dark Theme
  * Memoized for performance
  */
 const StockCard: React.FC<StockCardProps> = memo(
   ({ stock, onClick, onAddToWatchlist, isInWatchlist = false, showScore = true }) => {
+    const { isDark } = useTheme();
     const { quote, profile, scoreData } = stock;
 
     // Price change styling
     const priceChange = quote?.regularMarketChange || 0;
     const priceChangePercent = quote?.regularMarketChangePercent || 0;
     const isPositive = priceChange >= 0;
-    const changeColor = isPositive ? 'text-green-500' : 'text-red-500';
-    const changeBg = isPositive ? 'bg-green-100' : 'bg-red-100';
 
     // Score styling
     const score = stock.score || scoreData?.total || 0;
@@ -31,27 +30,37 @@ const StockCard: React.FC<StockCardProps> = memo(
     const scorePercent = (score / maxScore) * 100;
 
     const getScoreColor = () => {
-      if (scorePercent >= 70) return 'text-green-600';
-      if (scorePercent >= 55) return 'text-green-500';
-      if (scorePercent >= 45) return 'text-yellow-500';
-      if (scorePercent >= 30) return 'text-orange-500';
-      return 'text-red-500';
+      if (scorePercent >= 70) return isDark ? 'text-emerald-400' : 'text-green-600';
+      if (scorePercent >= 55) return isDark ? 'text-green-400' : 'text-green-500';
+      if (scorePercent >= 45) return isDark ? 'text-yellow-400' : 'text-yellow-600';
+      if (scorePercent >= 30) return isDark ? 'text-orange-400' : 'text-orange-500';
+      return isDark ? 'text-red-400' : 'text-red-500';
+    };
+
+    const getScoreBarColor = () => {
+      if (scorePercent >= 70) return 'bg-gradient-to-r from-emerald-500 to-green-400';
+      if (scorePercent >= 55) return 'bg-gradient-to-r from-green-500 to-emerald-400';
+      if (scorePercent >= 45) return 'bg-gradient-to-r from-yellow-500 to-amber-400';
+      if (scorePercent >= 30) return 'bg-gradient-to-r from-orange-500 to-amber-500';
+      return 'bg-gradient-to-r from-red-500 to-rose-400';
     };
 
     const getRecommendationBadge = () => {
       const rec = scoreData?.recommendation;
       if (!rec) return null;
 
-      const colors: Record<string, string> = {
-        STRONG_BUY: 'bg-green-600 text-white',
-        BUY: 'bg-green-500 text-white',
-        HOLD: 'bg-yellow-500 text-white',
-        SELL: 'bg-orange-500 text-white',
-        STRONG_SELL: 'bg-red-500 text-white',
+      const colors: Record<string, { dark: string; light: string }> = {
+        STRONG_BUY: { dark: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', light: 'bg-green-100 text-green-700 border-green-200' },
+        BUY: { dark: 'bg-green-500/20 text-green-400 border-green-500/30', light: 'bg-green-50 text-green-600 border-green-100' },
+        HOLD: { dark: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30', light: 'bg-yellow-50 text-yellow-700 border-yellow-100' },
+        SELL: { dark: 'bg-orange-500/20 text-orange-400 border-orange-500/30', light: 'bg-orange-50 text-orange-600 border-orange-100' },
+        STRONG_SELL: { dark: 'bg-red-500/20 text-red-400 border-red-500/30', light: 'bg-red-100 text-red-700 border-red-200' },
       };
 
+      const colorClass = colors[rec.action] || { dark: 'bg-slate-700 text-slate-400', light: 'bg-gray-100 text-gray-600' };
+
       return (
-        <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors[rec.action] || 'bg-gray-200'}`}>
+        <span className={`px-2 py-1 rounded-lg text-xs font-semibold border ${isDark ? colorClass.dark : colorClass.light}`}>
           {rec.label}
         </span>
       );
@@ -59,14 +68,22 @@ const StockCard: React.FC<StockCardProps> = memo(
 
     return (
       <div
-        className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+        className={`backdrop-blur border rounded-xl p-4 cursor-pointer transition-all duration-200 group ${
+          isDark
+            ? 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-800 hover:border-slate-600'
+            : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm hover:shadow-md'
+        }`}
         onClick={() => onClick(stock.symbol)}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div>
-            <h3 className="font-bold text-lg text-gray-900">{stock.symbol}</h3>
-            <p className="text-sm text-gray-500 truncate max-w-[180px]">
+            <h3 className={`font-bold text-lg transition-colors ${
+              isDark ? 'text-white group-hover:text-emerald-400' : 'text-gray-900 group-hover:text-blue-600'
+            }`}>
+              {stock.symbol}
+            </h3>
+            <p className={`text-sm truncate max-w-[160px] ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
               {profile?.name || quote?.shortName || stock.symbol}
             </p>
           </div>
@@ -74,11 +91,15 @@ const StockCard: React.FC<StockCardProps> = memo(
         </div>
 
         {/* Price */}
-        <div className="flex items-baseline justify-between mb-3">
-          <span className="text-2xl font-bold text-gray-900">
+        <div className="flex items-baseline justify-between mb-4">
+          <span className={`text-2xl font-bold font-mono ${isDark ? 'text-white' : 'text-gray-900'}`}>
             ${quote?.regularMarketPrice?.toFixed(2) || '—'}
           </span>
-          <span className={`text-sm font-medium ${changeBg} ${changeColor} px-2 py-0.5 rounded`}>
+          <span className={`text-sm font-mono font-semibold px-2 py-1 rounded-lg ${
+            isPositive
+              ? isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-green-100 text-green-700'
+              : isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700'
+          }`}>
             {isPositive ? '+' : ''}
             {priceChangePercent.toFixed(2)}%
           </span>
@@ -86,26 +107,16 @@ const StockCard: React.FC<StockCardProps> = memo(
 
         {/* Score Bar */}
         {showScore && (
-          <div className="mb-3">
-            <div className="flex items-center justify-between text-sm mb-1">
-              <span className="text-gray-500">Score</span>
-              <span className={`font-bold ${getScoreColor()}`}>
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-sm mb-1.5">
+              <span className={`text-xs uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>AI Score</span>
+              <span className={`font-mono font-semibold ${getScoreColor()}`}>
                 {score}/{maxScore}
               </span>
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className={`w-full h-2 rounded-full overflow-hidden ${isDark ? 'bg-slate-700/50' : 'bg-gray-200'}`}>
               <div
-                className={`h-full transition-all ${
-                  scorePercent >= 70
-                    ? 'bg-green-500'
-                    : scorePercent >= 55
-                    ? 'bg-green-400'
-                    : scorePercent >= 45
-                    ? 'bg-yellow-400'
-                    : scorePercent >= 30
-                    ? 'bg-orange-400'
-                    : 'bg-red-400'
-                }`}
+                className={`h-full transition-all duration-500 ${getScoreBarColor()}`}
                 style={{ width: `${Math.min(scorePercent, 100)}%` }}
               />
             </div>
@@ -113,30 +124,28 @@ const StockCard: React.FC<StockCardProps> = memo(
         )}
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-          <div>
-            <span className="text-gray-500">P/E</span>
-            <span className="ml-1 font-medium">
+        <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+          <div className="flex justify-between">
+            <span className={isDark ? 'text-slate-500' : 'text-gray-400'}>P/E</span>
+            <span className={`font-mono ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               {stock.metrics?.peRatio ? stock.metrics.peRatio.toFixed(1) : '—'}
             </span>
           </div>
-          <div>
-            <span className="text-gray-500">Mkt Cap</span>
-            <span className="ml-1 font-medium">
+          <div className="flex justify-between">
+            <span className={isDark ? 'text-slate-500' : 'text-gray-400'}>Mkt Cap</span>
+            <span className={`font-mono ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               {quote?.marketCap ? formatMarketCap(quote.marketCap) : '—'}
             </span>
           </div>
-          <div>
-            <span className="text-gray-500">Div Yield</span>
-            <span className="ml-1 font-medium">
-              {stock.metrics?.dividendYield
-                ? `${stock.metrics.dividendYield.toFixed(1)}%`
-                : '—'}
+          <div className="flex justify-between">
+            <span className={isDark ? 'text-slate-500' : 'text-gray-400'}>Div Yield</span>
+            <span className={`font-mono ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
+              {stock.metrics?.dividendYield ? `${stock.metrics.dividendYield.toFixed(1)}%` : '—'}
             </span>
           </div>
-          <div>
-            <span className="text-gray-500">Beta</span>
-            <span className="ml-1 font-medium">
+          <div className="flex justify-between">
+            <span className={isDark ? 'text-slate-500' : 'text-gray-400'}>Beta</span>
+            <span className={`font-mono ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
               {stock.metrics?.beta ? stock.metrics.beta.toFixed(2) : '—'}
             </span>
           </div>
@@ -145,23 +154,43 @@ const StockCard: React.FC<StockCardProps> = memo(
         {/* Watchlist Button */}
         {onAddToWatchlist && (
           <button
-            className={`w-full py-2 rounded text-sm font-medium transition-colors ${
+            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               isInWatchlist
-                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                ? isDark
+                  ? 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : isDark
+                  ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30'
+                  : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200'
             }`}
             onClick={(e) => {
               e.stopPropagation();
               onAddToWatchlist(stock.symbol);
             }}
           >
-            {isInWatchlist ? '✓ In Watchlist' : '+ Add to Watchlist'}
+            {isInWatchlist ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                In Watchlist
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add to Watchlist
+              </span>
+            )}
           </button>
         )}
 
         {/* Top Reason */}
         {scoreData?.topReasons?.[0]?.reasons?.[0] && (
-          <p className="text-xs text-gray-500 mt-2 truncate">
+          <p className={`text-xs mt-3 truncate border-t pt-3 ${
+            isDark ? 'text-slate-500 border-slate-700/50' : 'text-gray-400 border-gray-100'
+          }`}>
             {scoreData.topReasons[0].reasons[0]}
           </p>
         )}
@@ -170,7 +199,6 @@ const StockCard: React.FC<StockCardProps> = memo(
   }
 );
 
-// Format market cap to human readable
 function formatMarketCap(value: number): string {
   if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
   if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;

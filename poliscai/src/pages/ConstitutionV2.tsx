@@ -45,35 +45,8 @@ const getShortLabel = (clause: typeof ALL_CLAUSES[0]): string => {
   return clause.articleSection;
 };
 
-// Shadow annotations with correct indices
-const DEMO_SHADOWS: Record<string, any[]> = {
-  'article-1-section-2': [
-    {
-      id: 'shadow-1',
-      text: 'Members',
-      startIndex: 50,
-      endIndex: 57,
-      description: '"Members" in 1787 implicitly excluded women, enslaved persons, Indigenous peoples, and those without property from holding office.',
-      type: 'gender_assumption',
-    },
-    {
-      id: 'shadow-2',
-      text: 'People',
-      startIndex: 90,
-      endIndex: 96,
-      description: '"People" was operationally defined to exclude the majority of the population from political participation.',
-      type: 'racial_exclusion',
-    },
-    {
-      id: 'shadow-3',
-      text: 'Electors',
-      startIndex: 128,
-      endIndex: 136,
-      description: '"Electors" referred only to propertied white males in most states, excluding most adults.',
-      type: 'economic_exclusion',
-    },
-  ],
-};
+// Demo shadows removed - all flags now come from real user submissions via Firestore
+const DEMO_SHADOWS: Record<string, any[]> = {};
 
 // V2.0 revisions
 const DEMO_REVISIONS: Record<string, string> = {

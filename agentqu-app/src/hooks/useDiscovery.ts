@@ -40,10 +40,14 @@ export function useDiscovery({
       // Call the Cloud Function with userId for affinity scoring
       const discoverActivities = httpsCallable(functions, 'discoverActivities');
 
+      // Use wider radius for text searches (especially Ticketmaster events)
+      // Text searches like "Cage the Elephant" should search up to 100 miles
+      const searchRadius = textSearch ? 100 : (filters.maxDistance || 10);
+
       console.log('🔍 AGENTQU_DEBUG: Calling discoverActivities with:', {
         lat: location.lat,
         lng: location.lng,
-        radius: filters.maxDistance || 10,
+        radius: searchRadius,
         userId: userId || null,
         enablePlaces,
         enableCustomSearch,
@@ -55,7 +59,7 @@ export function useDiscovery({
       const result = await discoverActivities({
         lat: location.lat,
         lng: location.lng,
-        radius: filters.maxDistance || 10,
+        radius: searchRadius,
         userId: userId || null,
         filters,
         enablePlaces,
@@ -74,7 +78,27 @@ export function useDiscovery({
         console.log(`🔍 AGENTQU_DEBUG: Got ${data.activities?.length || 0} activities`);
         console.log(`⚡ EV CHARGING: Got ${data.chargingStations?.length || 0} charging stations`);
         console.log('🔍 AGENTQU_DEBUG: Metadata:', JSON.stringify(data.metadata, null, 2));
-        setActivities(data.activities || []);
+
+        let filteredActivities = data.activities || [];
+
+        // If text search is active, filter results to only show relevant matches
+        // This prevents broad Ticketmaster keyword searches from showing unrelated events
+        if (textSearch && textSearch.trim().length > 0) {
+          const searchTerms = textSearch.toLowerCase().trim();
+          filteredActivities = filteredActivities.filter((activity: any) => {
+            const name = (activity.name || '').toLowerCase();
+            const description = (activity.description || activity.details?.description || '').toLowerCase();
+            const venue = (activity.details?.venue || '').toLowerCase();
+
+            // Match if search term is in name, description, or venue
+            return name.includes(searchTerms) ||
+                   description.includes(searchTerms) ||
+                   venue.includes(searchTerms);
+          });
+          console.log(`🔍 AGENTQU_DEBUG: Filtered ${data.activities?.length || 0} → ${filteredActivities.length} activities based on search: "${textSearch}"`);
+        }
+
+        setActivities(filteredActivities);
         setChargingStations(data.chargingStations || []);
         setMetadata(data.metadata);
       } else {

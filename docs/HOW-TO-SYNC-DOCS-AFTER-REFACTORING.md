@@ -1,4 +1,4 @@
-# How to Sync Documentation After Code Refactoring
+What# How to Sync Documentation After Code Refactoring
 
 ## Problem Statement
 

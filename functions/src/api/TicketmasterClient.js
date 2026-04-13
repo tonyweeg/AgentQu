@@ -15,7 +15,7 @@
 
 const BaseApiClient = require('./BaseApiClient');
 const { getApiKey, isConfigured } = require('../config/api-keys');
-const { API_LIMITS } = require('../config/constants');
+const { RATE_LIMITS } = require('../config/constants');
 
 class TicketmasterClient extends BaseApiClient {
   constructor() {
@@ -52,37 +52,56 @@ class TicketmasterClient extends BaseApiClient {
    * @param {number} params.radius - Search radius in miles
    * @param {string} params.startDateTime - Start date (ISO format)
    * @param {string} params.endDateTime - End date (ISO format)
+   * @param {string} params.keyword - Optional keyword search (e.g., "comedy", "concert")
    * @returns {Promise<Array>} Array of events
    */
-  async searchEvents({ lat, lng, radius = 10, startDateTime, endDateTime }) {
+  async searchEvents({ lat, lng, radius = 10, startDateTime, endDateTime, keyword = null }) {
     if (!this.isReady()) {
       this.logger.warn('Not configured');
       return [];
     }
 
     try {
-      this.logger.info(`Searching events within ${radius} miles of ${lat},${lng}`);
+      const searchType = keyword ? `keyword "${keyword}"` : 'all events';
+      this.logger.info(`Searching ${searchType} within ${radius} miles of ${lat},${lng}`);
 
-      const response = await this.get('/events.json', {
+      const params = {
         apikey: this.apiKey,
         latlong: `${lat},${lng}`,
         radius: radius,
         unit: 'miles',
-        size: API_LIMITS.TICKETMASTER_MAX_RESULTS || 50,
+        size: RATE_LIMITS.TICKETMASTER_MAX_RESULTS || 50,
         sort: 'date,asc',
         startDateTime: startDateTime,
         endDateTime: endDateTime,
-      });
+      };
+
+      // Add keyword search if provided
+      if (keyword) {
+        params.keyword = keyword;
+      }
+
+      const response = await this.get('/events.json', params);
 
       const events = response._embedded?.events || [];
       this.logger.info(`Found ${events.length} events`);
 
-      return events.map(event => this.transformEvent(event));
+      const transformedEvents = events.map(event => this.transformEvent(event));
+      const dedupedEvents = this.deduplicateByPerformer(transformedEvents);
+      this.logger.info(`Deduplicated ${events.length} → ${dedupedEvents.length} events`);
+
+      return dedupedEvents;
     } catch (error) {
-      this.logger.error('Error fetching events:', error.message);
-      if (error.response) {
-        this.logger.error(`Status ${error.response.status}:`, error.response.data);
-      }
+      this.logger.error('Error fetching events', {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          params: error.config?.params,
+        },
+      });
       return [];
     }
   }
@@ -129,12 +148,54 @@ class TicketmasterClient extends BaseApiClient {
   }
 
   /**
+   * Deduplicate events by performer/team name
+   * For each unique event name, keep only the closest (soonest) event
+   * @param {Array} events - Array of transformed events
+   * @returns {Array} Deduplicated events
+   */
+  deduplicateByPerformer(events) {
+    const eventsByName = new Map();
+
+    for (const event of events) {
+      const name = event.name.toLowerCase().trim();
+
+      if (!eventsByName.has(name)) {
+        // First occurrence of this event name
+        eventsByName.set(name, event);
+      } else {
+        // Compare dates - keep the soonest one
+        const existing = eventsByName.get(name);
+        const existingDate = new Date(existing.eventDate || existing.details?.eventDate);
+        const currentDate = new Date(event.eventDate || event.details?.eventDate);
+
+        if (currentDate < existingDate) {
+          // This event is sooner, replace existing
+          eventsByName.set(name, event);
+        }
+      }
+    }
+
+    return Array.from(eventsByName.values());
+  }
+
+  /**
    * Add affiliate tracking to event URL
    * @param {string} url - Original event URL
    * @returns {string} URL with affiliate tracking
    */
   addAffiliateTracking(url) {
-    if (!this.affiliateId || !url) {
+    if (!url) {
+      return url;
+    }
+
+    // Check if URL already has affiliate tracking (Ticketmaster API returns pre-tracked URLs)
+    if (url.includes('ticketmaster.evyy.net') || url.includes(this.affiliateId)) {
+      this.logger.debug('URL already has affiliate tracking, returning as-is');
+      return url; // Already tracked, don't double-wrap
+    }
+
+    // If no affiliate ID configured, return original URL
+    if (!this.affiliateId) {
       return url;
     }
 
@@ -150,9 +211,10 @@ class TicketmasterClient extends BaseApiClient {
    * @param {number} params.lng - Longitude
    * @param {number} params.radius - Search radius in miles
    * @param {number} params.days - Number of days to look ahead (default: 3)
+   * @param {string|null} params.keyword - Optional keyword search
    * @returns {Promise<Array>} Array of events
    */
-  async getUpcomingEvents({ lat, lng, radius = 10, days = 3 }) {
+  async getUpcomingEvents({ lat, lng, radius = 10, days = 3, keyword = null }) {
     const now = new Date();
     const startDateTime = now.toISOString().replace(/\.\d{3}Z$/, 'Z');
 
@@ -168,6 +230,7 @@ class TicketmasterClient extends BaseApiClient {
       radius,
       startDateTime,
       endDateTime,
+      keyword,
     });
   }
 }

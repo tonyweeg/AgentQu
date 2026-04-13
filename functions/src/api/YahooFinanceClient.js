@@ -101,12 +101,13 @@ class YahooFinanceClient {
   }
 
   /**
-   * Get historical prices
+   * Get historical prices using chart() API (historical() is deprecated)
    */
   async getHistoricalPrices(symbol, range = '1y', interval = '1d') {
     try {
-      logger.info('Fetching historical', { symbol, range });
+      logger.info('Fetching historical via chart()', { symbol, range });
 
+      // Convert range to date strings for chart() API
       const periodMap = {
         '1d': 1,
         '5d': 5,
@@ -118,25 +119,35 @@ class YahooFinanceClient {
       };
 
       const days = periodMap[range] || 365;
+      const period2 = new Date();
       const period1 = new Date();
       period1.setDate(period1.getDate() - days);
 
-      const result = await this.yf.historical(symbol.toUpperCase(), {
-        period1,
+      // Format as YYYY-MM-DD strings
+      const formatDate = (d) => d.toISOString().split('T')[0];
+
+      const result = await this.yf.chart(symbol.toUpperCase(), {
+        period1: formatDate(period1),
+        period2: formatDate(period2),
         interval,
       });
 
-      if (!result || result.length === 0) return null;
+      if (!result || !result.quotes || result.quotes.length === 0) {
+        logger.warn('No chart data returned', { symbol });
+        return null;
+      }
 
-      const prices = result.map(item => ({
-        date: item.date?.toISOString(),
+      const prices = result.quotes.map(item => ({
+        date: item.date?.toISOString?.() || new Date(item.date).toISOString(),
         open: item.open,
         high: item.high,
         low: item.low,
         close: item.close,
         volume: item.volume,
-        adjClose: item.adjClose,
-      }));
+        adjClose: item.adjclose,
+      })).filter(p => p.date && p.close); // Filter out invalid entries
+
+      logger.info('Chart data fetched', { symbol, count: prices.length });
 
       // Calculate returns
       const returns = [];
@@ -277,20 +288,63 @@ class YahooFinanceClient {
   }
 
   /**
-   * Get trending symbols
+   * Get market movers by type
+   * @param {string} type - 'gainers', 'losers', or 'mostactive' (default)
    */
-  async getMarketMovers() {
+  async getMarketMovers(type = 'mostactive') {
     try {
-      logger.info('Fetching trending');
-      const results = await this.yf.trendingSymbols('US');
-      const symbols = (results.quotes || []).map(q => q.symbol).slice(0, 20);
+      logger.info('Fetching market movers', { type });
 
-      if (symbols.length > 0) {
-        return this.getQuotes(symbols);
+      let results;
+      let quotes = [];
+
+      if (type === 'gainers') {
+        // Use screener for day gainers (dailyGainers is deprecated)
+        results = await this.yf.screener({ scrIds: 'day_gainers', count: 20 });
+        quotes = results.quotes || [];
+      } else if (type === 'losers') {
+        // Use screener for day losers (dailyLosers is deprecated)
+        results = await this.yf.screener({ scrIds: 'day_losers', count: 20 });
+        quotes = results.quotes || [];
+      } else {
+        // Default: most active
+        results = await this.yf.screener({ scrIds: 'most_actives', count: 20 });
+        quotes = results.quotes || [];
       }
-      return [];
+
+      logger.info('Market movers fetched', { type, count: quotes.length });
+
+      // Screener returns full quote data, map to our format
+      return quotes.slice(0, 20).map(q => ({
+        symbol: q.symbol,
+        shortName: q.shortName,
+        longName: q.longName,
+        regularMarketPrice: q.regularMarketPrice,
+        regularMarketChange: q.regularMarketChange,
+        regularMarketChangePercent: q.regularMarketChangePercent,
+        regularMarketVolume: q.regularMarketVolume,
+        regularMarketDayHigh: q.regularMarketDayHigh,
+        regularMarketDayLow: q.regularMarketDayLow,
+        regularMarketOpen: q.regularMarketOpen,
+        regularMarketPreviousClose: q.regularMarketPreviousClose,
+        marketCap: q.marketCap,
+        fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
+        fiftyTwoWeekLow: q.fiftyTwoWeekLow,
+        fiftyDayAverage: q.fiftyDayAverage,
+        twoHundredDayAverage: q.twoHundredDayAverage,
+        trailingPE: q.trailingPE,
+        forwardPE: q.forwardPE,
+        trailingAnnualDividendYield: q.trailingAnnualDividendYield,
+        dividendYield: q.dividendYield,
+        averageDailyVolume3Month: q.averageDailyVolume3Month,
+        exchange: q.exchange,
+        quoteType: q.quoteType,
+        epsTrailingTwelveMonths: q.epsTrailingTwelveMonths,
+        bookValue: q.bookValue,
+        priceToBook: q.priceToBook,
+      }));
     } catch (error) {
-      logger.error('Failed to fetch trending', { error: error.message });
+      logger.error('Failed to fetch market movers', { type, error: error.message });
       return [];
     }
   }

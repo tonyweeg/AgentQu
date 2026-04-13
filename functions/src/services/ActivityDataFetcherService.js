@@ -101,9 +101,10 @@ class ActivityDataFetcherService {
    * @param {number} lng - Longitude
    * @param {number} radius - Radius in miles
    * @param {number} days - Days ahead to search
+   * @param {string|null} keyword - Optional keyword search
    * @returns {Promise<Array>} Array of activities
    */
-  async fetchTicketmasterEvents(lat, lng, radius, days = 3) {
+  async fetchTicketmasterEvents(lat, lng, radius, days = 7, keyword = null) {
     try {
       if (!this.ticketmasterClient.isReady()) {
         this.logger.debug('Ticketmaster not configured, skipping');
@@ -115,6 +116,7 @@ class ActivityDataFetcherService {
         lng,
         radius,
         days,
+        keyword,
       });
 
       // Transform to our activity format
@@ -306,6 +308,7 @@ class ActivityDataFetcherService {
         priceLevel: tmEvent.priceRange?.min > 100 ? 4 : tmEvent.priceRange?.min > 50 ? 3 : tmEvent.priceRange?.min > 20 ? 2 : 1,
       },
       images: tmEvent.images || [],
+      website: tmEvent.website, // Affiliate-tracked URL at root level for ActivityCard
       details: {
         description: tmEvent.description,
         shortDescription: tmEvent.description?.substring(0, 150) || tmEvent.name,

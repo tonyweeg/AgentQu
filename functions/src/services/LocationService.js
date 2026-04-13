@@ -134,7 +134,7 @@ class LocationService {
    * @param {number} radiusMiles - Search radius in miles
    * @returns {Promise<Array>} Nearby towns
    */
-  async getNearbyTowns(lat, lng, radiusMiles = 50) {
+  async getNearbyTowns(lat, lng, radiusMiles = 200) {
     validateCoordinates(lat, lng);
 
     try {

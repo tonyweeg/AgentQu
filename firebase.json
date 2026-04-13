@@ -33,6 +33,21 @@
           "destination": "/index.html"
         }
       ]
+    },
+    {
+      "target": "opendocumentproject",
+      "public": "poliscai/build",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
     }
   ],
   "firestore": {

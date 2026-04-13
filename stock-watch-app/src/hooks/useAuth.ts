@@ -6,7 +6,11 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
+
+const googleProvider = new GoogleAuthProvider();
 
 interface AuthState {
   user: User | null;
@@ -66,6 +70,17 @@ export function useAuth() {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setState((prev) => ({ ...prev, loading: true, error: null }));
+      await signInWithPopup(auth, googleProvider);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Google sign in failed';
+      setState((prev) => ({ ...prev, loading: false, error: message }));
+      throw error;
+    }
+  };
+
   return {
     user: state.user,
     loading: state.loading,
@@ -75,5 +90,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    signInWithGoogle,
   };
 }

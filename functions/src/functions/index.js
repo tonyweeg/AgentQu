@@ -56,6 +56,7 @@ module.exports = {
   analyzeStock: stocks.analyzeStock,
   searchStocks: stocks.searchStocks,
   getMarketOverview: stocks.getMarketOverview,
+  getMarketIndices: stocks.getMarketIndices,
   getWatchlist: stocks.getWatchlist,
   addToWatchlist: stocks.addToWatchlist,
   removeFromWatchlist: stocks.removeFromWatchlist,
@@ -64,4 +65,5 @@ module.exports = {
   sellFromPortfolio: stocks.sellFromPortfolio,
   saveStockPreferences: stocks.saveStockPreferences,
   getStockPreferences: stocks.getStockPreferences,
+  finnhubWebhook: stocks.finnhubWebhook,
 };

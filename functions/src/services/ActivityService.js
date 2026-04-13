@@ -102,8 +102,15 @@ class ActivityService {
       }
 
       // Fetch from Ticketmaster (delegated to DataFetcher)
-      if (enableTicketmaster && !textSearch) {
-        const ticketmasterEvents = await this.dataFetcher.fetchTicketmasterEvents(lat, lng, radius);
+      // Enable for both general search AND text search (keyword search)
+      if (enableTicketmaster) {
+        const ticketmasterEvents = await this.dataFetcher.fetchTicketmasterEvents(
+          lat,
+          lng,
+          radius,
+          7, // days
+          textSearch // Pass search query as keyword
+        );
         allActivities.push(...ticketmasterEvents);
         this.logger.debug(`Got ${ticketmasterEvents.length} events from Ticketmaster`);
       }

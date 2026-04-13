@@ -12,13 +12,15 @@ const { getApiKey } = require('../config/api-keys');
 
 class WeatherClient extends BaseApiClient {
   constructor() {
-    super('https://api.openweathermap.org/data/2.5');
+    super({
+      name: 'WEATHER',
+      baseURL: 'https://api.openweathermap.org/data/2.5',
+      timeout: 10000,
+      cacheTTL: 3600, // 1 hour cache
+    });
 
     this.apiKey = getApiKey('OPEN_WEATHER_API_KEY');
     this.sunriseSunsetBase = 'https://api.sunrise-sunset.org';
-
-    // Cache TTL: 1 hour for weather (changes slowly)
-    this.cacheTTL = 60 * 60 * 1000;
   }
 
   /**
