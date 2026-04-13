@@ -30,8 +30,6 @@ function App() {
           <Route path="/groups/:groupId/search" element={<Search />} />
           <Route path="/groups/:groupId/meetings/:meetingId" element={<MeetingDetail />} />
 
-          {/* Global Search */}
-          <Route path="/search" element={<Search />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

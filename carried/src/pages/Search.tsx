@@ -32,8 +32,6 @@ import {
   Quote,
   ChevronDown,
   ExternalLink,
-  Sun,
-  Moon,
   Database,
   Hash,
   SortDesc,
@@ -45,7 +43,6 @@ import { Loading } from '../components/ui/Loading';
 import { SegmentMatch, SegmentType, SEGMENT_TYPE_INFO } from '../types';
 import { searchSegments } from '../lib/ai/search';
 import { generateNarrative, NarrativeResponse } from '../lib/ai/narrative';
-import { useTheme } from '../contexts/ThemeContext';
 
 const SEGMENT_ICONS: Record<SegmentType, React.ReactNode> = {
   motion: <Vote className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
@@ -89,7 +86,6 @@ type SortMode = 'relevance' | 'date';
 export function Search() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
 
   const [groupName, setGroupName] = useState<string>('');
   const [query, setQuery] = useState('');
@@ -230,9 +226,9 @@ export function Search() {
       <AppHeader />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Top Bar: Back + Theme Toggle */}
-        <div className="flex items-center justify-between mb-6">
-          {groupId ? (
+        {/* Back Button */}
+        {groupId && (
+          <div className="mb-6">
             <button
               onClick={() => navigate(`/groups/${groupId}`)}
               className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
@@ -240,29 +236,8 @@ export function Search() {
               <ArrowLeft className="w-4 h-4" />
               Back to Group
             </button>
-          ) : (
-            <div />
-          )}
-
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? (
-              <>
-                <Moon className="w-4 h-4" />
-                <span className="text-sm hidden sm:inline">Dark</span>
-              </>
-            ) : (
-              <>
-                <Sun className="w-4 h-4" />
-                <span className="text-sm hidden sm:inline">Light</span>
-              </>
-            )}
-          </button>
-        </div>
+          </div>
+        )}
 
         {/* Search Header */}
         <div className="text-center mb-8">

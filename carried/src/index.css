@@ -1,9 +1,16 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 /* Custom base styles for Carried */
 body {
   @apply bg-gray-50 text-gray-900 antialiased;
+  font-family: 'Atkinson Hyperlegible', sans-serif;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Ensure all elements use Atkinson Hyperlegible */
+*, *::before, *::after {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
 }
 
 /* Dark mode - class-based toggle */
