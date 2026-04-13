@@ -36,8 +36,10 @@ service cloud.firestore {
     match /meetings/{meetingId} {
       // Allow read for public access (group visibility checked at app level)
       allow read: if true;
+      // Allow create if user is authenticated
+      // Membership check handled at app level (owner or invited members only)
       allow create: if request.auth != null;
-      // Allow update/delete for creator
+      // Allow update/delete for meeting creator
       allow update, delete: if request.auth != null &&
         request.auth.uid == resource.data.createdBy;
     }

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { db, COLLECTIONS } from '../config/firebase';
 import { useAuth } from '../hooks/useAuth';
+import { useGroupMembership } from '../hooks/useGroupMembership';
 import { AppHeader } from '../components/layout/AppHeader';
 import { Button } from '../components/ui/Button';
 import { Textarea } from '../components/ui/Input';
@@ -33,6 +34,7 @@ type ProcessingStep = 'idle' | 'creating' | 'extracting' | 'embedding' | 'comple
 export function Upload() {
   const { groupId } = useParams<{ groupId: string }>();
   const { user } = useAuth();
+  const { canAddMeetings, loading: membershipLoading } = useGroupMembership(groupId);
   const navigate = useNavigate();
 
   const [group, setGroup] = useState<Group | null>(null);
@@ -223,6 +225,14 @@ export function Upload() {
     fetchGroup();
   }, [groupId, navigate]);
 
+  // Redirect non-members
+  useEffect(() => {
+    if (!membershipLoading && !canAddMeetings && !loading) {
+      console.log('CARRIED_DEBUG: User cannot add meetings, redirecting to group home');
+      navigate(`/groups/${groupId}`);
+    }
+  }, [membershipLoading, canAddMeetings, loading, navigate, groupId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !groupId || !title.trim() || !minutes.trim()) return;
@@ -298,7 +308,7 @@ export function Upload() {
     }
   };
 
-  if (loading) {
+  if (loading || membershipLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <AppHeader />

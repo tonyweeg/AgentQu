@@ -58,6 +58,7 @@ import { Group, Meeting, Segment, SegmentType, MotionOutcome, GroupVisibility, S
 import { clearGroupData, deleteGroupCompletely } from '../lib/firestore/groups';
 import { deleteOrphanedSegments, deleteSegmentsByGroup } from '../lib/firestore/segments';
 import { useAuth } from '../hooks/useAuth';
+import { useGroupMembership } from '../hooks/useGroupMembership';
 
 const OUTCOME_ICONS: Record<MotionOutcome, React.ReactNode> = {
   carried: <CheckCircle2 className="w-4 h-4 text-green-600" />,
@@ -84,6 +85,7 @@ export function GroupHome() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canAddMeetings } = useGroupMembership(groupId);
   const [group, setGroup] = useState<Group | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [recentSegments, setRecentSegments] = useState<Segment[]>([]);
@@ -357,8 +359,8 @@ export function GroupHome() {
                 <Search className="w-4 h-4" />
                 Search
               </Button>
-              {/* Only show Add Meeting for owner */}
-              {user && group && user.uid === group.createdBy && (
+              {/* Only show Add Meeting for owner or members */}
+              {canAddMeetings && (
                 <Button onClick={() => navigate(`/groups/${groupId}/upload`)}>
                   <Plus className="w-4 h-4" />
                   Add Meeting
