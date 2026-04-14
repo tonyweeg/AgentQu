@@ -30,6 +30,7 @@ import { Group, Meeting, MeetingSource, SegmentType, SEGMENT_TYPE_INFO } from '.
 import { extractSegments, extractMeetingMetadata } from '../lib/ai/extraction';
 import { saveSegments } from '../lib/firestore/segments';
 import { parseFile, validateFile, getFileType } from '../lib/parsers/fileParser';
+import { useFileDrop } from '../contexts/FileDropContext';
 
 type ProcessingStep = 'idle' | 'creating' | 'extracting' | 'embedding' | 'complete' | 'error';
 
@@ -58,6 +59,9 @@ export function Upload() {
   const [parsingFile, setParsingFile] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // File drop context (for drag-drop from GroupHome)
+  const { pendingFile, setPendingFile } = useFileDrop();
 
   // Duplicate detection state
   const [duplicateMeeting, setDuplicateMeeting] = useState<Meeting | null>(null);
@@ -126,8 +130,10 @@ export function Upload() {
     }
 
     try {
-      console.log('CARRIED_DEBUG: Parsing file:', file.name);
+      console.log('CARRIED_DEBUG: Starting parseFile for:', file.name, file.size, 'bytes');
+      console.log('CARRIED_DEBUG: File type:', file.type);
       const result = await parseFile(file);
+      console.log('CARRIED_DEBUG: parseFile returned:', result.text?.length || 0, 'chars, error:', result.error);
 
       if (result.error) {
         setError(result.error);
@@ -140,6 +146,9 @@ export function Upload() {
       console.log(`CARRIED_DEBUG: Extracted ${result.text.length} characters from file`);
 
       // Auto-detect metadata from the parsed text
+      let detectedTitle = '';
+      let detectedDate = '';
+
       if (result.text.length > 100) {
         setDetectingMetadata(true);
         try {
@@ -147,10 +156,12 @@ export function Upload() {
           console.log('CARRIED_DEBUG: Detected metadata from file:', metadata);
 
           if (metadata.title) {
+            detectedTitle = metadata.title;
             setTitle(metadata.title);
             setAutoDetected(prev => ({ ...prev, title: true }));
           }
           if (metadata.date) {
+            detectedDate = metadata.date;
             setDate(metadata.date);
             setAutoDetected(prev => ({ ...prev, date: true }));
           }
@@ -159,6 +170,17 @@ export function Upload() {
         } finally {
           setDetectingMetadata(false);
         }
+      }
+
+      // AUTO-SUBMIT: If we have text, title, and date, automatically process
+      if (result.text.trim() && detectedTitle && detectedDate) {
+        console.log('CARRIED_DEBUG: Auto-submitting with detected metadata');
+        // Pass values directly to avoid state timing issues
+        await processSubmission({
+          title: detectedTitle,
+          date: detectedDate,
+          minutes: result.text,
+        });
       }
     } catch (err) {
       console.error('CARRIED_DEBUG: File parsing error:', err);
@@ -239,6 +261,15 @@ export function Upload() {
       navigate(`/groups/${groupId}`);
     }
   }, [membershipLoading, canAddMeetings, loading, navigate, groupId]);
+
+  // Handle pending file from drag-drop on GroupHome
+  useEffect(() => {
+    if (pendingFile && !parsingFile && !selectedFile) {
+      console.log('CARRIED_DEBUG: Processing pending file from drag-drop:', pendingFile.name);
+      handleFileSelect(pendingFile);
+      setPendingFile(null); // Clear the pending file
+    }
+  }, [pendingFile, parsingFile, selectedFile, setPendingFile]);
 
   // Check for duplicate meetings
   const checkForDuplicates = async (): Promise<Meeting | null> => {
@@ -345,8 +376,13 @@ export function Upload() {
   };
 
   // Process the actual submission (called directly or after duplicate warning)
-  const processSubmission = async () => {
-    if (!user || !groupId || !title.trim() || !minutes.trim()) return;
+  // Can accept override values for auto-submit scenarios
+  const processSubmission = async (overrides?: { title?: string; date?: string; minutes?: string }) => {
+    const submitTitle = overrides?.title || title;
+    const submitDate = overrides?.date || date;
+    const submitMinutes = overrides?.minutes || minutes;
+
+    if (!user || !groupId || !submitTitle.trim() || !submitMinutes.trim()) return;
 
     setShowDuplicateWarning(false);
     setDuplicateMeeting(null);
@@ -357,9 +393,9 @@ export function Upload() {
       // Step 1: Create meeting document
       const meetingData: Record<string, any> = {
         groupId,
-        title: title.trim(),
-        meetingDate: new Date(date),
-        rawMinutes: minutes.trim(),
+        title: submitTitle.trim(),
+        meetingDate: new Date(submitDate),
+        rawMinutes: submitMinutes.trim(),
         source,
         processingStatus: 'processing',
         segmentCount: 0,
@@ -379,7 +415,7 @@ export function Upload() {
 
       // Step 2: Extract segments using Gemini
       setProcessingStep('extracting');
-      const { segments, error: extractionError } = await extractSegments(minutes.trim());
+      const { segments, error: extractionError } = await extractSegments(submitMinutes.trim());
 
       if (extractionError) {
         console.warn('CARRIED_DEBUG: Extraction warning:', extractionError);
@@ -412,8 +448,10 @@ export function Upload() {
 
       setProcessingStep('complete');
       setTimeout(() => {
-        navigate(`/groups/${groupId}`);
-      }, 3000);
+        navigate(`/groups/${groupId}`, {
+          state: { uploadedMeeting: submitTitle.trim() }
+        });
+      }, 2000);
     } catch (err) {
       console.error('CARRIED_DEBUG: Error processing meeting:', err);
       setError('Failed to process meeting. Please try again.');
@@ -558,7 +596,7 @@ export function Upload() {
                     Drop your file here or click to browse
                   </p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Supports DOCX, PDF, and TXT files (max 10MB)
+                    Supports DOCX, PDF, and TXT files (max 30MB)
                   </p>
                   <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
                     <span className="flex items-center gap-1">

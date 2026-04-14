@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   doc,
   getDoc,
@@ -48,6 +48,7 @@ import {
   Check,
   Edit3,
   Video,
+  X,
 } from 'lucide-react';
 import { db, COLLECTIONS } from '../config/firebase';
 import { AppHeader } from '../components/layout/AppHeader';
@@ -86,6 +87,7 @@ const SEGMENT_ICONS: Record<SegmentType, React.ReactNode> = {
 export function GroupHome() {
   const { groupId } = useParams<{ groupId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const { canAddMeetings } = useGroupMembership(groupId);
   const { setPendingFile } = useFileDrop();
@@ -107,6 +109,20 @@ export function GroupHome() {
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [dragActive, setDragActive] = useState(false);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+
+  // Handle success toast from upload redirect
+  useEffect(() => {
+    const state = location.state as { uploadedMeeting?: string } | null;
+    if (state?.uploadedMeeting) {
+      setSuccessToast(state.uploadedMeeting);
+      // Clear the state so it doesn't show again on refresh
+      window.history.replaceState({}, document.title);
+      // Auto-hide after 5 seconds
+      const timer = setTimeout(() => setSuccessToast(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // Handle drag events for PDF drop
   const handleDrag = (e: React.DragEvent) => {
@@ -387,6 +403,25 @@ export function GroupHome() {
       onDrop={handleDrop}
     >
       <AppHeader />
+
+      {/* Success toast */}
+      {successToast && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl shadow-lg">
+            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
+            <div>
+              <p className="font-medium">Meeting uploaded successfully</p>
+              <p className="text-sm text-green-600">{successToast}</p>
+            </div>
+            <button
+              onClick={() => setSuccessToast(null)}
+              className="ml-2 p-1 hover:bg-green-100 rounded-full transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Drag overlay */}
       {dragActive && canAddMeetings && (
