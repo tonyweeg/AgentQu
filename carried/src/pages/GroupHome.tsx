@@ -14,7 +14,6 @@ import {
   query,
   where,
   getDocs,
-  limit,
   updateDoc,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -23,9 +22,9 @@ import {
   Plus,
   FileText,
   Vote,
-  Calendar,
   Search,
   ChevronRight,
+  ChevronDown,
   CheckCircle2,
   XCircle,
   Clock,
@@ -48,6 +47,7 @@ import {
   Copy,
   Check,
   Edit3,
+  Video,
 } from 'lucide-react';
 import { db, COLLECTIONS } from '../config/firebase';
 import { AppHeader } from '../components/layout/AppHeader';
@@ -58,6 +58,8 @@ import { Group, Meeting, Segment, SegmentType, MotionOutcome, GroupVisibility, S
 import { clearGroupData, deleteGroupCompletely } from '../lib/firestore/groups';
 import { deleteOrphanedSegments, deleteSegmentsByGroup } from '../lib/firestore/segments';
 import { useAuth } from '../hooks/useAuth';
+import { useFileDrop } from '../contexts/FileDropContext';
+import { validateFile, getFileType } from '../lib/parsers/fileParser';
 import { useGroupMembership } from '../hooks/useGroupMembership';
 
 const OUTCOME_ICONS: Record<MotionOutcome, React.ReactNode> = {
@@ -86,9 +88,11 @@ export function GroupHome() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { canAddMeetings } = useGroupMembership(groupId);
+  const { setPendingFile } = useFileDrop();
   const [group, setGroup] = useState<Group | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [recentSegments, setRecentSegments] = useState<Segment[]>([]);
+  const [meetingStats, setMeetingStats] = useState<Record<string, Record<SegmentType, number>>>({});
   const [loading, setLoading] = useState(true);
   const [showClearModal, setShowClearModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -100,6 +104,42 @@ export function GroupHome() {
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [saving, setSaving] = useState(false);
+  const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dragActive, setDragActive] = useState(false);
+
+  // Handle drag events for PDF drop
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  // Handle file drop
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (!canAddMeetings) return;
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const fileType = getFileType(file);
+      if (fileType === 'pdf' || fileType === 'docx' || fileType === 'txt') {
+        const validation = validateFile(file);
+        if (validation.valid) {
+          console.log('CARRIED_DEBUG: File dropped on GroupHome, navigating to upload:', file.name);
+          setPendingFile(file);
+          navigate(`/groups/${groupId}/upload`);
+        }
+      }
+    }
+  };
 
   // Generate a random share code
   const generateShareCode = (): string => {
@@ -222,14 +262,21 @@ export function GroupHome() {
         });
         setMeetings(fetchedMeetings);
 
-        // Fetch recent segments - but only if we have meetings
+        // Auto-expand all years
+        const years = new Set<number>();
+        fetchedMeetings.forEach(m => {
+          const date = m.meetingDate?.toDate?.() || m.date?.toDate?.() || new Date();
+          years.add(date.getFullYear());
+        });
+        setExpandedYears(years);
+
+        // Fetch all segments for stats - but only if we have meetings
         if (fetchedMeetings.length > 0) {
           const meetingIds = new Set(fetchedMeetings.map(m => m.id));
           const segmentsRef = collection(db, COLLECTIONS.SEGMENTS);
           const segmentsQuery = query(
             segmentsRef,
-            where('groupId', '==', groupId),
-            limit(30) // Fetch more to filter orphans
+            where('groupId', '==', groupId)
           );
           const segmentsSnapshot = await getDocs(segmentsQuery);
           const fetchedSegments = segmentsSnapshot.docs.map((docSnap) => ({
@@ -248,6 +295,16 @@ export function GroupHome() {
               console.error('CARRIED_DEBUG: Orphan cleanup error:', err);
             });
           }
+
+          // Calculate stats per meeting
+          const stats: Record<string, Record<SegmentType, number>> = {};
+          for (const segment of validSegments) {
+            if (!stats[segment.meetingId]) {
+              stats[segment.meetingId] = {} as Record<SegmentType, number>;
+            }
+            stats[segment.meetingId][segment.type] = (stats[segment.meetingId][segment.type] || 0) + 1;
+          }
+          setMeetingStats(stats);
 
           // Sort by createdAt client-side
           validSegments.sort((a, b) => {
@@ -322,8 +379,25 @@ export function GroupHome() {
   const segmentCount = meetings.reduce((sum, m) => sum + (m.segmentCount || m.motionCount || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className={`min-h-screen bg-gray-50 transition-colors ${dragActive ? 'bg-blue-50' : ''}`}
+      onDragEnter={handleDrag}
+      onDragLeave={handleDrag}
+      onDragOver={handleDrag}
+      onDrop={handleDrop}
+    >
       <AppHeader />
+
+      {/* Drag overlay */}
+      {dragActive && canAddMeetings && (
+        <div className="fixed inset-0 z-50 bg-blue-500/20 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 text-center">
+            <FileText className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+            <p className="text-xl font-semibold text-gray-900">Drop PDF to upload</p>
+            <p className="text-gray-500">Release to add meeting minutes</p>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Back button */}
@@ -348,25 +422,16 @@ export function GroupHome() {
                   <FileText className="w-4 h-4" />
                   {meetings.length} meetings
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Vote className="w-4 h-4" />
-                  {segmentCount} segments
-                </div>
+                {/* Segments stat - only show to owner */}
+                {user && group && user.uid === group.createdBy && (
+                  <div className="flex items-center gap-1.5">
+                    <Vote className="w-4 h-4" />
+                    {segmentCount} segments
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex gap-3 items-center">
-              <Button variant="secondary" onClick={() => navigate(`/groups/${groupId}/search`)}>
-                <Search className="w-4 h-4" />
-                Search
-              </Button>
-              {/* Only show Add Meeting for owner or members */}
-              {canAddMeetings && (
-                <Button onClick={() => navigate(`/groups/${groupId}/upload`)}>
-                  <Plus className="w-4 h-4" />
-                  Add Meeting
-                </Button>
-              )}
-
+            <div className="flex gap-2 items-center">
               {/* Menu dropdown - only show for owner */}
               {user && group && user.uid === group.createdBy && (
               <div className="relative">
@@ -435,10 +500,38 @@ export function GroupHome() {
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        {/* Search bar + Add Meeting - discrete, above content */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  navigate(`/groups/${groupId}/search?q=${encodeURIComponent(searchQuery.trim())}`);
+                }
+              }}
+              placeholder="Search meetings..."
+              className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white/80"
+            />
+          </div>
+          {canAddMeetings && (
+            <button
+              onClick={() => navigate(`/groups/${groupId}/upload`)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium text-sm rounded-lg transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Meeting
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-6">
           {/* Meetings */}
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Meetings</h2>
+            <h2 className="text-base font-bold text-gray-900 mb-3">Meetings</h2>
             {meetings.length === 0 ? (
               <Card className="p-8 text-center">
                 <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -449,42 +542,143 @@ export function GroupHome() {
                 </Button>
               </Card>
             ) : (
-              <div className="space-y-3">
-                {meetings.map((meeting) => {
-                  const meetingDate = meeting.meetingDate?.toDate?.() || meeting.date?.toDate?.() || new Date();
-                  return (
-                    <Card
-                      key={meeting.id}
-                      hoverable
-                      onClick={() => navigate(`/groups/${groupId}/meetings/${meeting.id}`)}
-                      className="p-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-medium text-gray-900">{meeting.title}</h3>
-                          <div className="flex items-center gap-3 mt-1 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3.5 h-3.5" />
-                              {meetingDate.toLocaleDateString()}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Vote className="w-3.5 h-3.5" />
-                              {meeting.segmentCount || meeting.motionCount || 0} segments
-                            </div>
+              <div className="space-y-2">
+                {(() => {
+                  // Group meetings by year
+                  const meetingsByYear: Record<number, Meeting[]> = {};
+                  meetings.forEach(meeting => {
+                    const date = meeting.meetingDate?.toDate?.() || meeting.date?.toDate?.() || new Date();
+                    const year = date.getFullYear();
+                    if (!meetingsByYear[year]) meetingsByYear[year] = [];
+                    meetingsByYear[year].push(meeting);
+                  });
+
+                  // Sort years descending
+                  const years = Object.keys(meetingsByYear).map(Number).sort((a, b) => b - a);
+
+                  // Sort meetings within each year by date (newest first)
+                  years.forEach(year => {
+                    meetingsByYear[year].sort((a, b) => {
+                      const dateA = a.meetingDate?.toDate?.() || a.date?.toDate?.() || new Date(0);
+                      const dateB = b.meetingDate?.toDate?.() || b.date?.toDate?.() || new Date(0);
+                      return dateB.getTime() - dateA.getTime();
+                    });
+                  });
+
+                  const toggleYear = (year: number) => {
+                    setExpandedYears(prev => {
+                      const next = new Set(prev);
+                      if (next.has(year)) {
+                        next.delete(year);
+                      } else {
+                        next.add(year);
+                      }
+                      return next;
+                    });
+                  };
+
+                  return years.map(year => {
+                    const isExpanded = expandedYears.has(year);
+                    const yearMeetings = meetingsByYear[year];
+
+                    return (
+                      <div key={year}>
+                        {/* Year Header */}
+                        <button
+                          onClick={() => toggleYear(year)}
+                          className="flex items-center gap-2 w-full px-2 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                          {year}
+                          <span className="text-xs font-normal text-gray-400">({yearMeetings.length})</span>
+                        </button>
+
+                        {/* Meetings for this year */}
+                        {isExpanded && (
+                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                            {yearMeetings.map((meeting) => {
+                              const meetingDate = meeting.meetingDate?.toDate?.() || meeting.date?.toDate?.() || new Date();
+                              const stats = meetingStats[meeting.id] || {};
+                              const totalSegments = Object.values(stats).reduce((sum, count) => sum + count, 0);
+
+                              return (
+                                <div
+                                  key={meeting.id}
+                                  onClick={() => navigate(`/groups/${groupId}/meetings/${meeting.id}`)}
+                                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 cursor-pointer transition-colors group"
+                                >
+                                  {/* Date (no year since grouped) */}
+                                  <div className="w-14 text-xs text-gray-500 shrink-0">
+                                    {meetingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </div>
+
+                                  {/* Title */}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-gray-900 truncate">{meeting.title}</p>
+                                  </div>
+
+                                  {/* Stats pills */}
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    {stats.motion > 0 && (
+                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-blue-50 text-blue-700 rounded">
+                                        <Vote className="w-2.5 h-2.5" />
+                                        {stats.motion}
+                                      </span>
+                                    )}
+                                    {stats.discussion > 0 && (
+                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-purple-50 text-purple-700 rounded">
+                                        <MessageSquare className="w-2.5 h-2.5" />
+                                        {stats.discussion}
+                                      </span>
+                                    )}
+                                    {stats.report > 0 && (
+                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-green-50 text-green-700 rounded">
+                                        <FileText className="w-2.5 h-2.5" />
+                                        {stats.report}
+                                      </span>
+                                    )}
+                                    {stats.action_item > 0 && (
+                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-red-50 text-red-700 rounded">
+                                        <CheckSquare className="w-2.5 h-2.5" />
+                                        {stats.action_item}
+                                      </span>
+                                    )}
+                                    {totalSegments === 0 && (
+                                      <span className="text-xs text-gray-400">—</span>
+                                    )}
+                                  </div>
+
+                                  {/* Video link */}
+                                  {meeting.videoUrl && (
+                                    <a
+                                      href={meeting.videoUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="p-1 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-colors shrink-0"
+                                      title="Watch video"
+                                    >
+                                      <Video className="w-3.5 h-3.5" />
+                                    </a>
+                                  )}
+
+                                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 shrink-0" />
+                                </div>
+                              );
+                            })}
                           </div>
-                        </div>
-                        <ChevronRight className="w-5 h-5 text-gray-400" />
+                        )}
                       </div>
-                    </Card>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             )}
           </div>
 
           {/* Recent Segments */}
           <div>
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Recent Content</h2>
+            <h2 className="text-base font-bold text-gray-900 mb-3">Recent Content</h2>
             {recentSegments.length === 0 ? (
               <Card className="p-8 text-center">
                 <Vote className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -493,48 +687,48 @@ export function GroupHome() {
                 </p>
               </Card>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-1">
                 {recentSegments.map((segment) => (
-                  <Card key={segment.id} className="p-4">
-                    <div className="flex items-start gap-3">
+                  <div
+                    key={segment.id}
+                    className="flex items-start gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="shrink-0 mt-0.5">
                       {segment.type === 'motion' && segment.outcome && segment.outcome in OUTCOME_ICONS
                         ? OUTCOME_ICONS[segment.outcome as MotionOutcome]
                         : SEGMENT_ICONS[segment.type]}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {segment.title}
-                        </p>
-                        <p className="text-xs text-gray-500 line-clamp-2 mt-1">
-                          {segment.content}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${
-                            segment.type === 'motion' ? 'bg-blue-100 text-blue-700' :
-                            segment.type === 'discussion' ? 'bg-purple-100 text-purple-700' :
-                            segment.type === 'report' ? 'bg-green-100 text-green-700' :
-                            segment.type === 'action_item' ? 'bg-red-100 text-red-700' :
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 truncate">
+                        {segment.title}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          segment.type === 'motion' ? 'bg-blue-50 text-blue-700' :
+                          segment.type === 'discussion' ? 'bg-purple-50 text-purple-700' :
+                          segment.type === 'report' ? 'bg-green-50 text-green-700' :
+                          segment.type === 'action_item' ? 'bg-red-50 text-red-700' :
+                          'bg-gray-100 text-gray-600'
+                        }`}>
+                          {SEGMENT_TYPE_INFO[segment.type]?.label || segment.type}
+                        </span>
+                        {segment.type === 'motion' && segment.outcome && (
+                          <span className={`text-xs px-1.5 py-0.5 rounded ${
+                            segment.outcome === 'carried' ? 'bg-green-50 text-green-700' :
+                            segment.outcome === 'defeated' ? 'bg-red-50 text-red-700' :
                             'bg-gray-100 text-gray-600'
                           }`}>
-                            {SEGMENT_TYPE_INFO[segment.type]?.label || segment.type}
+                            {segment.outcome.charAt(0).toUpperCase() + segment.outcome.slice(1)}
                           </span>
-                          {segment.type === 'motion' && segment.outcome && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              segment.outcome === 'carried' ? 'bg-green-100 text-green-700' :
-                              segment.outcome === 'defeated' ? 'bg-red-100 text-red-700' :
-                              'bg-gray-100 text-gray-600'
-                            }`}>
-                              {segment.outcome.charAt(0).toUpperCase() + segment.outcome.slice(1)}
-                            </span>
-                          )}
-                          {segment.tags.slice(0, 2).map((tag) => (
-                            <span key={tag} className="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                        )}
+                        {segment.tags.slice(0, 1).map((tag) => (
+                          <span key={tag} className="text-xs px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded hidden sm:inline">
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             )}
