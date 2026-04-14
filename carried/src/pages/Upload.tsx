@@ -449,7 +449,10 @@ export function Upload() {
       setProcessingStep('complete');
       setTimeout(() => {
         navigate(`/groups/${groupId}`, {
-          state: { uploadedMeeting: submitTitle.trim() }
+          state: {
+            uploadedMeeting: submitTitle.trim(),
+            uploadedFile: selectedFile?.name || null
+          }
         });
       }, 2000);
     } catch (err) {

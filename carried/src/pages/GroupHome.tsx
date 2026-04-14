@@ -109,18 +109,18 @@ export function GroupHome() {
   const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [dragActive, setDragActive] = useState(false);
-  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [successToast, setSuccessToast] = useState<{ meeting: string; file: string | null } | null>(null);
 
   // Handle success toast from upload redirect
   useEffect(() => {
-    const state = location.state as { uploadedMeeting?: string } | null;
+    const state = location.state as { uploadedMeeting?: string; uploadedFile?: string } | null;
     if (state?.uploadedMeeting) {
-      setSuccessToast(state.uploadedMeeting);
+      setSuccessToast({
+        meeting: state.uploadedMeeting,
+        file: state.uploadedFile || null
+      });
       // Clear the state so it doesn't show again on refresh
       window.history.replaceState({}, document.title);
-      // Auto-hide after 5 seconds
-      const timer = setTimeout(() => setSuccessToast(null), 5000);
-      return () => clearTimeout(timer);
     }
   }, [location.state]);
 
@@ -411,7 +411,10 @@ export function GroupHome() {
             <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
             <div>
               <p className="font-medium">Meeting uploaded successfully</p>
-              <p className="text-sm text-green-600">{successToast}</p>
+              <p className="text-sm text-green-700">{successToast.meeting}</p>
+              {successToast.file && (
+                <p className="text-xs text-green-600 mt-0.5">from {successToast.file}</p>
+              )}
             </div>
             <button
               onClick={() => setSuccessToast(null)}
