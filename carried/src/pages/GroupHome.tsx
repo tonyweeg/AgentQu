@@ -278,13 +278,9 @@ export function GroupHome() {
         });
         setMeetings(fetchedMeetings);
 
-        // Auto-expand all years
-        const years = new Set<number>();
-        fetchedMeetings.forEach(m => {
-          const date = m.meetingDate?.toDate?.() || m.date?.toDate?.() || new Date();
-          years.add(date.getFullYear());
-        });
-        setExpandedYears(years);
+        // Only expand current year by default
+        const currentYear = new Date().getFullYear();
+        setExpandedYears(new Set([currentYear]));
 
         // Fetch all segments for stats - but only if we have meetings
         if (fetchedMeetings.length > 0) {
