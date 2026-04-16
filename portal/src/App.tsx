@@ -18,6 +18,8 @@ import {
   LogOut,
   Loader2,
   ExternalLink,
+  Trophy,
+  Activity,
 } from 'lucide-react';
 
 // Firebase config
@@ -75,6 +77,30 @@ const apps: AppCard[] = [
     url: 'https://poliscai-democracy.web.app',
     icon: <Scale className="w-8 h-8" />,
     gradient: 'from-amber-500 to-orange-500',
+  },
+  {
+    id: 'nerdfootball',
+    name: 'NerdFootball',
+    description: 'Fantasy football tools, survivor pools, and NFL analytics for the data-driven fan.',
+    url: 'https://nerdfootball.com',
+    icon: <Trophy className="w-8 h-8" />,
+    gradient: 'from-emerald-600 to-teal-500',
+  },
+  {
+    id: 'nerdbasketball',
+    name: 'NerdBasketball',
+    description: 'NBA analytics, fantasy basketball tools, and bracket predictions.',
+    url: 'https://nerdbasketball.com',
+    icon: <Trophy className="w-8 h-8" />,
+    gradient: 'from-orange-500 to-red-500',
+  },
+  {
+    id: 'pattern',
+    name: 'Pattern Clinical',
+    description: 'AI-powered health insights from wearable data. HRV, sleep, and recovery analytics.',
+    url: 'https://patternclinical.com',
+    icon: <Activity className="w-8 h-8" />,
+    gradient: 'from-rose-500 to-pink-500',
   },
 ];
 
@@ -163,10 +189,12 @@ function App() {
       <header className="px-6 py-4 border-b border-slate-700/50">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <span className="text-white font-bold text-lg">N</span>
-            </div>
-            <span className="text-white font-semibold text-xl tracking-tight">Agent Nerd</span>
+            <img
+              src="/agentqu-glyph.png"
+              alt="AgentQu"
+              className="w-10 h-10 rounded-xl shadow-lg shadow-blue-500/20"
+            />
+            <span className="text-white font-semibold text-xl tracking-tight">AgentQu</span>
           </div>
 
           {user && (
@@ -201,11 +229,13 @@ function App() {
           {!user ? (
             /* Login Screen */
             <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-8 shadow-2xl shadow-purple-500/30">
-                <span className="text-white font-bold text-5xl">N</span>
-              </div>
+              <img
+                src="/agentqu-glyph.png"
+                alt="AgentQu"
+                className="w-24 h-24 rounded-2xl mb-8 shadow-2xl shadow-purple-500/30"
+              />
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                Welcome to Agent Nerd
+                Welcome to AgentQu
               </h1>
               <p className="text-slate-400 text-lg mb-10 max-w-md leading-relaxed">
                 Your AI-powered app suite. Sign in to access all your apps.
@@ -298,7 +328,7 @@ function App() {
 
               {/* Footer */}
               <div className="mt-16 text-center">
-                <p className="text-slate-500 text-sm">Built with AI by Agent Nerd</p>
+                <p className="text-slate-500 text-sm">Built with AI by AgentQu</p>
               </div>
             </>
           )}
