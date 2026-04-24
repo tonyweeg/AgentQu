@@ -47,14 +47,14 @@ const LETTER_VARIANTS: Record<string, number[]> = {
   z: [0, 1],
 };
 
-// Aspect ratio presets
+// Aspect ratio presets (all at 300 DPI for print-ready output)
 const ASPECT_RATIOS = [
-  { label: '1:1 (Square)', value: 1, width: 3000, height: 3000 },
-  { label: '4:3 (Standard)', value: 4/3, width: 4000, height: 3000 },
-  { label: '3:2 (Photo)', value: 3/2, width: 3600, height: 2400 },
-  { label: '5:7 (Portrait)', value: 5/7, width: 2500, height: 3500 },
-  { label: '2:3 (Portrait)', value: 2/3, width: 2400, height: 3600 },
-  { label: '16:9 (Wide)', value: 16/9, width: 4800, height: 2700 },
+  { label: '18×12" (Landscape)', value: 18/12, width: 5400, height: 3600 },  // Default - common print size
+  { label: '12×18" (Portrait)', value: 12/18, width: 3600, height: 5400 },
+  { label: '16×20" (Large)', value: 16/20, width: 4800, height: 6000 },
+  { label: '11×14" (Standard)', value: 11/14, width: 3300, height: 4200 },
+  { label: '8×10" (Small)', value: 8/10, width: 2400, height: 3000 },
+  { label: '12×12" (Square)', value: 1, width: 3600, height: 3600 },
 ];
 
 interface NameObject {
@@ -77,14 +77,14 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
   const [newNameInput, setNewNameInput] = useState('');
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [spacing, setSpacing] = useState(40);
-  const [letterSpacing, setLetterSpacing] = useState(4);
+  const [spacing, setSpacing] = useState(80); // Space between name rows
+  const [letterSpacing, setLetterSpacing] = useState(12); // Space between letters
   const [selectedNameId, setSelectedNameId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isExporting, setIsExporting] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [previewScale, setPreviewScale] = useState(0.25);
+  const [previewScale, setPreviewScale] = useState(0.15); // Smaller preview scale for large canvas
   const [imagesLoaded, setImagesLoaded] = useState<Record<string, boolean>>({});
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -161,14 +161,17 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     );
   };
 
+  // Base letter size - this determines how big letters appear on print canvas
+  const BASE_LETTER_SIZE = 350;
+
   // Auto-arrange names in a balanced layout
   const autoArrange = useCallback(() => {
     if (names.length === 0) return;
 
     const canvasWidth = aspectRatio.width;
     const canvasHeight = aspectRatio.height;
-    const letterWidth = 100;
-    const margin = spacing * 2;
+    const letterWidth = BASE_LETTER_SIZE;
+    const margin = spacing * 3;
 
     // Calculate name widths
     const nameWidths = names.map(n =>
@@ -181,20 +184,20 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     const availableHeight = canvasHeight - margin * 2;
 
     // Try to fit names in rows
-    const rowHeight = 150; // Approximate height per row with spacing
+    const rowHeight = BASE_LETTER_SIZE * 1.2; // Height per row with some padding
     const totalRows = names.length;
     const neededHeight = totalRows * rowHeight + (totalRows - 1) * spacing;
 
-    // Calculate scale
+    // Calculate scale to fit everything with good margins
     let scale = Math.min(
       availableWidth / maxNameWidth,
       availableHeight / neededHeight,
-      1.5 // Max scale
+      2.0 // Max scale
     );
-    scale = Math.max(0.3, Math.min(scale, 1.5)); // Clamp scale
+    scale = Math.max(0.3, Math.min(scale, 2.0)); // Clamp scale
 
     // Position names centered vertically, each on its own row
-    const scaledRowHeight = 100 * scale;
+    const scaledRowHeight = BASE_LETTER_SIZE * scale;
     const totalHeight = names.length * scaledRowHeight + (names.length - 1) * spacing;
     const startY = (canvasHeight - totalHeight) / 2;
 
@@ -262,8 +265,8 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
 
     // Draw each name
     for (const name of names) {
-      const letterWidth = 100 * name.scale;
-      const letterHeight = 100 * name.scale;
+      const letterWidth = BASE_LETTER_SIZE * name.scale;
+      const letterHeight = BASE_LETTER_SIZE * name.scale;
       const gap = letterSpacing * name.scale;
 
       let offsetX = 0;
@@ -391,7 +394,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
 
       // Draw each name
       for (const name of names) {
-        const letterHeight = 100 * name.scale;
+        const letterHeight = BASE_LETTER_SIZE * name.scale;
         const gap = letterSpacing * name.scale;
 
         let offsetX = 0;
@@ -541,7 +544,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                 type="text"
                 value={newNameInput}
                 onChange={(e) => setNewNameInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && addName()}
+                onKeyDown={(e) => e.key === 'Enter' && addName()}
                 placeholder="Enter a name..."
                 className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
               />
@@ -649,7 +652,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Output: {aspectRatio.width} x {aspectRatio.height}px (300 DPI)
+              Print size: {(aspectRatio.width / 300).toFixed(0)}" × {(aspectRatio.height / 300).toFixed(0)}" @ 300 DPI ({aspectRatio.width} × {aspectRatio.height}px)
             </p>
           </div>
 
@@ -694,8 +697,8 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                 </label>
                 <input
                   type="range"
-                  min="10"
-                  max="100"
+                  min="20"
+                  max="300"
                   value={spacing}
                   onChange={(e) => setSpacing(Number(e.target.value))}
                   className="w-full mt-1"
@@ -709,7 +712,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                 <input
                   type="range"
                   min="0"
-                  max="20"
+                  max="60"
                   value={letterSpacing}
                   onChange={(e) => setLetterSpacing(Number(e.target.value))}
                   className="w-full mt-1"
@@ -731,9 +734,9 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                 <span className="text-gray-400">Zoom:</span>
                 <input
                   type="range"
-                  min="0.1"
-                  max="0.5"
-                  step="0.05"
+                  min="0.08"
+                  max="0.35"
+                  step="0.01"
                   value={previewScale}
                   onChange={(e) => setPreviewScale(Number(e.target.value))}
                   className="w-24"
@@ -768,7 +771,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                 {/* Interactive name overlays */}
                 {names.map((name) => {
                   // Calculate approximate width based on loaded images
-                  const letterWidth = 100 * name.scale;
+                  const letterWidth = BASE_LETTER_SIZE * name.scale;
                   const gap = letterSpacing * name.scale;
                   const totalWidth = name.letters.length * letterWidth + (name.letters.length - 1) * gap;
                   const totalHeight = letterWidth;
