@@ -174,24 +174,28 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       });
   };
 
-  // Snap position to grid
-  const snapToGridPosition = (x: number, y: number): { x: number; y: number; row: number; col: number } => {
-    if (!snapToGrid) return { x, y, row: 0, col: 0 };
-
+  // Snap position to grid cell center
+  const snapToGridPosition = useCallback((centerX: number, centerY: number, nameWidth: number, nameHeight: number): { x: number; y: number; row: number; col: number } => {
     const margin = spacing;
-    const col = Math.round((x - margin) / gridConfig.cellWidth);
-    const row = Math.round((y - margin) / gridConfig.cellHeight);
 
-    const snappedX = margin + col * gridConfig.cellWidth;
-    const snappedY = margin + row * gridConfig.cellHeight;
+    // Determine which cell center is closest
+    const col = Math.max(0, Math.min(gridConfig.cols - 1, Math.round((centerX - margin - gridConfig.cellWidth / 2) / gridConfig.cellWidth)));
+    const row = Math.max(0, Math.min(gridConfig.rows - 1, Math.round((centerY - margin - gridConfig.cellHeight / 2) / gridConfig.cellHeight)));
 
-    return {
-      x: Math.max(margin, Math.min(snappedX, aspectRatio.width - margin)),
-      y: Math.max(margin, Math.min(snappedY, aspectRatio.height - margin)),
-      row: Math.max(0, Math.min(row, gridConfig.rows - 1)),
-      col: Math.max(0, Math.min(col, gridConfig.cols - 1)),
-    };
-  };
+    // Calculate cell center position
+    const cellCenterX = margin + col * gridConfig.cellWidth + gridConfig.cellWidth / 2;
+    const cellCenterY = margin + row * gridConfig.cellHeight + gridConfig.cellHeight / 2;
+
+    // Position name centered in cell, but clamp to canvas bounds
+    let x = cellCenterX - nameWidth / 2;
+    let y = cellCenterY - nameHeight / 2;
+
+    // Clamp to stay within canvas
+    x = Math.max(20, Math.min(x, aspectRatio.width - nameWidth - 20));
+    y = Math.max(20, Math.min(y, aspectRatio.height - nameHeight - 20));
+
+    return { x, y, row, col };
+  }, [spacing, gridConfig, aspectRatio]);
 
   // Add a new name
   const addName = () => {
@@ -428,17 +432,26 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       let newX = mouseX - dragOffset.x;
       let newY = mouseY - dragOffset.y;
 
-      // Snap to grid if enabled
-      if (snapToGrid) {
-        const name = names.find(n => n.id === selectedNameId);
-        if (name) {
-          const nameWidth = name.letters.length * BASE_LETTER_SIZE * name.scale;
-          const nameHeight = BASE_LETTER_SIZE * name.scale;
+      const name = names.find(n => n.id === selectedNameId);
+      if (name) {
+        // Estimate name dimensions (use 0.8 aspect ratio for letter approximation)
+        const letterHeight = BASE_LETTER_SIZE * name.scale;
+        const letterWidth = letterHeight * 0.8;
+        const gap = letterSpacing * name.scale;
+        const nameWidth = name.letters.length * letterWidth + (name.letters.length - 1) * gap;
+        const nameHeight = letterHeight;
+
+        // Snap to grid if enabled
+        if (snapToGrid) {
           const centerX = newX + nameWidth / 2;
           const centerY = newY + nameHeight / 2;
-          const snapped = snapToGridPosition(centerX, centerY);
-          newX = snapped.x - nameWidth / 2;
-          newY = snapped.y - nameHeight / 2;
+          const snapped = snapToGridPosition(centerX, centerY, nameWidth, nameHeight);
+          newX = snapped.x;
+          newY = snapped.y;
+        } else {
+          // Just clamp to canvas bounds
+          newX = Math.max(20, Math.min(newX, aspectRatio.width - nameWidth - 20));
+          newY = Math.max(20, Math.min(newY, aspectRatio.height - nameHeight - 20));
         }
       }
 
@@ -463,7 +476,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
         })
       );
     }
-  }, [isDragging, isResizing, selectedNameId, dragOffset, previewScale, resizeHandle, resizeStart, snapToGrid, names, snapToGridPosition]);
+  }, [isDragging, isResizing, selectedNameId, dragOffset, previewScale, resizeHandle, resizeStart, snapToGrid, names, snapToGridPosition, aspectRatio, letterSpacing]);
 
   // Handle mouse up
   const handleMouseUp = useCallback(() => {
@@ -933,39 +946,54 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                     className="absolute inset-0 pointer-events-none"
                     width={aspectRatio.width * previewScale}
                     height={aspectRatio.height * previewScale}
+                    style={{ zIndex: 10 }}
                   >
-                    {/* Vertical lines */}
-                    {Array.from({ length: gridConfig.cols + 1 }).map((_, i) => {
-                      const x = (spacing + i * gridConfig.cellWidth) * previewScale;
-                      return (
-                        <line
-                          key={`v-${i}`}
-                          x1={x}
-                          y1={spacing * previewScale}
-                          x2={x}
-                          y2={(aspectRatio.height - spacing) * previewScale}
-                          stroke="rgba(59, 130, 246, 0.3)"
-                          strokeWidth="1"
-                          strokeDasharray="4,4"
-                        />
-                      );
-                    })}
-                    {/* Horizontal lines */}
-                    {Array.from({ length: gridConfig.rows + 1 }).map((_, i) => {
-                      const y = (spacing + i * gridConfig.cellHeight) * previewScale;
-                      return (
-                        <line
-                          key={`h-${i}`}
-                          x1={spacing * previewScale}
-                          y1={y}
-                          x2={(aspectRatio.width - spacing) * previewScale}
-                          y2={y}
-                          stroke="rgba(59, 130, 246, 0.3)"
-                          strokeWidth="1"
-                          strokeDasharray="4,4"
-                        />
-                      );
-                    })}
+                    {/* Grid cell backgrounds */}
+                    {Array.from({ length: gridConfig.rows }).map((_, row) =>
+                      Array.from({ length: gridConfig.cols }).map((_, col) => {
+                        const x = (spacing + col * gridConfig.cellWidth) * previewScale;
+                        const y = (spacing + row * gridConfig.cellHeight) * previewScale;
+                        return (
+                          <rect
+                            key={`cell-${row}-${col}`}
+                            x={x}
+                            y={y}
+                            width={gridConfig.cellWidth * previewScale}
+                            height={gridConfig.cellHeight * previewScale}
+                            fill="none"
+                            stroke="rgba(59, 130, 246, 0.4)"
+                            strokeWidth="1"
+                          />
+                        );
+                      })
+                    )}
+                    {/* Cell center markers */}
+                    {Array.from({ length: gridConfig.rows }).map((_, row) =>
+                      Array.from({ length: gridConfig.cols }).map((_, col) => {
+                        const centerX = (spacing + col * gridConfig.cellWidth + gridConfig.cellWidth / 2) * previewScale;
+                        const centerY = (spacing + row * gridConfig.cellHeight + gridConfig.cellHeight / 2) * previewScale;
+                        return (
+                          <g key={`center-${row}-${col}`}>
+                            <line
+                              x1={centerX - 6}
+                              y1={centerY}
+                              x2={centerX + 6}
+                              y2={centerY}
+                              stroke="rgba(59, 130, 246, 0.5)"
+                              strokeWidth="1"
+                            />
+                            <line
+                              x1={centerX}
+                              y1={centerY - 6}
+                              x2={centerX}
+                              y2={centerY + 6}
+                              stroke="rgba(59, 130, 246, 0.5)"
+                              strokeWidth="1"
+                            />
+                          </g>
+                        );
+                      })
+                    )}
                   </svg>
                 )}
 
@@ -981,10 +1009,12 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
 
                 {/* Interactive name overlays with resize handles */}
                 {names.map((name) => {
-                  const letterWidth = BASE_LETTER_SIZE * name.scale;
+                  // Use 0.8 aspect ratio for letter width approximation (matches NASA letter aspect ratios)
+                  const letterHeight = BASE_LETTER_SIZE * name.scale;
+                  const letterWidth = letterHeight * 0.8;
                   const gap = letterSpacing * name.scale;
                   const totalWidth = name.letters.length * letterWidth + (name.letters.length - 1) * gap;
-                  const totalHeight = letterWidth;
+                  const totalHeight = letterHeight;
                   const isSelected = selectedNameId === name.id;
 
                   return (
@@ -996,13 +1026,20 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                         top: name.y * previewScale,
                         width: totalWidth * previewScale,
                         height: totalHeight * previewScale,
+                        zIndex: isSelected ? 30 : 20,
                       }}
                     >
-                      {/* Drag area */}
+                      {/* Selection outline - dashed border when selected */}
+                      {isSelected && (
+                        <div
+                          className="absolute -inset-1 border-2 border-dashed border-blue-400 rounded pointer-events-none"
+                          style={{ background: 'rgba(59, 130, 246, 0.05)' }}
+                        />
+                      )}
+
+                      {/* Drag area - transparent overlay for interaction */}
                       <div
-                        className={`absolute inset-0 cursor-move ${
-                          isSelected ? 'ring-2 ring-blue-500' : ''
-                        }`}
+                        className="absolute inset-0 cursor-move"
                         onMouseDown={(e) => handleNameMouseDown(e, name.id)}
                         onClick={() => setSelectedNameId(name.id)}
                       />
@@ -1010,28 +1047,32 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                       {/* Resize handles - only show when selected */}
                       {isSelected && (
                         <>
-                          {/* Corner handles */}
+                          {/* Corner handles - small circles */}
                           {(['nw', 'ne', 'sw', 'se'] as ResizeHandle[]).map((handle) => {
                             const isTop = handle?.includes('n');
                             const isLeft = handle?.includes('w');
                             return (
                               <div
                                 key={handle}
-                                className="absolute w-4 h-4 bg-blue-500 border-2 border-white rounded-sm cursor-nwse-resize shadow-lg"
+                                className="absolute w-3 h-3 bg-white border-2 border-blue-500 rounded-full shadow-md hover:bg-blue-100 transition-colors"
                                 style={{
-                                  top: isTop ? -8 : 'auto',
-                                  bottom: !isTop ? -8 : 'auto',
-                                  left: isLeft ? -8 : 'auto',
-                                  right: !isLeft ? -8 : 'auto',
+                                  top: isTop ? -6 : 'auto',
+                                  bottom: !isTop ? -6 : 'auto',
+                                  left: isLeft ? -6 : 'auto',
+                                  right: !isLeft ? -6 : 'auto',
                                   cursor: handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize',
+                                  zIndex: 40,
                                 }}
                                 onMouseDown={(e) => handleResizeMouseDown(e, name.id, handle)}
                               />
                             );
                           })}
 
-                          {/* Name label */}
-                          <div className="absolute -top-6 left-0 text-xs bg-blue-600 px-2 py-0.5 rounded whitespace-nowrap">
+                          {/* Name label - positioned above */}
+                          <div
+                            className="absolute left-0 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full whitespace-nowrap shadow-md"
+                            style={{ top: -20, zIndex: 40 }}
+                          >
                             {name.name}
                           </div>
                         </>
