@@ -4,17 +4,15 @@ import {
   Trash2,
   Download,
   RefreshCw,
-  Maximize2,
-  Minimize2,
   Move,
   Shuffle,
-  ChevronDown,
   ArrowLeft,
   Satellite,
   Image as ImageIcon,
   Palette,
-  Layout,
   HelpCircle,
+  Grid3X3,
+  Check,
 } from 'lucide-react';
 
 // Letter variants available (from NASA Landsat)
@@ -49,7 +47,7 @@ const LETTER_VARIANTS: Record<string, number[]> = {
 
 // Aspect ratio presets (all at 300 DPI for print-ready output)
 const ASPECT_RATIOS = [
-  { label: '18×12" (Landscape)', value: 18/12, width: 5400, height: 3600 },  // Default - common print size
+  { label: '18×12" (Landscape)', value: 18/12, width: 5400, height: 3600 },
   { label: '12×18" (Portrait)', value: 12/18, width: 3600, height: 5400 },
   { label: '16×20" (Large)', value: 16/20, width: 4800, height: 6000 },
   { label: '11×14" (Standard)', value: 11/14, width: 3300, height: 4200 },
@@ -65,31 +63,90 @@ interface NameObject {
   y: number;
   scale: number;
   width: number;
+  row: number;
+  col: number;
+}
+
+interface GridConfig {
+  rows: number;
+  cols: number;
+  cellWidth: number;
+  cellHeight: number;
 }
 
 interface LandsatPlaqueBuilderProps {
   onBack?: () => void;
 }
 
+type SetupStep = 'count' | 'builder';
+type ResizeHandle = 'nw' | 'ne' | 'sw' | 'se' | null;
+
 const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) => {
-  // State
+  // Setup state
+  const [setupStep, setSetupStep] = useState<SetupStep>('count');
+  const [plannedNameCount, setPlannedNameCount] = useState(5);
+
+  // Builder state
   const [names, setNames] = useState<NameObject[]>([]);
   const [newNameInput, setNewNameInput] = useState('');
   const [aspectRatio, setAspectRatio] = useState(ASPECT_RATIOS[0]);
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
-  const [spacing, setSpacing] = useState(80); // Space between name rows
-  const [letterSpacing, setLetterSpacing] = useState(12); // Space between letters
+  const [spacing, setSpacing] = useState(80);
+  const [letterSpacing, setLetterSpacing] = useState(12);
   const [selectedNameId, setSelectedNameId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState<ResizeHandle>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, scale: 1 });
   const [isExporting, setIsExporting] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [previewScale, setPreviewScale] = useState(0.15); // Smaller preview scale for large canvas
-  const [imagesLoaded, setImagesLoaded] = useState<Record<string, boolean>>({});
+  const [previewScale, setPreviewScale] = useState(0.15);
+  const [showGrid, setShowGrid] = useState(true);
+  const [snapToGrid, setSnapToGrid] = useState(true);
+  const [gridConfig, setGridConfig] = useState<GridConfig>({ rows: 2, cols: 3, cellWidth: 0, cellHeight: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const imageCache = useRef<Record<string, HTMLImageElement>>({});
+
+  // Base letter size
+  const BASE_LETTER_SIZE = 350;
+
+  // Calculate optimal grid based on name count
+  const calculateGrid = useCallback((count: number, canvasWidth: number, canvasHeight: number): GridConfig => {
+    const isLandscape = canvasWidth > canvasHeight;
+    let rows: number, cols: number;
+
+    if (count <= 2) {
+      rows = isLandscape ? 1 : 2;
+      cols = isLandscape ? 2 : 1;
+    } else if (count <= 4) {
+      rows = 2;
+      cols = 2;
+    } else if (count <= 6) {
+      rows = isLandscape ? 2 : 3;
+      cols = isLandscape ? 3 : 2;
+    } else if (count <= 9) {
+      rows = 3;
+      cols = 3;
+    } else {
+      rows = Math.ceil(Math.sqrt(count));
+      cols = Math.ceil(count / rows);
+    }
+
+    const margin = spacing * 2;
+    const cellWidth = (canvasWidth - margin) / cols;
+    const cellHeight = (canvasHeight - margin) / rows;
+
+    return { rows, cols, cellWidth, cellHeight };
+  }, [spacing]);
+
+  // Update grid when name count or aspect ratio changes
+  useEffect(() => {
+    const grid = calculateGrid(plannedNameCount, aspectRatio.width, aspectRatio.height);
+    setGridConfig(grid);
+  }, [plannedNameCount, aspectRatio, calculateGrid]);
 
   // Generate unique ID
   const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -117,6 +174,25 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       });
   };
 
+  // Snap position to grid
+  const snapToGridPosition = (x: number, y: number): { x: number; y: number; row: number; col: number } => {
+    if (!snapToGrid) return { x, y, row: 0, col: 0 };
+
+    const margin = spacing;
+    const col = Math.round((x - margin) / gridConfig.cellWidth);
+    const row = Math.round((y - margin) / gridConfig.cellHeight);
+
+    const snappedX = margin + col * gridConfig.cellWidth;
+    const snappedY = margin + row * gridConfig.cellHeight;
+
+    return {
+      x: Math.max(margin, Math.min(snappedX, aspectRatio.width - margin)),
+      y: Math.max(margin, Math.min(snappedY, aspectRatio.height - margin)),
+      row: Math.max(0, Math.min(row, gridConfig.rows - 1)),
+      col: Math.max(0, Math.min(col, gridConfig.cols - 1)),
+    };
+  };
+
   // Add a new name
   const addName = () => {
     if (!newNameInput.trim()) return;
@@ -124,14 +200,39 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     const letters = createLetterObjects(newNameInput);
     if (letters.length === 0) return;
 
+    // Find next available grid position
+    const usedPositions = new Set(names.map(n => `${n.row}-${n.col}`));
+    let row = 0, col = 0;
+    for (let r = 0; r < gridConfig.rows; r++) {
+      for (let c = 0; c < gridConfig.cols; c++) {
+        if (!usedPositions.has(`${r}-${c}`)) {
+          row = r;
+          col = c;
+          break;
+        }
+      }
+      if (!usedPositions.has(`${row}-${col}`)) break;
+    }
+
+    const margin = spacing;
+    const x = margin + col * gridConfig.cellWidth + gridConfig.cellWidth / 2;
+    const y = margin + row * gridConfig.cellHeight + gridConfig.cellHeight / 2;
+
+    // Calculate scale to fit in cell
+    const nameWidth = letters.length * BASE_LETTER_SIZE + (letters.length - 1) * letterSpacing;
+    const maxWidth = gridConfig.cellWidth * 0.9;
+    const scale = Math.min(maxWidth / nameWidth, 1.5);
+
     const newName: NameObject = {
       id: generateId(),
       name: newNameInput.trim(),
       letters,
-      x: 0,
-      y: 0,
-      scale: 1,
-      width: letters.length * 100 + (letters.length - 1) * letterSpacing,
+      x: x - (nameWidth * scale) / 2,
+      y: y - (BASE_LETTER_SIZE * scale) / 2,
+      scale,
+      width: nameWidth,
+      row,
+      col,
     };
 
     setNames(prev => [...prev, newName]);
@@ -151,72 +252,48 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
         if (n.id !== id) return n;
         return {
           ...n,
-          letters: n.letters.map(l => ({
-            ...l,
-            variant: getRandomVariant(l.char),
-            imageUrl: `/landsat-letters/${l.char.toLowerCase()}_${getRandomVariant(l.char)}.jpg`,
-          })),
+          letters: n.letters.map(l => {
+            const newVariant = getRandomVariant(l.char);
+            return {
+              ...l,
+              variant: newVariant,
+              imageUrl: `/landsat-letters/${l.char.toLowerCase()}_${newVariant}.jpg`,
+            };
+          }),
         };
       })
     );
   };
 
-  // Base letter size - this determines how big letters appear on print canvas
-  const BASE_LETTER_SIZE = 350;
-
-  // Auto-arrange names in a balanced layout
+  // Auto-arrange names in grid
   const autoArrange = useCallback(() => {
     if (names.length === 0) return;
 
-    const canvasWidth = aspectRatio.width;
-    const canvasHeight = aspectRatio.height;
-    const letterWidth = BASE_LETTER_SIZE;
-    const margin = spacing * 3;
-
-    // Calculate name widths
-    const nameWidths = names.map(n =>
-      n.letters.length * letterWidth + (n.letters.length - 1) * letterSpacing
-    );
-
-    // Find optimal scale to fit all names
-    const maxNameWidth = Math.max(...nameWidths);
-    const availableWidth = canvasWidth - margin * 2;
-    const availableHeight = canvasHeight - margin * 2;
-
-    // Try to fit names in rows
-    const rowHeight = BASE_LETTER_SIZE * 1.2; // Height per row with some padding
-    const totalRows = names.length;
-    const neededHeight = totalRows * rowHeight + (totalRows - 1) * spacing;
-
-    // Calculate scale to fit everything with good margins
-    let scale = Math.min(
-      availableWidth / maxNameWidth,
-      availableHeight / neededHeight,
-      2.0 // Max scale
-    );
-    scale = Math.max(0.3, Math.min(scale, 2.0)); // Clamp scale
-
-    // Position names centered vertically, each on its own row
-    const scaledRowHeight = BASE_LETTER_SIZE * scale;
-    const totalHeight = names.length * scaledRowHeight + (names.length - 1) * spacing;
-    const startY = (canvasHeight - totalHeight) / 2;
-
+    const margin = spacing;
     const arrangedNames = names.map((name, index) => {
-      const nameWidth = nameWidths[index] * scale;
-      const x = (canvasWidth - nameWidth) / 2;
-      const y = startY + index * (scaledRowHeight + spacing);
+      const row = Math.floor(index / gridConfig.cols);
+      const col = index % gridConfig.cols;
+
+      const cellCenterX = margin + col * gridConfig.cellWidth + gridConfig.cellWidth / 2;
+      const cellCenterY = margin + row * gridConfig.cellHeight + gridConfig.cellHeight / 2;
+
+      const nameWidth = name.letters.length * BASE_LETTER_SIZE + (name.letters.length - 1) * letterSpacing;
+      const maxWidth = gridConfig.cellWidth * 0.85;
+      const maxHeight = gridConfig.cellHeight * 0.7;
+      const scale = Math.min(maxWidth / nameWidth, maxHeight / BASE_LETTER_SIZE, 1.5);
 
       return {
         ...name,
-        x,
-        y,
+        x: cellCenterX - (nameWidth * scale) / 2,
+        y: cellCenterY - (BASE_LETTER_SIZE * scale) / 2,
         scale,
-        width: nameWidths[index],
+        row,
+        col,
       };
     });
 
     setNames(arrangedNames);
-  }, [names.length, aspectRatio, spacing, letterSpacing]);
+  }, [names.length, gridConfig, spacing, letterSpacing]);
 
   // Load an image and cache it
   const loadImage = (src: string): Promise<HTMLImageElement> => {
@@ -230,7 +307,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         imageCache.current[src] = img;
-        setImagesLoaded(prev => ({ ...prev, [src]: true }));
         resolve(img);
       };
       img.onerror = reject;
@@ -255,7 +331,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
     canvas.width = aspectRatio.width;
     canvas.height = aspectRatio.height;
 
@@ -265,7 +340,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
 
     // Draw each name
     for (const name of names) {
-      const letterWidth = BASE_LETTER_SIZE * name.scale;
       const letterHeight = BASE_LETTER_SIZE * name.scale;
       const gap = letterSpacing * name.scale;
 
@@ -273,7 +347,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       for (const letter of name.letters) {
         try {
           const img = await loadImage(letter.imageUrl);
-          // Calculate aspect ratio of the letter image
           const imgAspect = img.width / img.height;
           const drawWidth = letterHeight * imgAspect;
 
@@ -286,14 +359,9 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
           );
           offsetX += drawWidth + gap;
         } catch (err) {
-          // Draw placeholder
           ctx.fillStyle = '#cccccc';
-          ctx.fillRect(name.x + offsetX, name.y, letterWidth, letterHeight);
-          ctx.fillStyle = '#666666';
-          ctx.font = `${40 * name.scale}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText(letter.char, name.x + offsetX + letterWidth/2, name.y + letterHeight/2 + 15);
-          offsetX += letterWidth + gap;
+          ctx.fillRect(name.x + offsetX, name.y, letterHeight, letterHeight);
+          offsetX += letterHeight + gap;
         }
       }
     }
@@ -307,13 +375,13 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
   // Handle mouse down on name for dragging
   const handleNameMouseDown = (e: React.MouseEvent, nameId: string) => {
     e.preventDefault();
+    e.stopPropagation();
     const name = names.find(n => n.id === nameId);
     if (!name) return;
 
     setSelectedNameId(nameId);
     setIsDragging(true);
 
-    // Calculate offset from name position to mouse position (scaled)
     const rect = previewRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -326,36 +394,87 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     });
   };
 
-  // Handle mouse move for dragging
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !selectedNameId) return;
+  // Handle resize handle mouse down
+  const handleResizeMouseDown = (e: React.MouseEvent, nameId: string, handle: ResizeHandle) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const name = names.find(n => n.id === nameId);
+    if (!name) return;
+
+    setSelectedNameId(nameId);
+    setIsResizing(true);
+    setResizeHandle(handle);
 
     const rect = previewRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const mouseX = (e.clientX - rect.left) / previewScale;
-    const mouseY = (e.clientY - rect.top) / previewScale;
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      scale: name.scale,
+    });
+  };
 
-    setNames(prev =>
-      prev.map(n => {
-        if (n.id !== selectedNameId) return n;
-        return {
-          ...n,
-          x: mouseX - dragOffset.x,
-          y: mouseY - dragOffset.y,
-        };
-      })
-    );
-  }, [isDragging, selectedNameId, dragOffset, previewScale]);
+  // Handle mouse move for dragging/resizing
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (isDragging && selectedNameId) {
+      const rect = previewRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const mouseX = (e.clientX - rect.left) / previewScale;
+      const mouseY = (e.clientY - rect.top) / previewScale;
+
+      let newX = mouseX - dragOffset.x;
+      let newY = mouseY - dragOffset.y;
+
+      // Snap to grid if enabled
+      if (snapToGrid) {
+        const name = names.find(n => n.id === selectedNameId);
+        if (name) {
+          const nameWidth = name.letters.length * BASE_LETTER_SIZE * name.scale;
+          const nameHeight = BASE_LETTER_SIZE * name.scale;
+          const centerX = newX + nameWidth / 2;
+          const centerY = newY + nameHeight / 2;
+          const snapped = snapToGridPosition(centerX, centerY);
+          newX = snapped.x - nameWidth / 2;
+          newY = snapped.y - nameHeight / 2;
+        }
+      }
+
+      setNames(prev =>
+        prev.map(n => {
+          if (n.id !== selectedNameId) return n;
+          return { ...n, x: newX, y: newY };
+        })
+      );
+    } else if (isResizing && selectedNameId && resizeHandle) {
+      const deltaX = e.clientX - resizeStart.x;
+      const deltaY = e.clientY - resizeStart.y;
+      const delta = (deltaX + deltaY) / 2;
+      const scaleFactor = delta / 200;
+
+      const newScale = Math.max(0.3, Math.min(2.5, resizeStart.scale + scaleFactor));
+
+      setNames(prev =>
+        prev.map(n => {
+          if (n.id !== selectedNameId) return n;
+          return { ...n, scale: newScale };
+        })
+      );
+    }
+  }, [isDragging, isResizing, selectedNameId, dragOffset, previewScale, resizeHandle, resizeStart, snapToGrid, names, snapToGridPosition]);
 
   // Handle mouse up
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle(null);
   }, []);
 
   // Add/remove mouse event listeners
   useEffect(() => {
-    if (isDragging) {
+    if (isDragging || isResizing) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
     }
@@ -363,36 +482,22 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
-
-  // Scale a name
-  const scaleName = (id: string, delta: number) => {
-    setNames(prev =>
-      prev.map(n => {
-        if (n.id !== id) return n;
-        const newScale = Math.max(0.2, Math.min(2, n.scale + delta));
-        return { ...n, scale: newScale };
-      })
-    );
-  };
+  }, [isDragging, isResizing, handleMouseMove, handleMouseUp]);
 
   // Export to JPG
   const exportToJPG = async () => {
     setIsExporting(true);
 
     try {
-      // Create a high-res canvas for export
       const exportCanvas = document.createElement('canvas');
       exportCanvas.width = aspectRatio.width;
       exportCanvas.height = aspectRatio.height;
       const ctx = exportCanvas.getContext('2d');
       if (!ctx) throw new Error('Could not get canvas context');
 
-      // Draw background
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-      // Draw each name
       for (const name of names) {
         const letterHeight = BASE_LETTER_SIZE * name.scale;
         const gap = letterSpacing * name.scale;
@@ -418,7 +523,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
         }
       }
 
-      // Convert to blob and download
       exportCanvas.toBlob(
         (blob) => {
           if (!blob) {
@@ -457,24 +561,97 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     { color: '#2d3436', label: 'Charcoal' },
   ];
 
+  // Setup Step - Ask for name count
+  if (setupStep === 'count') {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="max-w-md w-full mx-4">
+          <div className="text-center mb-8">
+            <Satellite className="w-16 h-16 text-blue-400 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold mb-2">Landsat Family Plaques</h1>
+            <p className="text-gray-400">Create print-ready satellite letter art</p>
+          </div>
+
+          <div className="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <h2 className="text-xl font-semibold mb-4 text-center">How many names will you add?</h2>
+            <p className="text-gray-400 text-sm mb-6 text-center">
+              This helps us create the perfect grid layout for your plaque.
+            </p>
+
+            <div className="grid grid-cols-4 gap-3 mb-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                <button
+                  key={num}
+                  onClick={() => setPlannedNameCount(num)}
+                  className={`py-4 rounded-xl text-xl font-bold transition-all ${
+                    plannedNameCount === num
+                      ? 'bg-blue-600 text-white scale-105'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+
+            <div className="mb-6">
+              <label className="text-sm text-gray-400 mb-2 block">Or enter a custom number:</label>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={plannedNameCount}
+                onChange={(e) => setPlannedNameCount(Math.max(1, Math.min(20, Number(e.target.value))))}
+                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-center text-xl font-bold focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div className="text-center text-sm text-gray-400 mb-6">
+              Grid will be: <span className="text-white font-semibold">
+                {calculateGrid(plannedNameCount, aspectRatio.width, aspectRatio.height).rows} rows × {calculateGrid(plannedNameCount, aspectRatio.width, aspectRatio.height).cols} columns
+              </span>
+            </div>
+
+            <button
+              onClick={() => setSetupStep('builder')}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <Check className="w-5 h-5" />
+              Continue to Builder
+            </button>
+          </div>
+
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mt-4 w-full py-3 text-gray-400 hover:text-white transition-colors flex items-center justify-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Home
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Builder Step
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Header */}
       <header className="bg-gray-800/80 backdrop-blur-sm border-b border-gray-700 px-4 py-3 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            )}
+            <button
+              onClick={() => setSetupStep('count')}
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
             <Satellite className="w-6 h-6 text-blue-400" />
             <div>
               <h1 className="text-xl font-bold">Landsat Family Plaques</h1>
-              <p className="text-xs text-gray-400">Create print-ready satellite letter art</p>
+              <p className="text-xs text-gray-400">Planning for {plannedNameCount} names • {gridConfig.rows}×{gridConfig.cols} grid</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -510,16 +687,13 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
               How to Use
             </h2>
             <div className="space-y-3 text-sm text-gray-300">
-              <p><strong>1. Add Names:</strong> Type names in the input field and click Add or press Enter.</p>
-              <p><strong>2. Arrange:</strong> Click "Auto Arrange" for balanced layout, or drag names to position manually.</p>
-              <p><strong>3. Customize:</strong> Choose aspect ratio, background color, and adjust spacing.</p>
-              <p><strong>4. Shuffle:</strong> Click the shuffle icon on any name to get different letter variants.</p>
-              <p><strong>5. Resize:</strong> Use +/- buttons to scale individual names.</p>
+              <p><strong>1. Add Names:</strong> Type names and click Add. They'll snap to the grid.</p>
+              <p><strong>2. Drag:</strong> Click and drag names to reposition. They snap to grid cells.</p>
+              <p><strong>3. Resize:</strong> Use the corner handles to resize each name.</p>
+              <p><strong>4. Shuffle:</strong> Click the shuffle icon to get different letter variants.</p>
+              <p><strong>5. Auto Arrange:</strong> Click to automatically arrange all names in the grid.</p>
               <p><strong>6. Export:</strong> Click "Export JPG" for a 300 DPI print-ready image.</p>
             </div>
-            <p className="text-xs text-gray-500 mt-4">
-              Letter images from NASA Landsat Outreach program.
-            </p>
             <button
               onClick={() => setShowHelp(false)}
               className="mt-4 w-full py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
@@ -537,7 +711,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
           <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
             <h3 className="font-semibold mb-3 flex items-center gap-2">
               <Plus className="w-4 h-4" />
-              Add Names
+              Add Names ({names.length}/{plannedNameCount})
             </h3>
             <div className="flex gap-2">
               <input
@@ -550,24 +724,29 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
               />
               <button
                 onClick={addName}
-                disabled={!newNameInput.trim()}
+                disabled={!newNameInput.trim() || names.length >= plannedNameCount}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg transition-colors"
               >
                 Add
               </button>
             </div>
+            {names.length >= plannedNameCount && (
+              <p className="text-xs text-amber-400 mt-2">
+                You've reached your planned name count. Change it in settings if needed.
+              </p>
+            )}
           </div>
 
           {/* Names List */}
           <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold">Names ({names.length})</h3>
+              <h3 className="font-semibold">Names</h3>
               <button
                 onClick={autoArrange}
                 disabled={names.length === 0}
                 className="text-sm px-3 py-1 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded-lg transition-colors flex items-center gap-1"
               >
-                <Layout className="w-3 h-3" />
+                <Grid3X3 className="w-3 h-3" />
                 Auto Arrange
               </button>
             </div>
@@ -577,7 +756,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                 No names added yet
               </p>
             ) : (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {names.map((name) => (
                   <div
                     key={name.id}
@@ -591,20 +770,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{name.name}</span>
                       <div className="flex items-center gap-1">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); scaleName(name.id, -0.1); }}
-                          className="p-1 hover:bg-gray-600 rounded"
-                          title="Decrease size"
-                        >
-                          <Minimize2 className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); scaleName(name.id, 0.1); }}
-                          className="p-1 hover:bg-gray-600 rounded"
-                          title="Increase size"
-                        >
-                          <Maximize2 className="w-3 h-3" />
-                        </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); shuffleLetters(name.id); }}
                           className="p-1 hover:bg-gray-600 rounded"
@@ -622,12 +787,51 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                       </div>
                     </div>
                     <div className="text-xs text-gray-400 mt-1">
-                      Scale: {(name.scale * 100).toFixed(0)}%
+                      Scale: {(name.scale * 100).toFixed(0)}% • Row {name.row + 1}, Col {name.col + 1}
                     </div>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Grid Settings */}
+          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <Grid3X3 className="w-4 h-4" />
+              Grid Settings
+            </h3>
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showGrid}
+                  onChange={(e) => setShowGrid(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-sm">Show grid lines</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={snapToGrid}
+                  onChange={(e) => setSnapToGrid(e.target.checked)}
+                  className="w-4 h-4 rounded"
+                />
+                <span className="text-sm">Snap to grid</span>
+              </label>
+              <div className="pt-2 border-t border-gray-700">
+                <label className="text-sm text-gray-400">Planned names:</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={plannedNameCount}
+                  onChange={(e) => setPlannedNameCount(Math.max(1, Math.min(20, Number(e.target.value))))}
+                  className="w-full mt-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Aspect Ratio */}
@@ -652,7 +856,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-2">
-              Print size: {(aspectRatio.width / 300).toFixed(0)}" × {(aspectRatio.height / 300).toFixed(0)}" @ 300 DPI ({aspectRatio.width} × {aspectRatio.height}px)
+              {(aspectRatio.width / 300).toFixed(0)}" × {(aspectRatio.height / 300).toFixed(0)}" @ 300 DPI
             </p>
           </div>
 
@@ -662,7 +866,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
               <Palette className="w-4 h-4" />
               Background
             </h3>
-            <div className="flex gap-2 flex-wrap mb-3">
+            <div className="flex gap-2 flex-wrap">
               {colorPresets.map((preset) => (
                 <button
                   key={preset.color}
@@ -685,41 +889,6 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
               />
             </div>
           </div>
-
-          {/* Spacing */}
-          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-            <h3 className="font-semibold mb-3">Spacing</h3>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm text-gray-400 flex justify-between">
-                  <span>Name Spacing</span>
-                  <span>{spacing}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="20"
-                  max="300"
-                  value={spacing}
-                  onChange={(e) => setSpacing(Number(e.target.value))}
-                  className="w-full mt-1"
-                />
-              </div>
-              <div>
-                <label className="text-sm text-gray-400 flex justify-between">
-                  <span>Letter Spacing</span>
-                  <span>{letterSpacing}px</span>
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="60"
-                  value={letterSpacing}
-                  onChange={(e) => setLetterSpacing(Number(e.target.value))}
-                  className="w-full mt-1"
-                />
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Right Panel - Preview */}
@@ -728,7 +897,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold flex items-center gap-2">
                 <Move className="w-4 h-4" />
-                Preview (Drag names to reposition)
+                Preview (Drag to reposition, corners to resize)
               </h3>
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-400">Zoom:</span>
@@ -751,13 +920,55 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
             >
               <div
                 ref={previewRef}
-                className="relative cursor-crosshair"
+                className="relative"
                 style={{
                   width: aspectRatio.width * previewScale,
                   height: aspectRatio.height * previewScale,
                   backgroundColor: backgroundColor,
                 }}
               >
+                {/* Grid lines */}
+                {showGrid && (
+                  <svg
+                    className="absolute inset-0 pointer-events-none"
+                    width={aspectRatio.width * previewScale}
+                    height={aspectRatio.height * previewScale}
+                  >
+                    {/* Vertical lines */}
+                    {Array.from({ length: gridConfig.cols + 1 }).map((_, i) => {
+                      const x = (spacing + i * gridConfig.cellWidth) * previewScale;
+                      return (
+                        <line
+                          key={`v-${i}`}
+                          x1={x}
+                          y1={spacing * previewScale}
+                          x2={x}
+                          y2={(aspectRatio.height - spacing) * previewScale}
+                          stroke="rgba(59, 130, 246, 0.3)"
+                          strokeWidth="1"
+                          strokeDasharray="4,4"
+                        />
+                      );
+                    })}
+                    {/* Horizontal lines */}
+                    {Array.from({ length: gridConfig.rows + 1 }).map((_, i) => {
+                      const y = (spacing + i * gridConfig.cellHeight) * previewScale;
+                      return (
+                        <line
+                          key={`h-${i}`}
+                          x1={spacing * previewScale}
+                          y1={y}
+                          x2={(aspectRatio.width - spacing) * previewScale}
+                          y2={y}
+                          stroke="rgba(59, 130, 246, 0.3)"
+                          strokeWidth="1"
+                          strokeDasharray="4,4"
+                        />
+                      );
+                    })}
+                  </svg>
+                )}
+
                 {/* Hidden canvas for actual rendering */}
                 <canvas
                   ref={canvasRef}
@@ -768,35 +979,62 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
                   }}
                 />
 
-                {/* Interactive name overlays */}
+                {/* Interactive name overlays with resize handles */}
                 {names.map((name) => {
-                  // Calculate approximate width based on loaded images
                   const letterWidth = BASE_LETTER_SIZE * name.scale;
                   const gap = letterSpacing * name.scale;
                   const totalWidth = name.letters.length * letterWidth + (name.letters.length - 1) * gap;
                   const totalHeight = letterWidth;
+                  const isSelected = selectedNameId === name.id;
 
                   return (
                     <div
                       key={name.id}
-                      className={`absolute border-2 rounded transition-colors ${
-                        selectedNameId === name.id
-                          ? 'border-blue-500 bg-blue-500/10'
-                          : 'border-transparent hover:border-blue-400/50'
-                      }`}
+                      className="absolute"
                       style={{
                         left: name.x * previewScale,
                         top: name.y * previewScale,
                         width: totalWidth * previewScale,
                         height: totalHeight * previewScale,
-                        cursor: 'move',
                       }}
-                      onMouseDown={(e) => handleNameMouseDown(e, name.id)}
                     >
-                      {selectedNameId === name.id && (
-                        <div className="absolute -top-6 left-0 text-xs bg-blue-600 px-2 py-0.5 rounded whitespace-nowrap">
-                          {name.name}
-                        </div>
+                      {/* Drag area */}
+                      <div
+                        className={`absolute inset-0 cursor-move ${
+                          isSelected ? 'ring-2 ring-blue-500' : ''
+                        }`}
+                        onMouseDown={(e) => handleNameMouseDown(e, name.id)}
+                        onClick={() => setSelectedNameId(name.id)}
+                      />
+
+                      {/* Resize handles - only show when selected */}
+                      {isSelected && (
+                        <>
+                          {/* Corner handles */}
+                          {(['nw', 'ne', 'sw', 'se'] as ResizeHandle[]).map((handle) => {
+                            const isTop = handle?.includes('n');
+                            const isLeft = handle?.includes('w');
+                            return (
+                              <div
+                                key={handle}
+                                className="absolute w-4 h-4 bg-blue-500 border-2 border-white rounded-sm cursor-nwse-resize shadow-lg"
+                                style={{
+                                  top: isTop ? -8 : 'auto',
+                                  bottom: !isTop ? -8 : 'auto',
+                                  left: isLeft ? -8 : 'auto',
+                                  right: !isLeft ? -8 : 'auto',
+                                  cursor: handle === 'nw' || handle === 'se' ? 'nwse-resize' : 'nesw-resize',
+                                }}
+                                onMouseDown={(e) => handleResizeMouseDown(e, name.id, handle)}
+                              />
+                            );
+                          })}
+
+                          {/* Name label */}
+                          <div className="absolute -top-6 left-0 text-xs bg-blue-600 px-2 py-0.5 rounded whitespace-nowrap">
+                            {name.name}
+                          </div>
+                        </>
                       )}
                     </div>
                   );
