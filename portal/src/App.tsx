@@ -17,6 +17,8 @@ import {
   Loader2,
   ExternalLink,
   Satellite,
+  Trophy,
+  Activity,
 } from 'lucide-react';
 
 // Firebase config (same as AgentQu main app)
@@ -79,6 +81,33 @@ const apps: AppCard[] = [
     icon: <Scale className="w-8 h-8" />,
     color: 'text-amber-400',
     gradient: 'from-amber-500 to-orange-500',
+  },
+  {
+    id: 'nerdfootball',
+    name: 'NerdFootball',
+    description: 'Fantasy football tools, survivor pools, and NFL analytics for the data-driven fan.',
+    url: 'https://nerdfootball.web.app',
+    icon: <Trophy className="w-8 h-8" />,
+    color: 'text-teal-400',
+    gradient: 'from-teal-500 to-cyan-500',
+  },
+  {
+    id: 'nerdbasketball',
+    name: 'NerdBasketball',
+    description: 'NBA analytics, fantasy basketball tools, and bracket predictions.',
+    url: 'https://nerdbasketball.web.app',
+    icon: <Trophy className="w-8 h-8" />,
+    color: 'text-orange-400',
+    gradient: 'from-orange-500 to-red-500',
+  },
+  {
+    id: 'pattern-clinical',
+    name: 'Pattern Clinical',
+    description: 'AI-powered health insights from wearable data. HRV, sleep, and recovery analytics.',
+    url: 'https://pattern-clinical.web.app',
+    icon: <Activity className="w-8 h-8" />,
+    color: 'text-pink-400',
+    gradient: 'from-pink-500 to-rose-500',
   },
   {
     id: 'landsat-plaque',
