@@ -17,6 +17,7 @@ import JoinCirqle from './components/JoinCirqle';
 import MyTrips from './components/MyTrips';
 import TripDetail from './components/TripDetail';
 import TestHarness from './components/TestHarness';
+import LandsatPlaqueBuilder from './components/LandsatPlaqueBuilder';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import ContactUs from './components/ContactUs';
@@ -97,6 +98,7 @@ function App() {
   const urlParams = new URLSearchParams(window.location.search);
   const isJoinCirqle = urlPath === '/join-cirqle' || urlParams.has('token');
   const isTestHarness = urlPath === '/test-harness';
+  const isLandsatPlaque = urlPath === '/landsat-plaque';
   const isPrivacyPolicy = urlPath === '/privacy';
   const isTermsOfService = urlPath === '/terms';
   const isContactUs = urlPath === '/contact';
@@ -434,6 +436,11 @@ function App() {
   // Test Harness (special route - accessible without full auth)
   if (isTestHarness) {
     return <TestHarness />;
+  }
+
+  // Landsat Plaque Builder (special route - accessible without full auth)
+  if (isLandsatPlaque) {
+    return <LandsatPlaqueBuilder onBack={() => window.location.href = '/'} />;
   }
 
   // Join Cirqle flow (special route)

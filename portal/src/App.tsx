@@ -16,6 +16,7 @@ import {
   LogOut,
   Loader2,
   ExternalLink,
+  Satellite,
 } from 'lucide-react';
 
 // Firebase config (same as AgentQu main app)
@@ -78,6 +79,15 @@ const apps: AppCard[] = [
     icon: <Scale className="w-8 h-8" />,
     color: 'text-amber-400',
     gradient: 'from-amber-500 to-orange-500',
+  },
+  {
+    id: 'landsat-plaque',
+    name: 'Landsat Family Plaques',
+    description: 'Create print-ready art using NASA Landsat satellite letter imagery.',
+    url: 'https://agentqu-platform.web.app/landsat-plaque',
+    icon: <Satellite className="w-8 h-8" />,
+    color: 'text-cyan-400',
+    gradient: 'from-cyan-500 to-teal-500',
   },
 ];
 
