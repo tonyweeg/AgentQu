@@ -58,11 +58,12 @@ const ASPECT_RATIOS = [
 interface NameObject {
   id: string;
   name: string;
-  letters: { char: string; variant: number; imageUrl: string }[];
+  letters: { char: string; variant: number; imageUrl: string; aspectRatio?: number }[];
   x: number;
   y: number;
   scale: number;
   width: number;
+  renderedWidth: number; // Actual width after images load
   row: number;
   col: number;
 }
@@ -235,6 +236,7 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
       y: y - (BASE_LETTER_SIZE * scale) / 2,
       scale,
       width: nameWidth,
+      renderedWidth: 0, // Will be calculated after images load
       row,
       col,
     };
@@ -318,14 +320,49 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
     });
   };
 
-  // Preload all images for current names
+  // Preload all images and calculate actual rendered widths
   useEffect(() => {
-    names.forEach(name => {
-      name.letters.forEach(letter => {
-        loadImage(letter.imageUrl).catch(console.error);
-      });
-    });
-  }, [names]);
+    const calculateRenderedWidths = async () => {
+      const updates: { id: string; renderedWidth: number; letters: typeof names[0]['letters'] }[] = [];
+
+      for (const name of names) {
+        if (name.renderedWidth > 0) continue; // Already calculated
+
+        const letterHeight = BASE_LETTER_SIZE * name.scale;
+        const gap = letterSpacing * name.scale;
+        let totalWidth = 0;
+        const updatedLetters = [...name.letters];
+
+        for (let i = 0; i < name.letters.length; i++) {
+          const letter = name.letters[i];
+          try {
+            const img = await loadImage(letter.imageUrl);
+            const aspectRatio = img.width / img.height;
+            updatedLetters[i] = { ...letter, aspectRatio };
+            totalWidth += letterHeight * aspectRatio;
+            if (i < name.letters.length - 1) totalWidth += gap;
+          } catch {
+            totalWidth += letterHeight * 0.5; // Fallback
+            if (i < name.letters.length - 1) totalWidth += gap;
+          }
+        }
+
+        updates.push({ id: name.id, renderedWidth: totalWidth, letters: updatedLetters });
+      }
+
+      if (updates.length > 0) {
+        setNames(prev => prev.map(n => {
+          const update = updates.find(u => u.id === n.id);
+          if (update) {
+            return { ...n, renderedWidth: update.renderedWidth, letters: update.letters };
+          }
+          return n;
+        }));
+      }
+    };
+
+    calculateRenderedWidths();
+  }, [names.length, letterSpacing]); // Only recalculate when names are added
 
   // Draw the canvas
   const drawCanvas = useCallback(async () => {
@@ -434,11 +471,11 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
 
       const name = names.find(n => n.id === selectedNameId);
       if (name) {
-        // Estimate name dimensions (use 0.8 aspect ratio for letter approximation)
         const letterHeight = BASE_LETTER_SIZE * name.scale;
-        const letterWidth = letterHeight * 0.8;
-        const gap = letterSpacing * name.scale;
-        const nameWidth = name.letters.length * letterWidth + (name.letters.length - 1) * gap;
+        // Use actual rendered width if available
+        const nameWidth = name.renderedWidth > 0
+          ? name.renderedWidth
+          : name.letters.length * letterHeight * 0.5 + (name.letters.length - 1) * letterSpacing * name.scale;
         const nameHeight = letterHeight;
 
         // Snap to grid if enabled
@@ -1009,11 +1046,11 @@ const LandsatPlaqueBuilder: React.FC<LandsatPlaqueBuilderProps> = ({ onBack }) =
 
                 {/* Interactive name overlays with resize handles */}
                 {names.map((name) => {
-                  // Use 0.8 aspect ratio for letter width approximation (matches NASA letter aspect ratios)
                   const letterHeight = BASE_LETTER_SIZE * name.scale;
-                  const letterWidth = letterHeight * 0.8;
-                  const gap = letterSpacing * name.scale;
-                  const totalWidth = name.letters.length * letterWidth + (name.letters.length - 1) * gap;
+                  // Use actual rendered width if available, otherwise estimate
+                  const totalWidth = name.renderedWidth > 0
+                    ? name.renderedWidth
+                    : name.letters.length * letterHeight * 0.5 + (name.letters.length - 1) * letterSpacing * name.scale;
                   const totalHeight = letterHeight;
                   const isSelected = selectedNameId === name.id;
 
