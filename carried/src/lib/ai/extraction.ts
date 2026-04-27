@@ -6,7 +6,7 @@
  * motions, discussions, reports, announcements, action items, etc.
  */
 
-import { getGenerativeModel, isGeminiAvailable } from './gemini';
+import { generateText, isGeminiAvailable } from './gemini';
 import { ExtractedSegment, SegmentType } from '../../types/segment';
 import { MotionOutcome } from '../../types/group';
 
@@ -250,12 +250,10 @@ export async function extractSegments(minutesText: string): Promise<ExtractionRe
   }
 
   try {
-    const model = getGenerativeModel();
     const prompt = EXTRACTION_PROMPT + minutesText;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Uses generateText which has retry logic and model fallback
+    const text = await generateText(prompt);
 
     // Parse JSON from response
     const segments = parseSegmentsResponse(text);
@@ -503,8 +501,6 @@ export async function extractMeetingMetadata(minutesText: string): Promise<Meeti
   }
 
   try {
-    const model = getGenerativeModel();
-
     // Skip authoritative voting records section if present (prepended by vision extraction)
     let textForMetadata = minutesText;
     const endMarker = 'END OF AUTHORITATIVE VOTING RECORDS';
@@ -518,9 +514,8 @@ export async function extractMeetingMetadata(minutesText: string): Promise<Meeti
     const truncatedText = textForMetadata.slice(0, 2000);
     const prompt = METADATA_PROMPT + truncatedText;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    // Uses generateText which has retry logic and model fallback
+    const text = await generateText(prompt);
 
     // Parse JSON response
     const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();

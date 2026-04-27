@@ -12,6 +12,48 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_AI_API_KEY);
 
+// Vision model hierarchy for fallback
+const VISION_MODELS = [
+  'gemini-2.0-flash-001',    // Stable version
+  'gemini-2.0-flash',        // Latest
+  'gemini-1.5-flash',        // Fallback
+];
+
+// Retry configuration
+const RETRY_CONFIG = {
+  maxAttempts: 4,
+  baseDelayMs: 1500,
+  maxDelayMs: 24000,
+  jitterFactor: 0.3,
+};
+
+/**
+ * Sleep with jitter for exponential backoff
+ */
+function sleepWithJitter(attemptNumber: number): Promise<void> {
+  const baseDelay = Math.min(
+    RETRY_CONFIG.baseDelayMs * Math.pow(2, attemptNumber),
+    RETRY_CONFIG.maxDelayMs
+  );
+  const jitter = baseDelay * RETRY_CONFIG.jitterFactor * Math.random();
+  const delay = baseDelay + jitter;
+
+  console.log(`CARRIED_DEBUG: Vision retry wait ${Math.round(delay)}ms...`);
+  return new Promise(resolve => setTimeout(resolve, delay));
+}
+
+/**
+ * Check if error is a 429 rate limit error
+ */
+function isRateLimitError(error: unknown): boolean {
+  if (error instanceof Error) {
+    return error.message.includes('429') ||
+           error.message.includes('Resource exhausted') ||
+           error.message.includes('rate limit');
+  }
+  return false;
+}
+
 export interface VoteRecord {
   name: string;
   vote: 'Aye' | 'No' | 'Abstain' | 'Recused' | 'Absent' | 'Unknown';
@@ -89,10 +131,9 @@ async function renderPageToImage(pdf: pdfjsLib.PDFDocumentProxy, pageNumber: num
 /**
  * Extract voting table data from page images using Gemini Vision
  * Accepts multiple images to handle tables that split across pages
+ * Includes retry logic and model fallback for 429 errors
  */
 async function extractVotesFromImages(imageBase64Array: string[]): Promise<VoteTableResult[]> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
   const imageCount = imageBase64Array.length;
   const prompt = `You are analyzing voting tables from municipal meeting minutes. Your job is to PRECISELY identify which column each X mark is in.
 
@@ -137,67 +178,103 @@ DOUBLE-CHECK: Count the X positions carefully. An X in the rightmost column mean
 
 Return ONLY valid JSON, no explanations.`;
 
-  try {
-    // Build content array with prompt + all images
-    const content: any[] = [{ text: prompt }];
-    for (const imageBase64 of imageBase64Array) {
-      content.push({
-        inlineData: {
-          mimeType: 'image/jpeg',
-          data: imageBase64,
-        },
-      });
-    }
-
-    const result = await model.generateContent(content);
-
-    const response = result.response.text();
-    console.log('CARRIED_DEBUG: Gemini Vision response:', response);
-
-    // Parse JSON from response
-    const jsonMatch = response.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      console.warn('CARRIED_DEBUG: No JSON array found in response');
-      return [];
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]);
-
-    // Validate and normalize each vote record
-    const validatedVotes: VoteTableResult[] = [];
-    for (const vote of parsed) {
-      if (!vote || !Array.isArray(vote.votes)) {
-        console.warn('CARRIED_DEBUG: Skipping malformed vote record:', vote);
-        continue;
-      }
-
-      // Calculate tally from votes if not provided
-      const ayes = vote.votes.filter((v: any) => v.vote === 'Aye').length;
-      const noes = vote.votes.filter((v: any) => v.vote === 'No').length;
-      const abstains = vote.votes.filter((v: any) => v.vote === 'Abstain').length;
-      const recusedCount = vote.votes.filter((v: any) => v.vote === 'Recused').length;
-      const absentCount = vote.votes.filter((v: any) => v.vote === 'Absent').length;
-
-      validatedVotes.push({
-        pageNumber: 0,
-        motionContext: vote.motionContext || 'Unknown Motion',
-        votes: vote.votes,
-        tally: vote.tally || {
-          aye: ayes,
-          no: noes,
-          abstain: abstains,
-          recused: recusedCount,
-          absent: absentCount,
-        },
-        outcome: vote.outcome || (ayes > noes ? 'carried' : 'defeated'),
-      });
-    }
-
-    return validatedVotes;
-  } catch (error) {
-    console.error('CARRIED_DEBUG: Gemini Vision error:', error);
-    return [];
+  // Build content array with prompt + all images
+  const content: any[] = [{ text: prompt }];
+  for (const imageBase64 of imageBase64Array) {
+    content.push({
+      inlineData: {
+        mimeType: 'image/jpeg',
+        data: imageBase64,
+      },
+    });
   }
+
+  let lastError: Error | null = null;
+
+  // Try each model in the hierarchy
+  for (let modelIndex = 0; modelIndex < VISION_MODELS.length; modelIndex++) {
+    const modelName = VISION_MODELS[modelIndex];
+
+    // Try with retries for this model
+    for (let attempt = 0; attempt < RETRY_CONFIG.maxAttempts; attempt++) {
+      try {
+        console.log(`CARRIED_DEBUG: Vision extraction with ${modelName} (attempt ${attempt + 1})`);
+
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(content);
+        const response = result.response.text();
+
+        if (modelIndex > 0 || attempt > 0) {
+          console.log(`CARRIED_DEBUG: Vision success after fallback/retry - model: ${modelName}`);
+        }
+
+        console.log('CARRIED_DEBUG: Gemini Vision response:', response);
+
+        // Parse JSON from response
+        const jsonMatch = response.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) {
+          console.warn('CARRIED_DEBUG: No JSON array found in response');
+          return [];
+        }
+
+        const parsed = JSON.parse(jsonMatch[0]);
+
+        // Validate and normalize each vote record
+        const validatedVotes: VoteTableResult[] = [];
+        for (const vote of parsed) {
+          if (!vote || !Array.isArray(vote.votes)) {
+            console.warn('CARRIED_DEBUG: Skipping malformed vote record:', vote);
+            continue;
+          }
+
+          // Calculate tally from votes if not provided
+          const ayes = vote.votes.filter((v: any) => v.vote === 'Aye').length;
+          const noes = vote.votes.filter((v: any) => v.vote === 'No').length;
+          const abstains = vote.votes.filter((v: any) => v.vote === 'Abstain').length;
+          const recusedCount = vote.votes.filter((v: any) => v.vote === 'Recused').length;
+          const absentCount = vote.votes.filter((v: any) => v.vote === 'Absent').length;
+
+          validatedVotes.push({
+            pageNumber: 0,
+            motionContext: vote.motionContext || 'Unknown Motion',
+            votes: vote.votes,
+            tally: vote.tally || {
+              aye: ayes,
+              no: noes,
+              abstain: abstains,
+              recused: recusedCount,
+              absent: absentCount,
+            },
+            outcome: vote.outcome || (ayes > noes ? 'carried' : 'defeated'),
+          });
+        }
+
+        return validatedVotes;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        if (isRateLimitError(error)) {
+          console.warn(`CARRIED_DEBUG: Vision rate limit on ${modelName} (attempt ${attempt + 1})`);
+
+          if (attempt < RETRY_CONFIG.maxAttempts - 1) {
+            await sleepWithJitter(attempt);
+            continue;
+          }
+
+          if (modelIndex < VISION_MODELS.length - 1) {
+            console.log(`CARRIED_DEBUG: Falling back to ${VISION_MODELS[modelIndex + 1]}`);
+            break;
+          }
+        } else {
+          console.error('CARRIED_DEBUG: Non-retryable vision error:', error);
+          return [];
+        }
+      }
+    }
+  }
+
+  console.error(`CARRIED_DEBUG: All vision models exhausted. Last error: ${lastError?.message}`);
+  return [];
 }
 
 /**

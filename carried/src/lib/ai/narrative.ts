@@ -17,7 +17,7 @@
  * 10. PREFER "I don't have that information" over guessing
  */
 
-import { getGenerativeModel, isGeminiAvailable } from './gemini';
+import { generateText, isGeminiAvailable } from './gemini';
 import { Segment } from '../../types';
 
 const NARRATIVE_PROMPT = `You are a precise, factual assistant that ONLY reports information from official meeting records.
@@ -185,11 +185,8 @@ export async function generateNarrative(request: NarrativeRequest): Promise<Narr
 
     fullPrompt += `\n---\n\n## USER QUESTION\n\n${question}\n\n## YOUR RESPONSE (following all rules above):\n`;
 
-    // Generate response
-    const model = getGenerativeModel();
-    const result = await model.generateContent(fullPrompt);
-    const response = await result.response;
-    const answer = response.text();
+    // Generate response using generateText (has retry logic and model fallback)
+    const answer = await generateText(fullPrompt);
 
     // Determine confidence
     const confidence = determineConfidence(segments, question);
