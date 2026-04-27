@@ -68,6 +68,7 @@ export interface NarrativeResponse {
   answer: string;
   sourcesUsed: {
     segmentId: string;
+    meetingId: string;
     meetingTitle: string;
     meetingDate: string;
     type: string;
@@ -176,6 +177,7 @@ export async function generateNarrative(request: NarrativeRequest): Promise<Narr
 
       sourcesUsed.push({
         segmentId: segment.id,
+        meetingId: segment.meetingId,
         meetingTitle,
         meetingDate,
         type: segment.type,

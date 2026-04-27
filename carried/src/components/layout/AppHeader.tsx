@@ -4,12 +4,14 @@
  */
 
 import { Link, useNavigate } from 'react-router-dom';
-import { Vote, Search, LogOut, User, Plus } from 'lucide-react';
+import { Vote, LogOut, User, Plus, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from '../ui/Button';
 
 export function AppHeader() {
   const { user, carriedUser, signInWithGoogle, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   return (
@@ -31,18 +33,20 @@ export function AppHeader() {
               >
                 Groups
               </Link>
-              <Link
-                to="/search"
-                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1.5"
-              >
-                <Search className="w-4 h-4" />
-                Search
-              </Link>
             </nav>
           )}
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Theme toggle - always visible */}
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors"
+              title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            </button>
+
             {user ? (
               <>
                 <Button size="sm" onClick={() => navigate('/groups/new')}>
