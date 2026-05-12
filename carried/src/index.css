@@ -1,0 +1,203 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* ============================================
+   CARRIED - SoCal Beach Theme
+   Bright, warm, sunny California vibes
+   ============================================ */
+
+/* Custom CSS variables for beach theme */
+:root {
+  --sand: #fef7ed;
+  --sand-dark: #fef3e2;
+  --ocean: #0d9488;
+  --ocean-light: #14b8a6;
+  --coral: #f97316;
+  --sunset: #fb923c;
+}
+
+/* Base styles */
+body {
+  background-color: var(--sand);
+  color: #1f2937;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Ensure all elements use Atkinson Hyperlegible */
+*, *::before, *::after {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+}
+
+/* Light mode - Beach theme overrides using CSS variables */
+.bg-gray-50 {
+  background-color: var(--sand);
+}
+
+.bg-gray-100 {
+  background-color: var(--sand-dark);
+}
+
+/* Ocean teal accents - override indigo with teal */
+.bg-indigo-600 {
+  background-color: #0d9488;
+}
+
+.bg-indigo-500 {
+  background-color: #14b8a6;
+}
+
+.bg-indigo-100 {
+  background-color: #ccfbf1;
+}
+
+.bg-indigo-50 {
+  background-color: #f0fdfa;
+}
+
+.text-indigo-600 {
+  color: #0d9488;
+}
+
+.text-indigo-700 {
+  color: #0f766e;
+}
+
+.text-indigo-500 {
+  color: #14b8a6;
+}
+
+.hover\:bg-indigo-700:hover {
+  background-color: #0f766e;
+}
+
+.hover\:text-indigo-600:hover {
+  color: #0d9488;
+}
+
+/* ============================================
+   DARK MODE - Deep ocean night
+   ============================================ */
+
+.dark body,
+html.dark body {
+  @apply bg-slate-900 text-gray-100;
+}
+
+/* Dark mode backgrounds */
+.dark .bg-gray-50 {
+  @apply bg-slate-900;
+}
+
+.dark .bg-gray-100 {
+  @apply bg-slate-800;
+}
+
+.dark .bg-white {
+  @apply bg-slate-800;
+}
+
+/* Dark mode text */
+.dark .text-gray-900 {
+  @apply text-gray-100;
+}
+
+.dark .text-gray-800 {
+  @apply text-gray-200;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark .text-gray-500 {
+  @apply text-gray-400;
+}
+
+/* Dark mode borders */
+.dark .border-gray-200 {
+  @apply border-slate-600;
+}
+
+.dark .border-gray-100 {
+  @apply border-slate-700;
+}
+
+.dark .border-gray-300 {
+  @apply border-slate-600;
+}
+
+/* Dark mode shadows */
+.dark .shadow-lg {
+  @apply shadow-slate-900/50;
+}
+
+/* Dark mode inputs */
+.dark input,
+.dark textarea,
+.dark select {
+  @apply bg-slate-800 border-slate-600 text-gray-100;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  @apply text-gray-500;
+}
+
+/* Dark mode accent backgrounds */
+.dark .bg-teal-50 {
+  @apply bg-teal-900/30;
+}
+
+.dark .bg-indigo-50 {
+  @apply bg-teal-900/30;
+}
+
+.dark .bg-emerald-50 {
+  @apply bg-emerald-900/30;
+}
+
+.dark .bg-red-50 {
+  @apply bg-red-900/30;
+}
+
+.dark .bg-yellow-50 {
+  @apply bg-yellow-900/30;
+}
+
+.dark .bg-orange-50 {
+  @apply bg-orange-900/30;
+}
+
+.dark .bg-blue-50 {
+  @apply bg-blue-900/30;
+}
+
+.dark .bg-purple-50 {
+  @apply bg-purple-900/30;
+}
+
+.dark .bg-green-50 {
+  @apply bg-green-900/30;
+}
+
+/* ============================================
+   TRANSITIONS
+   ============================================ */
+
+* {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.15s;
+  transition-timing-function: ease-out;
+}
+
+/* Override for animations that shouldn't have color transitions */
+.animate-spin,
+.transition-transform {
+  transition-property: transform;
+}

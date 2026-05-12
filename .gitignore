@@ -1,0 +1,68 @@
+# Firebase Service Account Keys (SENSITIVE!)
+*.json
+!firebase.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!firestore.indexes.json
+!manifest.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+
+# Build outputs
+build/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+firebase-debug.log
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Firebase cache
+.firebase/
+functions/.env
+stock-watch/
+
+# Vocal Remover Tool
+tools/vocal-remover-venv/
+docs/Audio/separated/
+
+# Large audio output files
+docs/Audio/separated/
+
+# Audio/video files
+*.mp3
+*.mp4
+*.wav
+*.flac
+docs/Audio/
+
+# Firebase environment files
+functions/.env.agentqu-platform
+functions/.env.*
+.env.agentqu-platform
+
+# Large files
+*.pdf
+*.psd
+*.ai
+*.mp3
+*.mp4
+*.wav
+*.flac
+firebase-debug.log
+docs/weeg-family-wide-two-groups.jpg
+carried/scripts/scraped-meetings/

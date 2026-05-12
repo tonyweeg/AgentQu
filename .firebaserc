@@ -1,0 +1,27 @@
+{
+  "projects": {
+    "default": "agentqu-platform"
+  },
+  "targets": {
+    "agentqu-platform": {
+      "hosting": {
+        "agentqu": [
+          "agentqu-platform"
+        ],
+        "stockwatch": [
+          "agentqu-stockwatch"
+        ],
+        "poliscai": [
+          "poliscai-democracy"
+        ],
+        "opendocumentproject": [
+          "opendocumentproject"
+        ],
+        "portal": [
+          "agentqu-portal"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

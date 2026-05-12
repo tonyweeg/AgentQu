@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* PoliScai Global Styles */
+
+body {
+  margin: 0;
+  font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
+}
+
+/* Atkinson Hyperlegible for all text */
+* {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+}
+
+/* Serif headings - also use Atkinson for consistency */
+.font-serif {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-weight: 700;
+}
+
+/* Selection styling */
+::selection {
+  background-color: #c9a227;
+  color: #1e3a5f;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e3a5f;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2d4a6f;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #1e3a5f;
+  outline-offset: 2px;
+}
+
+/* Shadow note highlight styles (for Phase 2) */
+.shadow-highlight-approved {
+  background-color: rgba(220, 38, 38, 0.2);
+  border-bottom: 2px solid #dc2626;
+  cursor: pointer;
+}
+
+.shadow-highlight-pending {
+  background-color: rgba(245, 158, 11, 0.2);
+  border-bottom: 2px dashed #f59e0b;
+  cursor: pointer;
+}
+
+.v2-text-revised {
+  background-color: rgba(22, 163, 74, 0.1);
+  border-left: 3px solid #16a34a;
+  padding-left: 0.5rem;
+}
+
+.v2-text-new {
+  background-color: rgba(37, 99, 235, 0.1);
+  border-left: 3px solid #2563eb;
+  padding-left: 0.5rem;
+}
+
+/* Enhanced animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: translateX(-50%) translateY(-100%) scale(0.8); opacity: 0; }
+  50% { transform: translateX(-50%) translateY(-100%) scale(1.05); }
+  100% { transform: translateX(-50%) translateY(-100%) scale(1); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Gradient text effect */
+.gradient-text {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Beautiful card hover effects */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.15);
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Smooth text selection */
+.select-text::selection {
+  background-color: #c9a227;
+  color: #1e3a5f;
+}
+
+/* Enhanced scrollbar for panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print styles for OpenConstitution V2.0 */
+@media print {
+  /* Hide non-essential elements */
+  header, nav, footer, button, .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Clean background */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Single column layout */
+  .grid {
+    display: block !important;
+  }
+
+  /* Clean page margins */
+  @page {
+    margin: 1in;
+    size: letter;
+  }
+
+  /* Preserve sky blue text for revisions */
+  .text-sky-500, .text-sky-600 {
+    color: #0ea5e9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Clean typography */
+  .font-serif {
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+
+  /* Section breaks */
+  .p-6, .p-8 {
+    padding: 0 !important;
+    page-break-inside: avoid;
+  }
+
+  /* Hide shadows and decorative elements */
+  .shadow-lg, .shadow-xl, .shadow-2xl {
+    box-shadow: none !important;
+  }
+
+  .rounded-xl, .rounded-2xl {
+    border-radius: 0 !important;
+  }
+
+  /* Clean borders */
+  .border {
+    border-color: #e5e7eb !important;
+  }
+}

@@ -1,0 +1,21 @@
+/**
+ * Eighteenth Amendment (1919)
+ * Prohibition of Alcohol (Repealed by Amendment 21)
+ */
+
+export const AMENDMENT_18 = {
+  id: 'amendment-18',
+  articleSection: 'Amendment XVIII',
+  title: 'Prohibition of Alcohol',
+  order: 42,
+  ratifiedYear: 1919,
+  repealed: true,
+  repealedBy: 'Amendment XXI (1933)',
+  originalText: `Section 1. After one year from the ratification of this article the manufacture, sale, or transportation of intoxicating liquors within, the importation thereof into, or the exportation thereof from the United States and all territory subject to the jurisdiction thereof for beverage purposes is hereby prohibited.
+
+Section 2. The Congress and the several States shall have concurrent power to enforce this article by appropriate legislation.
+
+Section 3. This article shall be inoperative unless it shall have been ratified as an amendment to the Constitution by the legislatures of the several States, as provided in the Constitution, within seven years from the date of the submission hereof to the States by the Congress.`,
+};
+
+export default AMENDMENT_18;

@@ -1,0 +1,1555 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "" [ref=e4] [cursor=pointer]:
+      - /url: javascript:void(0);
+      - generic [ref=e5]: 
+    - banner [ref=e6]:
+      - generic [ref=e9]:
+        - link "Town of Berlin, Maryland - Mayor and Council SealTown of Berlin, Maryland" [ref=e11] [cursor=pointer]:
+          - /url: https://berlinmd.gov/
+          - img "Town of Berlin, Maryland - Mayor and Council Seal" [ref=e12]
+          - img "Town of Berlin, Maryland" [ref=e13]
+        - generic [ref=e14]:
+          - link "en English" [ref=e18] [cursor=pointer]:
+            - /url: "#"
+            - img "en" [ref=e19]
+            - text: English
+          - search [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: "Search for:"
+              - textbox "Search for:" [ref=e23]:
+                - /placeholder: Search Our Site
+              - button "Search" [ref=e24] [cursor=pointer]
+          - link "Online Payments" [ref=e25] [cursor=pointer]:
+            - /url: https://berlinmd.municipalonlinepayments.com/berlinmd
+          - link "Utilities E-Billing Registration" [ref=e26] [cursor=pointer]:
+            - /url: /berlin-utilities-e-billing-registration/
+          - link "Energy Assistance" [ref=e27] [cursor=pointer]:
+            - /url: https://media.berlinmd.gov/wp-content/uploads/2023/12/15093634/tob-energy-assistance-letter-fy-2024-1.pdf
+          - link "CodeRED" [ref=e28] [cursor=pointer]:
+            - /url: https://accountportal.onsolve.net/berlintownmd
+            - img "CodeRED" [ref=e29]
+      - navigation [ref=e30]:
+        - list [ref=e32]:
+          - listitem [ref=e33]:
+            - link "Government" [ref=e34] [cursor=pointer]:
+              - /url: https://berlinmd.gov/government/
+          - listitem [ref=e35]:
+            - link "Departments & Services" [ref=e36] [cursor=pointer]:
+              - /url: https://berlinmd.gov/departments-services/
+          - listitem [ref=e37]:
+            - link "News" [ref=e38] [cursor=pointer]:
+              - /url: https://berlinmd.gov/news/
+          - listitem [ref=e39]:
+            - link "Employment" [ref=e40] [cursor=pointer]:
+              - /url: https://berlinmd.gov/employment/
+          - listitem [ref=e41]:
+            - link "About Our Town" [ref=e42] [cursor=pointer]:
+              - /url: https://berlinmd.gov/about-our-town/
+          - listitem [ref=e43]:
+            - link "Visit Us" [ref=e44] [cursor=pointer]:
+              - /url: https://www.berlinmainstreet.com/
+          - listitem [ref=e45]:
+            - link "Contact Us" [ref=e46] [cursor=pointer]:
+              - /url: https://berlinmd.gov/contact-us/
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - heading "Council Meetings" [level=1] [ref=e51]
+        - generic [ref=e52]:
+          - heading "How Can We Help You?" [level=2] [ref=e53]
+          - button "HOW DO I?" [ref=e55] [cursor=pointer]
+      - article [ref=e56]:
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e62]:
+              - paragraph [ref=e63]:
+                - strong [ref=e64]: Meeting dates and formats may be subject to change.
+              - paragraph [ref=e65]:
+                - strong [ref=e66]: Sign up at the bottom of the page to get Meeting Packets delivered to your inbox.
+              - paragraph [ref=e67]: "To submit questions and comments in advance of the meeting:"
+              - list [ref=e68]:
+                - listitem [ref=e69]:
+                  - list [ref=e70]:
+                    - listitem [ref=e71]: Meeting packets will be posted by 5:00 p.m. on the Friday before Mayor & Council and Board or Commission Meetings
+                    - listitem [ref=e72]: "Written questions will be accepted UNTIL 12:00 PM/NOON on the day of the meeting. Submit to:"
+                    - listitem [ref=e73]:
+                      - text: "Email:"
+                      - link "info@berlinmd.gov" [ref=e74] [cursor=pointer]:
+                        - /url: mailto:info@berlinmd.gov
+                      - text: ", please use Meeting Comments as your subject."
+                    - listitem [ref=e75]: "Fax to: 410-641-2316."
+                    - listitem [ref=e76]: Drop off in one of the two drop boxes at Town Hall – one is at the rear of the building behind the stair tower, and the other is at the corner of Bay and Williams Street on the building.
+                    - listitem [ref=e77]: "Mail to: Berlin Town Hall, Attn: Meeting Comments, 10 Williams St., Berlin, MD 21811. The Town of Berlin is not responsible for delays or delivery failures on the part of the USPS or other delivery service."
+                  - paragraph [ref=e78]:
+                    - text: To access the Meeting packet, please select the meeting date below for the most up-to-date information about meeting access. You may also click on the blue Facebook icon at the top of any page on the Town website,
+                    - link "www.berlinmd.gov" [ref=e79] [cursor=pointer]:
+                      - /url: http://berlinmd.gov/
+                    - text: ", or type @townofberlinmd in the Facebook search bar."
+              - list [ref=e80]:
+                - listitem [ref=e81]: No response will be given to questions and comments submitted via Facebook during any meeting including Public Hearings.
+              - paragraph [ref=e82]:
+                - strong [ref=e83]: Video recordings of meetings will be available within 72-hours (usually by the next morning) via the meeting date under “Past Meetings” below.
+              - paragraph [ref=e84]:
+                - strong [ref=e85]: Sign up at the bottom of the page to get Meeting Packets delivered to your inbox.
+              - paragraph [ref=e86]:
+                - text: If a past meeting date does not appear in the list below, please submit a
+                - generic [ref=e87]:
+                  - link "Request for Public Information" [ref=e88] [cursor=pointer]:
+                    - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103215/PIA-Req-Form-04.10.18-edits.pdf
+                  - text: .
+              - paragraph [ref=e89]
+            - generic [ref=e91]:
+              - heading "Upcoming Council Meetings" [level=2] [ref=e92]
+              - generic [ref=e93]:
+                - button "Closed Session of the Mayor & Council (April 13, 2026 5:00 PM)" [ref=e95] [cursor=pointer]:
+                  - heading "Closed Session of the Mayor & Council (April 13, 2026 5:00 PM)" [level=2] [ref=e96]
+                - text: 
+              - generic [ref=e97]:
+                - button "Mayor & Council Meeting (April 13, 2026 6:00 PM)" [ref=e99] [cursor=pointer]:
+                  - heading "Mayor & Council Meeting (April 13, 2026 6:00 PM)" [level=2] [ref=e100]
+                - text:  
+              - button "General Fund Budget Work Session (April 20, 2026 5:00 PM)" [ref=e103] [cursor=pointer]:
+                - heading "General Fund Budget Work Session (April 20, 2026 5:00 PM)" [level=2] [ref=e104]
+              - button "Comprehensive Plan Community Open House (April 21, 2026 6:00 PM)" [ref=e107] [cursor=pointer]:
+                - heading "Comprehensive Plan Community Open House (April 21, 2026 6:00 PM)" [level=2] [ref=e108]
+              - button "Closed Session of the Mayor & Council (April 27, 2026 5:00 PM)" [ref=e111] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (April 27, 2026 5:00 PM)" [level=2] [ref=e112]
+              - button "Mayor & Council Meeting (April 27, 2026 6:00 PM)" [ref=e115] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (April 27, 2026 6:00 PM)" [level=2] [ref=e116]
+              - button "Utilities Fund Budget Work Session (May 04, 2026 5:00 PM)" [ref=e119] [cursor=pointer]:
+                - heading "Utilities Fund Budget Work Session (May 04, 2026 5:00 PM)" [level=2] [ref=e120]
+              - button "Closed Session of the Mayor & Council (May 11, 2026 5:00 PM)" [ref=e123] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (May 11, 2026 5:00 PM)" [level=2] [ref=e124]
+              - button "Mayor & Council Meeting (May 11, 2026 6:00 PM)" [ref=e127] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (May 11, 2026 6:00 PM)" [level=2] [ref=e128]
+              - button "*Closed Session of the Mayor & Council (May 26, 2026 5:00 PM)" [ref=e131] [cursor=pointer]:
+                - heading "*Closed Session of the Mayor & Council (May 26, 2026 5:00 PM)" [level=2] [ref=e132]
+              - button "*Mayor & Council Meeting (May 26, 2026 6:00 PM)" [ref=e135] [cursor=pointer]:
+                - heading "*Mayor & Council Meeting (May 26, 2026 6:00 PM)" [level=2] [ref=e136]
+              - button "Closed Session of the Mayor & Council (June 08, 2026 5:00 PM)" [ref=e139] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (June 08, 2026 5:00 PM)" [level=2] [ref=e140]
+              - button "Mayor & Council Meeting (June 08, 2026 6:00 PM)" [ref=e143] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (June 08, 2026 6:00 PM)" [level=2] [ref=e144]
+              - button "Closed Session of the Mayor & Council (June 22, 2026 5:00 PM)" [ref=e147] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (June 22, 2026 5:00 PM)" [level=2] [ref=e148]
+              - button "Mayor & Council Meeting (June 22, 2026 6:00 PM)" [ref=e151] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (June 22, 2026 6:00 PM)" [level=2] [ref=e152]
+              - button "Closed Session of the Mayor & Council (July 13, 2026 5:00 PM)" [ref=e155] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (July 13, 2026 5:00 PM)" [level=2] [ref=e156]
+              - button "Mayor & Council Meeting (July 13, 2026 6:00 PM)" [ref=e159] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (July 13, 2026 6:00 PM)" [level=2] [ref=e160]
+              - button "Closed Session of the Mayor & Council (July 27, 2026 5:00 PM)" [ref=e163] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (July 27, 2026 5:00 PM)" [level=2] [ref=e164]
+              - button "Mayor & Council Meeting (July 27, 2026 6:00 PM)" [ref=e167] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (July 27, 2026 6:00 PM)" [level=2] [ref=e168]
+              - button "Closed Session of the Mayor & Council (August 10, 2026 5:00 PM)" [ref=e171] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (August 10, 2026 5:00 PM)" [level=2] [ref=e172]
+              - button "Mayor & Council Meeting (August 10, 2026 6:00 PM)" [ref=e175] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (August 10, 2026 6:00 PM)" [level=2] [ref=e176]
+              - button "Closed Session of the Mayor & Council (August 24, 2026 5:00 PM)" [ref=e179] [cursor=pointer]:
+                - heading "Closed Session of the Mayor & Council (August 24, 2026 5:00 PM)" [level=2] [ref=e180]
+              - button "Mayor & Council Meeting (August 24, 2026 6:00 PM)" [ref=e183] [cursor=pointer]:
+                - heading "Mayor & Council Meeting (August 24, 2026 6:00 PM)" [level=2] [ref=e184]
+            - generic [ref=e186]:
+              - heading "Past Council Meeting Minutes" [level=2] [ref=e187]
+              - generic [ref=e188]:
+                - button "2026" [ref=e190] [cursor=pointer]:
+                  - heading "2026" [level=2] [ref=e191]
+                - text:                            
+              - generic [ref=e192]:
+                - button "2025" [expanded] [active] [ref=e194] [cursor=pointer]:
+                  - heading "2025" [level=2] [ref=e195]
+                - generic "2025" [ref=e691]:
+                  - generic [ref=e692]:
+                    - generic [ref=e693]:
+                      - heading "December 23, 2025 5:00 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e694]
+                      - generic [ref=e695]:
+                        - link " Public Meeting Packet" [ref=e696] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/12/18124922/12.23.25-Closed-Session-Agenda-and-Summary.pdf
+                          - generic [ref=e697]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e698] [cursor=pointer]:
+                          - /url: https://youtu.be/Bp_qoADtrpo
+                          - generic [ref=e699]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e700]:
+                      - heading "December 19, 2025 12:00 PM (Notice of Quorum)" [level=3] [ref=e701]
+                      - paragraph [ref=e702]:
+                        - strong [ref=e703]: NOTICE OF QUORUM
+                      - paragraph [ref=e704]:
+                        - text: Friday, December 19, 2025
+                        - text: 12:00 pm
+                      - paragraph [ref=e705]: Please be advised that three or more members of the Town of Berlin Mayor and Council may be together on the above date and time to attend the Town of Berlin’s Staff Holiday Party at the Ocean Downs Casino, Event Center, 10218 Racetrack Rd, Berlin, MD 21811.
+                    - generic [ref=e706]:
+                      - heading "December 08, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e707]
+                      - generic [ref=e708]:
+                        - link " Public Meeting Packet" [ref=e709] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/03154604/12.08.2025-Council-Packet.pdf
+                          - generic [ref=e710]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e711] [cursor=pointer]:
+                          - /url: https://youtu.be/AJVWGBtJcoY
+                          - generic [ref=e712]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 12.08.2025" [ref=e713] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/29141610/Check-Run-Report-12.08.2025.pdf
+                          - generic [ref=e714]: 
+                          - text: Check Run Report 12.08.2025
+                    - generic [ref=e715]:
+                      - heading "December 08, 2025 5:30 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e716]
+                      - generic [ref=e717]:
+                        - link " Public Meeting Packet" [ref=e718] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/03155110/12.08.25-Closed-Session-Agenda-and-Summary.pdf
+                          - generic [ref=e719]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e720] [cursor=pointer]:
+                          - /url: https://youtu.be/lKy0u7F-twU
+                          - generic [ref=e721]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e722]:
+                      - heading "December 04, 2025 5:00 PM (Notice of Quorum)" [level=3] [ref=e723]
+                      - paragraph [ref=e724]:
+                        - strong [ref=e725]: NOTICE OF QUORUM
+                      - paragraph [ref=e726]:
+                        - text: Thursday, December 4, 2025
+                        - text: 5:00 pm
+                      - paragraph [ref=e727]: Please be advised that three or more members of the Town of Berlin Mayor and Council may be together on the above date and time to attend the Berlin Christmas Parade in Downtown Berlin.
+                    - generic [ref=e728]:
+                      - heading "November 24, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e729]
+                      - generic [ref=e730]:
+                        - link " Public Meeting Packet" [ref=e731] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/19144601/11.24.2025-Council-Packet.pdf
+                          - generic [ref=e732]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e733] [cursor=pointer]:
+                          - /url: https://youtu.be/ExiBe9fbO5w
+                          - generic [ref=e734]: 
+                          - text: Watch Meeting Video
+                    - heading "November 24, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e736]
+                    - generic [ref=e737]:
+                      - heading "November 18, 2025 10:00 AM (Mayor & Council Meeting – Notice of Quorum)" [level=3] [ref=e738]
+                      - paragraph [ref=e739]:
+                        - strong [ref=e740]: NOTICE OF QUORUM
+                      - paragraph [ref=e741]:
+                        - text: Tuesday, November 18, 2025
+                        - text: 10:00 am
+                      - paragraph [ref=e742]: Please be advised that three or more members of the Town of Berlin Mayor and Council may be together on the above date and time to attend the Worcester County Commissioners Meeting at the Worcester County Government Center, Room 1101, One West Market Street, Snow Hill, Maryland 21863.
+                    - generic [ref=e743]:
+                      - heading "November 10, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e744]
+                      - generic [ref=e745]:
+                        - link " Public Meeting Packet" [ref=e746] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/06122636/11.10.2025-Council-Packet.pdf
+                          - generic [ref=e747]: 
+                          - text: Public Meeting Packet
+                        - link "11.10.25 Regular Session of the Mayor and Council - Part 1" [ref=e748] [cursor=pointer]:
+                          - /url: https://youtu.be/ucdlPZGV2F4
+                        - link "11.10.25 Regular Session of the Mayor and Council - Part 2" [ref=e749] [cursor=pointer]:
+                          - /url: https://youtu.be/CKvLHjTYVDQ
+                        - link "11.10.25 Regular Session of the Mayor and Council - Part 3" [ref=e750] [cursor=pointer]:
+                          - /url: https://youtu.be/KO50fNDD94s
+                        - link "11.10.25 Regular Session of the Mayor and Council - Part 4" [ref=e751] [cursor=pointer]:
+                          - /url: https://youtu.be/gXBhfGIG9oI
+                        - link " Check Run Report 11.10.25" [ref=e752] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/10084009/Check-Run-Coverpage-11.10.2025.pdf
+                          - generic [ref=e753]: 
+                          - text: Check Run Report 11.10.25
+                    - generic [ref=e754]:
+                      - heading "November 10, 2025 5:00 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e755]
+                      - generic [ref=e756]:
+                        - link " Public Meeting Packet" [ref=e757] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/06122730/11.10.25-Closed-Session-Agenda-and-Summary-1.pdf
+                          - generic [ref=e758]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e759] [cursor=pointer]:
+                          - /url: https://youtu.be/UV4s28tK894
+                          - generic [ref=e760]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e761]:
+                      - heading "October 27, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e762]
+                      - generic [ref=e763]:
+                        - link " Public Meeting Packet" [ref=e764] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/22120430/FINAL-10.27.2025-Council-Packet-1.pdf
+                          - generic [ref=e765]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e766] [cursor=pointer]:
+                          - /url: https://youtu.be/Ab4ZxTGmLFw
+                          - generic [ref=e767]: 
+                          - text: Watch Meeting Video
+                        - link " 10.27.25 Check Run Report" [ref=e768] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/10/24154401/FINAL-Check-Run-Coverpage-10.27.2025.pdf
+                          - generic [ref=e769]: 
+                          - text: 10.27.25 Check Run Report
+                        - link " FY2025 Financial Highlights" [ref=e770] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/10/28121513/FY25-TOB-Financial-Highlights-10-23-2025-NS.pdf
+                          - generic [ref=e771]: 
+                          - text: FY2025 Financial Highlights
+                    - generic [ref=e772]:
+                      - heading "October 27, 2025 5:00 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e773]
+                      - link " Public Meeting Packet" [ref=e775] [cursor=pointer]:
+                        - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/22103824/10.27.25-Closed-Session-Agenda-and-Summary.pdf
+                        - generic [ref=e776]: 
+                        - text: Public Meeting Packet
+                    - generic [ref=e777]:
+                      - heading "October 14, 2025 6:00 PM (*Mayor & Council Meeting)" [level=3] [ref=e778]
+                      - paragraph [ref=e779]: "*The normal Monday date falls on a holiday."
+                      - generic [ref=e780]:
+                        - link " Public Meeting Packet" [ref=e781] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/09104153/10.14.2025-Council-Packet.pdf
+                          - generic [ref=e782]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e783] [cursor=pointer]:
+                          - /url: https://youtu.be/XvPiIoQVZgw
+                          - generic [ref=e784]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 10.14.25" [ref=e785] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/10100153/Final-Check-Run-Report-10.14.2025.pdf
+                          - generic [ref=e786]: 
+                          - text: Check Run Report 10.14.25
+                        - link " FY25 Financial Highlights" [ref=e787] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/23161058/FY25-TOB-Financial-Highlights-10-23-2025-NS.pdf
+                          - generic [ref=e788]: 
+                          - text: FY25 Financial Highlights
+                    - generic [ref=e789]:
+                      - heading "October 14, 2025 5:00 PM (*Closed Session of the Mayor & Council)" [level=3] [ref=e790]
+                      - paragraph [ref=e791]: "*The normal Monday date falls on a holiday."
+                      - generic [ref=e792]:
+                        - link " Public Meeting Packet" [ref=e793] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/08152153/10.14.25-Closed-Session-Agenda-and-Summary.pdf
+                          - generic [ref=e794]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e795] [cursor=pointer]:
+                          - /url: https://youtu.be/F_qipOFShaM
+                          - generic [ref=e796]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e797]:
+                      - heading "September 29, 2025 5:00 PM (Work Session of the Mayor & Council)" [level=3] [ref=e798]
+                      - paragraph [ref=e799]: Semi-annual Work Session with Berlin Fire Company & Emergency Medical Services.
+                      - paragraph [ref=e800]: Held at Berlin Town Hall, 10 William Street, Berlin, MD, 2nd floor Council Chambers. Work Sessions are open to the public with public participation at the Mayor’s discretion.
+                      - generic [ref=e801]:
+                        - link " Watch Meeting Video" [ref=e802] [cursor=pointer]:
+                          - /url: https://youtu.be/ZeGfKDDD5gc
+                          - generic [ref=e803]: 
+                          - text: Watch Meeting Video
+                        - link " Berlin Fire Company Work Session Agenda" [ref=e804] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/08/25082655/BFC-Semi-Annual-Work-Session-09-2025.pdf
+                          - generic [ref=e805]: 
+                          - text: Berlin Fire Company Work Session Agenda
+                        - link " Berlin Fire Company Emergency Medical Services Work Session Agenda" [ref=e806] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/08/25082658/BFCEMS-Quarterly-Work-Session-09-2025.pdf
+                          - generic [ref=e807]: 
+                          - text: Berlin Fire Company Emergency Medical Services Work Session Agenda
+                    - generic [ref=e808]:
+                      - heading "September 25, 2025 6:00 PM (Notice of Quorum)" [level=3] [ref=e809]
+                      - paragraph [ref=e810]:
+                        - strong [ref=e811]: NOTICE OF QUORUM
+                      - paragraph [ref=e812]:
+                        - text: Thursday, September 25, 2025
+                        - text: 6:00 PM
+                      - paragraph [ref=e813]: Please take notice that three or more members of the Town of Berlin Mayor and Council may be together on the above date and time to attend the Lead Service Line Replacement Community Workshop. Location to be announced. Please check back for updates.
+                    - generic [ref=e814]:
+                      - heading "September 22, 2025 6:00 PM (Mayor & Council Meeting – CANCELLED)" [level=3] [ref=e815]
+                      - paragraph [ref=e816]: This meeting has been cancelled due to a lack of agenda.
+                    - heading "September 22, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e818]
+                    - generic [ref=e819]:
+                      - heading "September 08, 2025 6:00 PM (Mayor & Council)" [level=3] [ref=e820]
+                      - generic [ref=e821]:
+                        - link " Public Meeting Packet" [ref=e822] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/05090656/09.08.2025-Council-Packet.pdf
+                          - generic [ref=e823]: 
+                          - text: Public Meeting Packet
+                        - link " Meeting Audio" [ref=e824] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/24142457/Final-Check-Run-Report-09.08.2025.pdf
+                          - generic [ref=e825]: 
+                          - text: Meeting Audio
+                        - link " Watch Meeting Video" [ref=e826] [cursor=pointer]:
+                          - /url: https://youtu.be/1MXlPiUcFmc
+                          - generic [ref=e827]: 
+                          - text: Watch Meeting Video
+                    - heading "September 08, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e829]
+                    - generic [ref=e830]:
+                      - heading "September 04, 2025 8:30 AM (Notice of Quorum)" [level=3] [ref=e831]
+                      - paragraph [ref=e832]:
+                        - strong [ref=e833]: NOTICE OF QUORUM
+                      - paragraph [ref=e834]:
+                        - text: Thursday, September 4, 2025
+                        - text: 8:30 AM
+                      - paragraph [ref=e835]
+                      - paragraph [ref=e836]: Please take notice that three (3) or more members of the Town of Berlin Mayor & Council may gather on the above date and time to attend the Berlin Merchant Meeting. This meeting will take place in the Town Hall Council Chambers located at 10 William Street, Berlin, Maryland, 21811.
+                    - generic [ref=e837]:
+                      - heading "August 25, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e838]
+                      - generic [ref=e839]:
+                        - link " Public Meeting Packet" [ref=e840] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/09/03153412/08-25-2025-council-packet.pdf
+                          - generic [ref=e841]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e842] [cursor=pointer]:
+                          - /url: https://youtu.be/RUQd5JSo4cI
+                          - generic [ref=e843]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 08.25.2025" [ref=e844] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/29162005/Check-Run-Report-08.25.2025.pdf
+                          - generic [ref=e845]: 
+                          - text: Check Run Report 08.25.2025
+                    - generic [ref=e846]:
+                      - heading "August 25, 2025 5:00 PM (Work Session of the Mayor & Council)" [level=3] [ref=e847]
+                      - paragraph [ref=e848]: This Work Session of the Mayor & Council is being held to discuss the future of the Welcome Center. Due to the brevity of the Work Session agenda, it has been incorporated into the August 25, 2025, Regular Session agenda. Please refer to the August 25 Regular Session of the Mayor and Council meeting for additional details.
+                      - generic [ref=e849]:
+                        - link "Watch Meeting Video - Part One" [ref=e850] [cursor=pointer]:
+                          - /url: https://youtu.be/8LOFS9nczBc
+                        - link "Watch Meeting Video - Part Two" [ref=e851] [cursor=pointer]:
+                          - /url: https://youtu.be/K-NaxoKNJZQ
+                        - link "Watch Meeting Video - Part Three" [ref=e852] [cursor=pointer]:
+                          - /url: https://youtu.be/atd7dM5gKdE
+                    - heading "August 25, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e854]
+                    - generic [ref=e855]:
+                      - heading "August 11, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e856]
+                      - paragraph [ref=e857]:
+                        - link "Click here to view our Mayor & Council Meeting Packet." [ref=e858] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/flipbook/council-packet-081125/index.html
+                      - generic [ref=e859]:
+                        - link " Public Meeting Packet" [ref=e860] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/20090321/08.11.2025-Council-Packet-1.pdf
+                          - generic [ref=e861]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e862] [cursor=pointer]:
+                          - /url: https://youtu.be/6ejGquCmR6E
+                          - generic [ref=e863]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 08.11.2025" [ref=e864] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/20085958/Final-Check-Run-Coverpage-08.11.2025.pdf
+                          - generic [ref=e865]: 
+                          - text: Check Run Report 08.11.2025
+                    - generic [ref=e866]:
+                      - heading "August 11, 2025 5:00 PM (Notice of Quorum)" [level=3] [ref=e867]
+                      - paragraph [ref=e868]:
+                        - strong [ref=e869]: NOTICE OF QUORUM
+                      - paragraph [ref=e870]:
+                        - text: Monday, August 11, 2025
+                        - text: 5:00 PM
+                      - paragraph [ref=e871]
+                      - paragraph [ref=e872]: Please take notice that three or more members of the Town of Berlin Mayor and Council may gather on the above date and time to attend the Stephen Decatur Park Flagpole Dedication Ceremony as we proudly unveil the new flagpoles donated by the Gillen Family. The gathering will take place at 130 Tripoli Street, Berlin, MD 21811, on the corner of Route 113 and Tripoli Street.
+                    - heading "August 11, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e874]
+                    - generic [ref=e875]:
+                      - heading "July 28, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e876]
+                      - generic [ref=e877]:
+                        - link " Public Meeting Packet" [ref=e878] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/07/28133701/Revised-07.28.2025-Council-Packet.pdf
+                          - generic [ref=e879]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e880] [cursor=pointer]:
+                          - /url: https://youtu.be/qe8-e__bvfg
+                          - generic [ref=e881]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 07.28.2025" [ref=e882] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/20090113/Final-Check-Run-Report-07.28.2025.pdf
+                          - generic [ref=e883]: 
+                          - text: Check Run Report 07.28.2025
+                    - heading "July 28, 2025 5:00 PM (Closed Session of the Mayor & Council – NO MEETING)" [level=3] [ref=e885]
+                    - generic [ref=e886]:
+                      - heading "July 14, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e887]
+                      - generic [ref=e888]:
+                        - link " Public Meeting Packet" [ref=e889] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/11101015/07.14.2025-Council-Packet.pdf
+                          - generic [ref=e890]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e891] [cursor=pointer]:
+                          - /url: https://youtu.be/isAhu598AdM
+                          - generic [ref=e892]: 
+                          - text: Watch Meeting Video
+                    - heading "June 23, 2025 6:00 PM (Mayor & Council Meeting – CANCELLED)" [level=3] [ref=e894]
+                    - generic [ref=e895]:
+                      - heading "June 23, 2025 5:30 PM (Notice of Quorum)" [level=3] [ref=e896]
+                      - paragraph [ref=e897]:
+                        - strong [ref=e898]: NOTICE OF QUORUM
+                      - paragraph [ref=e899]:
+                        - text: Monday, June 23, 2025
+                        - text: 5:30 PM
+                      - paragraph [ref=e900]
+                      - paragraph [ref=e901]: Please take notice that three or more members of the Town of Berlin Mayor and Council may gather on the above date and time to attend the annual Eastern Shore Association Of Municipalities (ESAM) Summer Meeting & Dinner. The meeting will take place at DRY 85 OC located at 12 48th Street Ocean City, MD 21842.
+                    - heading "June 23, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e903]
+                    - generic [ref=e904]:
+                      - heading "June 09, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e905]
+                      - generic [ref=e906]:
+                        - link " Public Meeting Packet" [ref=e907] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/05152133/06.09.2025-Council-Packet-For-Web.pdf
+                          - generic [ref=e908]: 
+                          - text: Public Meeting Packet
+                        - link "fab fa-youtube 06.09.25 Regular Session of the Mayor and Council Part One" [ref=e909] [cursor=pointer]:
+                          - /url: https://youtu.be/nR34Aq2rXhM
+                        - link "fab fa-youtube 06.09.25 Regular Session of the Mayor and Council Part Two" [ref=e910] [cursor=pointer]:
+                          - /url: https://youtu.be/wSCyloPUdF8
+                        - link " FY 2026 Budget for Adoption Report - 06.09.25" [ref=e911] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/06140137/FY-2026-Budget-for-Adoption-Meeting-06-09-2025.pdf
+                          - generic [ref=e912]: 
+                          - text: FY 2026 Budget for Adoption Report - 06.09.25
+                    - generic [ref=e913]:
+                      - heading "June 09, 2025 5:00 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e914]
+                      - paragraph [ref=e915]: "STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b):"
+                      - paragraph [ref=e916]: (1) To discuss the appointment, employment, assignment, promotion, discipline, demotion, compensation, removal, resignation, or performance evaluation of appointees, employees, or officials over whom this public body has jurisdiction; or any other personnel matter that affects one or more specific individuals.
+                      - generic [ref=e917]:
+                        - link " Public Meeting Packet" [ref=e918] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/05144248/06.09.25-Closed-Session-Agenda-and-Summary.pdf
+                          - generic [ref=e919]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e920] [cursor=pointer]:
+                          - /url: https://youtu.be/CqO_YYZwkRI
+                          - generic [ref=e921]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e922]:
+                      - heading "May 27, 2025 6:00 PM (*Mayor & Council Meeting)" [level=3] [ref=e923]
+                      - paragraph [ref=e924]: "*The normal Monday date falls on a holiday"
+                      - generic [ref=e925]:
+                        - link " Public Meeting Packet" [ref=e926] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/23114521/05.27.2025-Council-Packet-1.pdf
+                          - generic [ref=e927]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e928] [cursor=pointer]:
+                          - /url: https://youtu.be/4Lzhdx4gW-Y
+                          - generic [ref=e929]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 05.27.2025" [ref=e930] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/27092204/Check-Run-Report-05.27.2025.pdf
+                          - generic [ref=e931]: 
+                          - text: Check Run Report 05.27.2025
+                    - generic [ref=e932]:
+                      - heading "May 27, 2025 5:00 PM (*Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e933]
+                      - paragraph [ref=e934]: "* The normal Monday date falls on a Holiday"
+                    - generic [ref=e935]:
+                      - heading "May 12, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e936]
+                      - generic [ref=e937]:
+                        - link " Public Meeting Packet" [ref=e938] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/08164135/05.12.2025-Council-Packet.pdf
+                          - generic [ref=e939]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e940] [cursor=pointer]:
+                          - /url: https://youtu.be/trZnHBXBowA
+                          - generic [ref=e941]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report" [ref=e942] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/13161916/Check-Run-Report-05.12.2025.pdf
+                          - generic [ref=e943]: 
+                          - text: Check Run Report
+                    - generic [ref=e944]:
+                      - heading "May 12, 2025 5:00 PM (Notice of Quorum)" [level=3] [ref=e945]
+                      - paragraph [ref=e946]:
+                        - strong [ref=e947]: NOTICE OF QUORUM
+                      - paragraph [ref=e948]:
+                        - text: Monday, May 12, 2025
+                        - text: 5 PM
+                      - paragraph [ref=e949]
+                      - paragraph [ref=e950]: Please take notice that three or more members of the Town of Berlin Mayor and Council may gather on the above date and time to attend the War Memorial Flag Pole Presentation. The presentation will take place at the War Memorial, located at the corner of North Main Street & West Street, Berlin, MD, 21811.
+                    - heading "May 12, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e952]
+                    - generic [ref=e953]:
+                      - heading "May 07, 2025 12:00 PM (Notice of Quorum)" [level=3] [ref=e954]
+                      - paragraph [ref=e955]:
+                        - strong [ref=e956]: NOTICE OF QUORUM
+                      - paragraph [ref=e957]:
+                        - text: Wednesday, May 7, 2025
+                        - text: 12:00 PM
+                      - paragraph [ref=e958]
+                      - paragraph [ref=e959]: Please take notice that three or more members of the Town of Berlin Mayor and Council may gather on the above date and time to attend the Community Center Engagement Meeting on May 7, 2025, at 12 PM. The meeting will take place at Berlin Town Hall, 2nd Floor Council Chambers, located at 10 William Street, Berlin, MD, 21811.
+                    - generic [ref=e960]:
+                      - heading "May 06, 2025 6:00 PM (Notice of Quorum)" [level=3] [ref=e961]
+                      - paragraph [ref=e962]:
+                        - strong [ref=e963]: NOTICE OF QUORUM
+                      - paragraph [ref=e964]:
+                        - text: Tuesday, May 6, 2025
+                        - text: 6:00 PM
+                      - paragraph [ref=e965]
+                      - paragraph [ref=e966]: Please take notice that three or more members of the Town of Berlin Mayor and Council may gather on the above date and time to attend the Community Center Engagement Meeting on May 6, 2025, at 6 PM. The meeting will take place at St. Paul United Methodist Church, located at 405 Flower Street, Berlin, MD, 21811.
+                    - generic [ref=e967]:
+                      - heading "April 28, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e968]
+                      - generic [ref=e969]:
+                        - link " Public Meeting Packet" [ref=e970] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/23142100/04.28.2025-Council-Packet-1.pdf
+                          - generic [ref=e971]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e972] [cursor=pointer]:
+                          - /url: https://youtu.be/8dczlo3n8wU
+                          - generic [ref=e973]: 
+                          - text: Watch Meeting Video
+                        - link " 04.28.2025 Check Run Report" [ref=e974] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/25144514/Complete-Check-Run-04.28.2025.pdf
+                          - generic [ref=e975]: 
+                          - text: 04.28.2025 Check Run Report
+                    - heading "April 28, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e977]
+                    - generic [ref=e978]:
+                      - heading "April 21, 2025 5:00 PM (Work Session of the Mayor & Council (Utilities Fund Budget Work Session))" [level=3] [ref=e979]
+                      - paragraph [ref=e980]: Utilities Fund FY26 Budget Work Session (Electric, Water, Wastewater, and Storm Water Funds).
+                      - paragraph [ref=e981]: Work Session to be held in the Town Hall Council Chambers. The meeting is open to public attendance; however, no public comment will be taken.
+                      - generic [ref=e982]:
+                        - link " Public Meeting Packet" [ref=e983] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/02/17094206/4.21.25-Utility-Fund-Work-Session-Agenda.pdf
+                          - generic [ref=e984]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e985] [cursor=pointer]:
+                          - /url: https://youtu.be/1ldSCgv4s9E
+                          - generic [ref=e986]: 
+                          - text: Watch Meeting Video
+                        - link " FY 2026 Utilities Fund Work Session Budget Comparison Report" [ref=e987] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/02/17160041/DH-Requested-FY-2026-Utility-Funds-04-17-25-Meeting-04-21-25.pdf
+                          - generic [ref=e988]: 
+                          - text: FY 2026 Utilities Fund Work Session Budget Comparison Report
+                    - generic [ref=e989]:
+                      - heading "April 14, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e990]
+                      - generic [ref=e991]:
+                        - link " Public Meeting Packet" [ref=e992] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/10132443/04.14.2025-Full-Council-Packet.pdf
+                          - generic [ref=e993]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e994] [cursor=pointer]:
+                          - /url: https://youtu.be/skSrIPgC9-c
+                          - generic [ref=e995]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report 04.14.2025" [ref=e996] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/11145254/Check-Run-Report-04.14.2025.pdf
+                          - generic [ref=e997]: 
+                          - text: Check Run Report 04.14.2025
+                    - heading "April 14, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e999]
+                    - generic [ref=e1000]:
+                      - heading "April 07, 2025 8:00 PM (Work Session of the Mayor & Council)" [level=3] [ref=e1001]
+                      - paragraph [ref=e1002]: Quarterly Meeting Work Session w/ Berlin Fire Company & Emergency Medical Services will immediately follow the 6 PM General Fund Work Session.
+                      - paragraph [ref=e1003]: Held at Berlin Town Hall, 10 William Street, Berlin, MD, 2nd floor Council Chambers. Work Sessions are open to the public with public participation at the Mayor’s discretion.
+                      - generic [ref=e1004]:
+                        - link " Watch Meeting Video" [ref=e1005] [cursor=pointer]:
+                          - /url: https://youtu.be/Vv-nWjNb0p8
+                          - generic [ref=e1006]: 
+                          - text: Watch Meeting Video
+                        - link " 4.7.25 BFC Work Session Agenda" [ref=e1007] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/03/03111741/BFC-Semi-Annual-Work-Session-03-2025.pdf
+                          - generic [ref=e1008]: 
+                          - text: 4.7.25 BFC Work Session Agenda
+                        - link " 4.7.25 BFCEMS Work Session Agenda" [ref=e1009] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/03/03111803/BFCEMS-Semi-Annual-Work-Session-03-2025.pdf
+                          - generic [ref=e1010]: 
+                          - text: 4.7.25 BFCEMS Work Session Agenda
+                    - generic [ref=e1011]:
+                      - heading "April 07, 2025 6:00 PM (Work Session of the Mayor & Council (General Fund Budget Work Session))" [level=3] [ref=e1012]
+                      - paragraph [ref=e1013]: General Fund Budget Work Session FY26 (Town Departments, Berlin Fire Company, and Berlin Fire Company EMS).
+                      - paragraph [ref=e1014]: Work Session to be held in the Town Hall Council Chambers. The meeting is open for public attendance; however, no public comments will be taken.
+                      - generic [ref=e1015]:
+                        - link " Public Meeting Packet" [ref=e1016] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/02/03130343/FINAL-04.07.25-General-Fund-Work-Session-Agenda-1.pdf
+                          - generic [ref=e1017]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1018] [cursor=pointer]:
+                          - /url: https://youtu.be/ebylyrhY6OY
+                          - generic [ref=e1019]: 
+                          - text: Watch Meeting Video
+                        - link " FY 2026 General Fund Work Session Budget Comparison Report" [ref=e1020] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/02/04111650/DH-Requested-FY-2026-Gen-Fund-04-04-25-Meeting-04-07-25.pdf
+                          - generic [ref=e1021]: 
+                          - text: FY 2026 General Fund Work Session Budget Comparison Report
+                    - generic [ref=e1022]:
+                      - heading "April 07, 2025 5:00 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e1023]
+                      - paragraph [ref=e1024]: "Closed Session Agenda: STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b):"
+                      - paragraph [ref=e1025]:
+                        - generic [ref=e1026]: (1) To discuss the appointment, employment, assignment, promotion, discipline, demotion, compensation, removal, resignation, or performance evaluation of appointees, employees, or officials over whom this public body has jurisdiction; or any other personnel matter that affects one or more specific individuals;
+                      - generic [ref=e1027]:
+                        - link " Public Meeting Packet" [ref=e1028] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2025/04/02103305/04.07.25-Agenda-Summary.pdf
+                          - generic [ref=e1029]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1030] [cursor=pointer]:
+                          - /url: https://youtu.be/GByEAr9HaSs
+                          - generic [ref=e1031]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e1032]:
+                      - heading "March 24, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e1033]
+                      - generic [ref=e1034]:
+                        - link " Public Meeting Packet" [ref=e1035] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/20090952/03.24.2025-Full-Council-Packet.pdf
+                          - generic [ref=e1036]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1037] [cursor=pointer]:
+                          - /url: https://youtu.be/DQBgmndR5-w
+                          - generic [ref=e1038]: 
+                          - text: Watch Meeting Video
+                        - link " Mid-Year Financial Highlights FY25" [ref=e1039] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/24162526/FY-2025-Financial-Overview-Mid-Year-12-31-24-NS.pdf
+                          - generic [ref=e1040]: 
+                          - text: Mid-Year Financial Highlights FY25
+                        - link " Check Run Report" [ref=e1041] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/31083756/Check-Run-Report-03.24.2025.pdf
+                          - generic [ref=e1042]: 
+                          - text: Check Run Report
+                    - heading "March 24, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e1044]
+                    - generic [ref=e1045]:
+                      - heading "March 10, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e1046]
+                      - paragraph [ref=e1047]: https://www.facebook.com/share/v/1AAgnXbVg4/
+                      - generic [ref=e1048]:
+                        - link " Public Meeting Packet" [ref=e1049] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/10105422/03.10.2025-Full-Council-Packet-1.pdf
+                          - generic [ref=e1050]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1051] [cursor=pointer]:
+                          - /url: https://www.facebook.com/share/v/1A9rodu5QV/
+                          - generic [ref=e1052]: 
+                          - text: Watch Meeting Video
+                        - link "Watch Meeting Video Continued" [ref=e1053] [cursor=pointer]:
+                          - /url: https://www.facebook.com/share/v/1AAgnXbVg4/
+                        - link " Additional Check Run Report 03.03.25 - 03.07.25" [ref=e1054] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/07153321/Additional-Check-Run-Report-Coverpage-03.10.2025.pdf
+                          - generic [ref=e1055]: 
+                          - text: Additional Check Run Report 03.03.25 - 03.07.25
+                    - heading "March 10, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e1057]
+                    - generic [ref=e1058]:
+                      - heading "February 24, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e1059]
+                      - generic [ref=e1060]:
+                        - link " Public Meeting Packet" [ref=e1061] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/21084929/02.24.2025-Full-Council-Packet.pdf
+                          - generic [ref=e1062]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1063] [cursor=pointer]:
+                          - /url: https://www.facebook.com/townofberlinmd/videos/651961963915905/?comment_id=3899832596896816&reply_comment_id=1726334301430933&notif_id=1740447991020863&notif_t=video_comment&ref=notif
+                          - generic [ref=e1064]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report" [ref=e1065] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/21123227/2.24.2025-Check-Run-Report.pdf
+                          - generic [ref=e1066]: 
+                          - text: Check Run Report
+                    - heading "February 24, 2025 5:00 PM (Closed Session of the Mayor & Council – CANCELLED)" [level=3] [ref=e1068]
+                    - generic [ref=e1069]:
+                      - heading "February 10, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e1070]
+                      - generic [ref=e1071]:
+                        - link " Public Meeting Packet" [ref=e1072] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/06092456/2.10.2025-Public-Council-Packet-3.pdf
+                          - generic [ref=e1073]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1074] [cursor=pointer]:
+                          - /url: https://youtu.be/hVqDn_oXy9I
+                          - generic [ref=e1075]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report" [ref=e1076] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/11154105/2.10.25-Full-Check-Run.pdf
+                          - generic [ref=e1077]: 
+                          - text: Check Run Report
+                    - heading "February 10, 2025 5:00 PM (Closed Session of the Mayor and Council – CANCELLED)" [level=3] [ref=e1079]
+                    - generic [ref=e1080]:
+                      - heading "January 27, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e1081]
+                      - generic [ref=e1082]:
+                        - link " Public Meeting Packet" [ref=e1083] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/23152604/1.27.2025-Public-Council-Packet-2.pdf
+                          - generic [ref=e1084]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1085] [cursor=pointer]:
+                          - /url: https://youtu.be/plgEhAJYJxA
+                          - generic [ref=e1086]: 
+                          - text: Watch Meeting Video
+                        - link " Check Run Report" [ref=e1087] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/24124058/01.27.2025-Full-Check-Run-Report.pdf
+                          - generic [ref=e1088]: 
+                          - text: Check Run Report
+                    - generic [ref=e1089]:
+                      - heading "January 27, 2025 5:30 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e1090]
+                      - paragraph [ref=e1091]: "Closed Session Agenda: STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b):"
+                      - list [ref=e1092]:
+                        - listitem [ref=e1093]:
+                          - text: To discuss the appointment, employment, assignment, promotion, discipline, demotion, compensation, removal, resignation, or performance evaluation of appointees, employees, or officials over whom this public body has jurisdiction; or any other personnel matter that affects one or more specific individuals;
+                          - list [ref=e1094]:
+                            - listitem [ref=e1095]: Town Administrator contract renewal.
+                      - generic [ref=e1096]:
+                        - link " Public Meeting Packet" [ref=e1097] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/23132442/01.27.25-Closed-Session-Packet-Public.pdf
+                          - generic [ref=e1098]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1099] [cursor=pointer]:
+                          - /url: https://youtu.be/y_ncCPfTndA
+                          - generic [ref=e1100]: 
+                          - text: Watch Meeting Video
+                    - generic [ref=e1101]:
+                      - heading "January 16, 2025 6:00 PM (Notice of Quorum)" [level=3] [ref=e1102]
+                      - paragraph [ref=e1103]:
+                        - strong [ref=e1104]: NOTICE OF QUORUM
+                      - paragraph [ref=e1105]:
+                        - text: Thursday, January 16, 2025
+                        - text: 6:00 PM
+                      - paragraph [ref=e1106]: Please take notice that three or more members of the Town of Berlin Mayor and Council may be together on the above date and time to attend the Berlin Chamber of Commerce Installation & Awards Dinner. The event will be held at the Berlin Fire Company Banquet Hall at 214 N. Main Street, Berlin, Maryland.
+                    - generic [ref=e1107]:
+                      - heading "January 13, 2025 6:00 PM (Mayor & Council Meeting)" [level=3] [ref=e1108]
+                      - generic [ref=e1109]:
+                        - link " Public Meeting Packet" [ref=e1110] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/09145537/1.13.2025-Public-Council-Packet.pdf
+                          - generic [ref=e1111]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1112] [cursor=pointer]:
+                          - /url: https://youtu.be/JiCY-YaH5gs
+                          - generic [ref=e1113]: 
+                          - text: Watch Meeting Video
+                        - link " Audited Financial Statement FY 2024" [ref=e1114] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/14094708/FINAL-6.30.24-Audited-Financial-Statements.pdf
+                          - generic [ref=e1115]: 
+                          - text: Audited Financial Statement FY 2024
+                        - link " Audit Presentation FY 2024" [ref=e1116] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/14094723/FY-2024-Audit-Presentation.pdf
+                          - generic [ref=e1117]: 
+                          - text: Audit Presentation FY 2024
+                    - generic [ref=e1118]:
+                      - heading "January 13, 2025 5:00 PM (Closed Session of the Mayor & Council)" [level=3] [ref=e1119]
+                      - paragraph [ref=e1120]: "STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3-305(b): (7) To consult with counsel to obtain legal advice on a legal matter; i. Agreement regarding use of Town-owned property."
+                      - generic [ref=e1121]:
+                        - link " Public Meeting Packet" [ref=e1122] [cursor=pointer]:
+                          - /url: https://media.berlinmd.gov/wp-content/uploads/2024/10/10113435/01.13.25-Closed-Session-Agenda-and-Summary.pdf
+                          - generic [ref=e1123]: 
+                          - text: Public Meeting Packet
+                        - link " Watch Meeting Video" [ref=e1124] [cursor=pointer]:
+                          - /url: https://youtu.be/unN_4grS8Ng
+                          - generic [ref=e1125]: 
+                          - text: Watch Meeting Video
+              - generic [ref=e196]:
+                - button "2024" [ref=e198] [cursor=pointer]:
+                  - heading "2024" [level=2] [ref=e199]
+                - text:                                                                                                               
+              - generic [ref=e200]:
+                - button "2023" [ref=e202] [cursor=pointer]:
+                  - heading "2023" [level=2] [ref=e203]
+                - text:                                                                                                            
+              - generic [ref=e204]:
+                - button "2022" [ref=e206] [cursor=pointer]:
+                  - heading "2022" [level=2] [ref=e207]
+                - text:                                                                                
+              - generic [ref=e208]:
+                - button "2021" [ref=e210] [cursor=pointer]:
+                  - heading "2021" [level=2] [ref=e211]
+                - text:                                                                           
+              - generic [ref=e212]:
+                - button "2020" [ref=e214] [cursor=pointer]:
+                  - heading "2020" [level=2] [ref=e215]
+                - text:                                                                          
+              - generic [ref=e216]:
+                - button "2019" [ref=e218] [cursor=pointer]:
+                  - heading "2019" [level=2] [ref=e219]
+                - text:                                                            
+              - generic [ref=e220]:
+                - button "2018" [ref=e222] [cursor=pointer]:
+                  - heading "2018" [level=2] [ref=e223]
+                - text:                                                      
+              - generic [ref=e224]:
+                - button "2017" [ref=e226] [cursor=pointer]:
+                  - heading "2017" [level=2] [ref=e227]
+                - text:                                                
+              - generic [ref=e228]:
+                - button "2016" [ref=e230] [cursor=pointer]:
+                  - heading "2016" [level=2] [ref=e231]
+                - text:                        
+          - generic [ref=e233]:
+            - generic [ref=e234]:
+              - heading "Government Links" [level=3] [ref=e235]
+              - link "Elected Officials" [ref=e236] [cursor=pointer]:
+                - /url: /government/elected-officials/
+              - link "Council Meetings" [ref=e237] [cursor=pointer]:
+                - /url: /government/council-meetings/
+              - link "Boards, Commissions and Committees" [ref=e238] [cursor=pointer]:
+                - /url: /government/boards-commissions-and-committees/
+              - link "Town Charter & Code" [ref=e239] [cursor=pointer]:
+                - /url: https://library.municode.com/md/berlin/codes/code_of_ordinances
+              - link "Municipal Elections" [ref=e240] [cursor=pointer]:
+                - /url: /government/municipal-elections/
+              - link "Request for Proposals" [ref=e241] [cursor=pointer]:
+                - /url: /government/request-for-proposals/
+              - link "Strategic Plan" [ref=e242] [cursor=pointer]:
+                - /url: https://media.berlinmd.gov/app/uploads/2025/02/21105812/Berlin-Strategic-Plan_Report_FY24.pdf
+            - generic [ref=e243]:
+              - heading "Contact Info" [level=3] [ref=e244]
+              - link "10 William Street | Berlin, MD 21811" [ref=e245] [cursor=pointer]:
+                - /url: https://goo.gl/maps/ELZPrM4iwBz
+                - paragraph [ref=e246]: 10 William Street | Berlin, MD 21811
+              - paragraph [ref=e247]:
+                - text: "Email:"
+                - link "info@berlinmd.gov" [ref=e248] [cursor=pointer]:
+                  - /url: mailto:info@berlinmd.gov
+              - paragraph [ref=e249]:
+                - text: "Phone:"
+                - link "410-641-2770" [ref=e250] [cursor=pointer]:
+                  - /url: tel:+1-410-641-2770
+              - paragraph [ref=e251]: "Fax: 410-641-2316"
+              - paragraph [ref=e252]: Office Hours are Monday-Friday, 8:00 AM to 4:00 PM. Closed Weekends and Holidays.
+              - paragraph [ref=e253]: "After Hours / Emergency Contact:"
+              - paragraph [ref=e254]:
+                - text: Please call the Berlin Police Department at
+                - link "410-641-1333" [ref=e255] [cursor=pointer]:
+                  - /url: tel:+1-410-641-1333
+      - generic [ref=e257]:
+        - heading "Town Calendar" [level=2] [ref=e258]
+        - generic [ref=e259]:
+          - generic [ref=e260]:
+            - generic [ref=e264]:
+              - navigation [ref=e267]:
+                - list [ref=e268]:
+                  - listitem [ref=e269]:
+                    - button "Previous month" [ref=e270] [cursor=pointer]:
+                      - img [ref=e271]
+                  - listitem [ref=e273]: April 2026
+                  - listitem [ref=e274]:
+                    - button "Next month" [ref=e275] [cursor=pointer]:
+                      - img [ref=e276]
+              - heading "Calendar of Events" [level=2] [ref=e278]
+              - table [ref=e279]:
+                - rowgroup [ref=e280]:
+                  - row "Monday Tuesday Wednesday Thursday Friday Saturday Sunday" [ref=e281]:
+                    - columnheader "Monday" [ref=e282]:
+                      - generic:
+                        - text: M
+                        - generic [ref=e283]: Monday
+                    - columnheader "Tuesday" [ref=e284]:
+                      - generic:
+                        - text: T
+                        - generic [ref=e285]: Tuesday
+                    - columnheader "Wednesday" [ref=e286]:
+                      - generic:
+                        - text: W
+                        - generic [ref=e287]: Wednesday
+                    - columnheader "Thursday" [ref=e288]:
+                      - generic:
+                        - text: T
+                        - generic [ref=e289]: Thursday
+                    - columnheader "Friday" [ref=e290]:
+                      - generic:
+                        - text: F
+                        - generic [ref=e291]: Friday
+                    - columnheader "Saturday" [ref=e292]:
+                      - generic:
+                        - text: S
+                        - generic [ref=e293]: Saturday
+                    - columnheader "Sunday" [ref=e294]:
+                      - generic:
+                        - text: S
+                        - generic [ref=e295]: Sunday
+                - rowgroup [ref=e296]:
+                  - row [ref=e297]:
+                    - cell "1 event, March 30 5:00 pm - 7:00 pm Work Session of the Mayor & Council March 30 @ 5:00 pm - 7:00 pm Work Session of the Mayor & Council FY26 Contracted Work Session with Berlin Fire Company & Emergency Medical Services. Held at Berlin Police Department, 129 Decatur Street, Berlin, MD. Work Sessions are open to the public with […]" [ref=e298]:
+                      - button "March 30, 1 event" [ref=e299] [cursor=pointer]:
+                        - generic [ref=e300]:
+                          - generic [ref=e301]: 1 event
+                          - time [ref=e302]: "30"
+                    - cell "0 events, 31" [ref=e304]:
+                      - button "March 31, 0 events" [ref=e305] [cursor=pointer]:
+                        - generic [ref=e306]:
+                          - generic [ref=e307]: 0 events
+                          - time [ref=e308]: "31"
+                    - cell "2 events, April 1 5:30 pm - 6:30 pm Historic District Commission April 1 @ 5:30 pm - 6:30 pm Historic District Commission Filing deadline is March 4, 2026. *This meeting will be held at the Berlin Police Department, 129 Decatur Street, Berlin, MD, 21811. 6:30 pm - 7:30 pm Board of Appeals – No Meeting April 1 @ 6:30 pm - 7:30 pm Board of Appeals – No Meeting Filing deadline March 4, 2026. **Meets only when case is filed." [ref=e309]:
+                      - button "April 1, 2 events" [ref=e310] [cursor=pointer]:
+                        - generic [ref=e311]:
+                          - generic [ref=e312]: 2 events
+                          - time [ref=e313]: "1"
+                    - cell "0 events, 2" [ref=e315]:
+                      - button "April 2, 0 events" [ref=e316] [cursor=pointer]:
+                        - generic [ref=e317]:
+                          - generic [ref=e318]: 0 events
+                          - time [ref=e319]: "2"
+                    - cell "0 events, 3" [ref=e320]:
+                      - button "April 3, 0 events" [ref=e321] [cursor=pointer]:
+                        - generic [ref=e322]:
+                          - generic [ref=e323]: 0 events
+                          - time [ref=e324]: "3"
+                    - cell "2 events, April 4 2026-04-04 Community Yard Sale Community Yard Sale April 4 Community Yard Sale Berlin residents sign up to participate in a town wide yard sale. Event hosted by the Town of Berlin 10:00 am - 4:00 pm Spring Celebration April 4 @ 10:00 am - 4:00 pm Spring Celebration Celebrate the start of Spring in downtown Berlin! Bonnet Parade at 10 AM starting in front of World of Toys. Easter Egg Hunt at 11 AM at Taylor House Museum, […]" [ref=e325]:
+                      - button "April 4, 2 events" [ref=e326] [cursor=pointer]:
+                        - generic [ref=e327]:
+                          - generic [ref=e328]: 2 events
+                          - time [ref=e329]: "4"
+                    - cell "0 events, 5" [ref=e331]:
+                      - button "April 5, 0 events" [ref=e332] [cursor=pointer]:
+                        - generic [ref=e333]:
+                          - generic [ref=e334]: 0 events
+                          - time [ref=e335]: "5"
+                  - 'row "0 events, 6 0 events, 7 2 events, April 8 5:00 pm - 5:30 pm Planning Commission – Closed Session April 8 @ 5:00 pm - 5:30 pm Planning Commission – Closed Session STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): (7) To consult with counsel to obtain legal advice on a legal matter; Regular Session meeting of the Planning Commission to […] 5:30 pm - 6:30 pm Planning Commission April 8 @ 5:30 pm - 6:30 pm Planning Commission Meeting to be held at the Berlin Police Department, Training Room, located at 129 Decatur Street, Berlin, MD, 21811. 0 events, 9 0 events, 10 0 events, 11 0 events, 12" [ref=e336]':
+                    - cell "0 events, 6" [ref=e337]:
+                      - button "April 6, 0 events" [ref=e338] [cursor=pointer]:
+                        - generic [ref=e339]:
+                          - generic [ref=e340]: 0 events
+                          - time [ref=e341]: "6"
+                    - cell "0 events, 7" [ref=e342]:
+                      - button "April 7, 0 events" [ref=e343] [cursor=pointer]:
+                        - generic [ref=e344]:
+                          - generic [ref=e345]: 0 events
+                          - time [ref=e346]: "7"
+                    - 'cell "2 events, April 8 5:00 pm - 5:30 pm Planning Commission – Closed Session April 8 @ 5:00 pm - 5:30 pm Planning Commission – Closed Session STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): (7) To consult with counsel to obtain legal advice on a legal matter; Regular Session meeting of the Planning Commission to […] 5:30 pm - 6:30 pm Planning Commission April 8 @ 5:30 pm - 6:30 pm Planning Commission Meeting to be held at the Berlin Police Department, Training Room, located at 129 Decatur Street, Berlin, MD, 21811." [ref=e347]':
+                      - button "April 8, 2 events" [ref=e348] [cursor=pointer]:
+                        - generic [ref=e349]:
+                          - generic [ref=e350]: 2 events
+                          - time [ref=e351]: "8"
+                    - cell "0 events, 9" [ref=e353]:
+                      - button "April 9, 0 events" [ref=e354] [cursor=pointer]:
+                        - generic [ref=e355]:
+                          - generic [ref=e356]: 0 events
+                          - time [ref=e357]: "9"
+                    - cell "0 events, 10" [ref=e358]:
+                      - button "April 10, 0 events" [ref=e359] [cursor=pointer]:
+                        - generic [ref=e360]:
+                          - generic [ref=e361]: 0 events
+                          - time [ref=e362]: "10"
+                    - cell "0 events, 11" [ref=e363]:
+                      - button "April 11, 0 events" [ref=e364] [cursor=pointer]:
+                        - generic [ref=e365]:
+                          - generic [ref=e366]: 0 events
+                          - time [ref=e367]: "11"
+                    - cell "0 events, 12" [ref=e368]:
+                      - button "April 12, 0 events" [ref=e369] [cursor=pointer]:
+                        - generic [ref=e370]:
+                          - generic [ref=e371]: 0 events
+                          - time [ref=e372]: "12"
+                  - 'row "2 events, April 13 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 13 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […] 6:00 pm - 8:00 pm Mayor & Council Meeting April 13 @ 6:00 pm - 8:00 pm Mayor & Council Meeting ATTENTION: Monday''s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […] 0 events, 14 0 events, 15 0 events, 16 0 events, 17 1 event, April 18 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day April 18 @ 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day 0 events, 19" [ref=e373]':
+                    - 'cell "2 events, April 13 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 13 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […] 6:00 pm - 8:00 pm Mayor & Council Meeting April 13 @ 6:00 pm - 8:00 pm Mayor & Council Meeting ATTENTION: Monday''s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […]" [ref=e374]':
+                      - button "April 13, 2 events" [expanded] [ref=e375] [cursor=pointer]:
+                        - generic [ref=e376]:
+                          - generic [ref=e377]: 2 events
+                          - time [ref=e378]: "13"
+                    - cell "0 events, 14" [ref=e380]:
+                      - button "April 14, 0 events" [ref=e381] [cursor=pointer]:
+                        - generic [ref=e382]:
+                          - generic [ref=e383]: 0 events
+                          - time [ref=e384]: "14"
+                    - cell "0 events, 15" [ref=e385]:
+                      - button "April 15, 0 events" [ref=e386] [cursor=pointer]:
+                        - generic [ref=e387]:
+                          - generic [ref=e388]: 0 events
+                          - time [ref=e389]: "15"
+                    - cell "0 events, 16" [ref=e390]:
+                      - button "April 16, 0 events" [ref=e391] [cursor=pointer]:
+                        - generic [ref=e392]:
+                          - generic [ref=e393]: 0 events
+                          - time [ref=e394]: "16"
+                    - cell "0 events, 17" [ref=e395]:
+                      - button "April 17, 0 events" [ref=e396] [cursor=pointer]:
+                        - generic [ref=e397]:
+                          - generic [ref=e398]: 0 events
+                          - time [ref=e399]: "17"
+                    - cell "1 event, April 18 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day April 18 @ 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day" [ref=e400]:
+                      - button "April 18, 1 event" [ref=e401] [cursor=pointer]:
+                        - generic [ref=e402]:
+                          - generic [ref=e403]: 1 event
+                          - time [ref=e404]: "18"
+                    - cell "0 events, 19" [ref=e406]:
+                      - button "April 19, 0 events" [ref=e407] [cursor=pointer]:
+                        - generic [ref=e408]:
+                          - generic [ref=e409]: 0 events
+                          - time [ref=e410]: "19"
+                  - row [ref=e411]:
+                    - 'cell "1 event, April 20 5:00 pm - 7:00 pm General Fund Budget Work Session April 20 @ 5:00 pm - 7:00 pm General Fund Budget Work Session General Fund Work Session Meeting of the Mayor & Council: Town Departments, Fire Company, and Fire Company EMS. Will be held at the Berlin Police Department, 129 Decatur St, Berlin, […]" [ref=e412]':
+                      - button "April 20, 1 event" [ref=e413] [cursor=pointer]:
+                        - generic [ref=e414]:
+                          - generic [ref=e415]: 1 event
+                          - time [ref=e416]: "20"
+                    - cell "2 events, April 21 6:00 pm - 8:00 pm Comprehensive Plan Community Open House April 21 @ 6:00 pm - 8:00 pm Comprehensive Plan Community Open House NOTICE OF QUORUM Tuesday, April 21, 2026 6 PM Please take notice that three or more members of the Town of Berlin Mayor and Council may be together on the […] 6:00 pm - 8:00 pm Comprehensive Plan Community Open House April 21 @ 6:00 pm - 8:00 pm Comprehensive Plan Community Open House NOTICE OF QUORUM Tuesday, April 21, 2026 6 PM Please take notice that three or more members of the Town of Berlin Planning Commission may be together on the above […]" [ref=e418]:
+                      - button "April 21, 2 events" [ref=e419] [cursor=pointer]:
+                        - generic [ref=e420]:
+                          - generic [ref=e421]: 2 events
+                          - time [ref=e422]: "21"
+                    - cell "0 events, 22" [ref=e424]:
+                      - button "April 22, 0 events" [ref=e425] [cursor=pointer]:
+                        - generic [ref=e426]:
+                          - generic [ref=e427]: 0 events
+                          - time [ref=e428]: "22"
+                    - cell "0 events, 23" [ref=e429]:
+                      - button "April 23, 0 events" [ref=e430] [cursor=pointer]:
+                        - generic [ref=e431]:
+                          - generic [ref=e432]: 0 events
+                          - time [ref=e433]: "23"
+                    - cell "0 events, 24" [ref=e434]:
+                      - button "April 24, 0 events" [ref=e435] [cursor=pointer]:
+                        - generic [ref=e436]:
+                          - generic [ref=e437]: 0 events
+                          - time [ref=e438]: "24"
+                    - cell "0 events, 25" [ref=e439]:
+                      - button "April 25, 0 events" [ref=e440] [cursor=pointer]:
+                        - generic [ref=e441]:
+                          - generic [ref=e442]: 0 events
+                          - time [ref=e443]: "25"
+                    - cell "0 events, 26" [ref=e444]:
+                      - button "April 26, 0 events" [ref=e445] [cursor=pointer]:
+                        - generic [ref=e446]:
+                          - generic [ref=e447]: 0 events
+                          - time [ref=e448]: "26"
+                  - 'row "2 events, April 27 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 27 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council 6:00 pm - 8:00 pm Mayor & Council Meeting April 27 @ 6:00 pm - 8:00 pm Mayor & Council Meeting 0 events, 28 0 events, 29 0 events, 30 0 events, 1 1 event, May 2 8:00 am - 2:00 pm Spring Cruisers May 2 @ 8:00 am - 2:00 pm Spring Cruisers Classic cruiser cars line Main Street for a feel from the past. Event hosted by the Berlin Chamber of Commerce 1 event, May 3 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market May 3 @ 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market Main, Commerce, & Pitts Streets Producers only market featuring local farms, breweries, seafood, live music, free kids crafts, a petting farm and more featuring 40+ vendors. Hosted by Berlin Main […]" [ref=e449]':
+                    - cell "2 events, April 27 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 27 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council 6:00 pm - 8:00 pm Mayor & Council Meeting April 27 @ 6:00 pm - 8:00 pm Mayor & Council Meeting" [ref=e450]:
+                      - button "April 27, 2 events" [ref=e451] [cursor=pointer]:
+                        - generic [ref=e452]:
+                          - generic [ref=e453]: 2 events
+                          - time [ref=e454]: "27"
+                    - cell "0 events, 28" [ref=e456]:
+                      - button "April 28, 0 events" [ref=e457] [cursor=pointer]:
+                        - generic [ref=e458]:
+                          - generic [ref=e459]: 0 events
+                          - time [ref=e460]: "28"
+                    - cell "0 events, 29" [ref=e461]:
+                      - button "April 29, 0 events" [ref=e462] [cursor=pointer]:
+                        - generic [ref=e463]:
+                          - generic [ref=e464]: 0 events
+                          - time [ref=e465]: "29"
+                    - cell "0 events, 30" [ref=e466]:
+                      - button "April 30, 0 events" [ref=e467] [cursor=pointer]:
+                        - generic [ref=e468]:
+                          - generic [ref=e469]: 0 events
+                          - time [ref=e470]: "30"
+                    - cell "0 events, 1" [ref=e471]:
+                      - button "May 1, 0 events" [ref=e472] [cursor=pointer]:
+                        - generic [ref=e473]:
+                          - generic [ref=e474]: 0 events
+                          - time [ref=e475]: "1"
+                    - cell "1 event, May 2 8:00 am - 2:00 pm Spring Cruisers May 2 @ 8:00 am - 2:00 pm Spring Cruisers Classic cruiser cars line Main Street for a feel from the past. Event hosted by the Berlin Chamber of Commerce" [ref=e476]:
+                      - button "May 2, 1 event" [ref=e477] [cursor=pointer]:
+                        - generic [ref=e478]:
+                          - generic [ref=e479]: 1 event
+                          - time [ref=e480]: "2"
+                    - 'cell "1 event, May 3 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market May 3 @ 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market Main, Commerce, & Pitts Streets Producers only market featuring local farms, breweries, seafood, live music, free kids crafts, a petting farm and more featuring 40+ vendors. Hosted by Berlin Main […]" [ref=e482]':
+                      - button "May 3, 1 event" [ref=e483] [cursor=pointer]:
+                        - generic [ref=e484]:
+                          - generic [ref=e485]: 1 event
+                          - time [ref=e486]: "3"
+            - generic [ref=e489]:
+              - generic [ref=e492]:
+                - 'link "Closed Session of the Mayor & Council April 13 @ 5:00pm - 6:00pm Worcester County Library – Berlin Branch STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […]" [ref=e493] [cursor=pointer]':
+                  - /url: https://berlinmd.gov/event/closed-session-of-the-mayor-council-61/
+                  - heading "Closed Session of the Mayor & Council" [level=2] [ref=e494]
+                  - generic [ref=e495]: April 13 @ 5:00pm - 6:00pm
+                  - generic [ref=e496]: Worcester County Library – Berlin Branch
+                  - generic [ref=e497]: "STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […]"
+                - generic [ref=e498]:
+                  - link "Closed Session of the Mayor & Council - View Event":
+                    - /url: https://berlinmd.gov/event/closed-session-of-the-mayor-council-61/
+                  - link "MORE INFO" [ref=e499] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/closed-session-of-the-mayor-council-61/
+              - generic [ref=e502]:
+                - 'link "Mayor & Council Meeting April 13 @ 6:00pm - 8:00pm Worcester County Library – Berlin Branch ATTENTION: Monday’s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […]" [ref=e503] [cursor=pointer]':
+                  - /url: https://berlinmd.gov/event/mayor-council-meeting-74/
+                  - heading "Mayor & Council Meeting" [level=2] [ref=e504]
+                  - generic [ref=e505]: April 13 @ 6:00pm - 8:00pm
+                  - generic [ref=e506]: Worcester County Library – Berlin Branch
+                  - generic [ref=e507]: "ATTENTION: Monday’s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […]"
+                - generic [ref=e508]:
+                  - link "Mayor & Council Meeting - View Event":
+                    - /url: https://berlinmd.gov/event/mayor-council-meeting-74/
+                  - link "MORE INFO" [ref=e509] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/mayor-council-meeting-74/
+              - generic [ref=e512]:
+                - link "Vintage & Vinyl Record Store Day April 18 @ 11:00am - 4:00pm" [ref=e513] [cursor=pointer]:
+                  - /url: https://berlinmd.gov/event/vintage-vinyl-record-store-day/
+                  - heading "Vintage & Vinyl Record Store Day" [level=2] [ref=e514]
+                  - generic [ref=e515]: April 18 @ 11:00am - 4:00pm
+                - generic [ref=e516]:
+                  - link "Vintage & Vinyl Record Store Day - View Event":
+                    - /url: https://berlinmd.gov/event/vintage-vinyl-record-store-day/
+                  - link "MORE INFO" [ref=e517] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/vintage-vinyl-record-store-day/
+              - generic [ref=e520]:
+                - 'link "General Fund Budget Work Session April 20 @ 5:00pm - 7:00pm Berlin Police Department General Fund Work Session Meeting of the Mayor & Council: Town Departments, Fire Company, and Fire Company EMS. Will be held at the Berlin Police Department, 129 Decatur St, Berlin, […]" [ref=e521] [cursor=pointer]':
+                  - /url: https://berlinmd.gov/event/general-fund-budget-work-session-3/
+                  - heading "General Fund Budget Work Session" [level=2] [ref=e522]
+                  - generic [ref=e523]: April 20 @ 5:00pm - 7:00pm
+                  - generic [ref=e524]: Berlin Police Department
+                  - generic [ref=e525]: "General Fund Work Session Meeting of the Mayor & Council: Town Departments, Fire Company, and Fire Company EMS. Will be held at the Berlin Police Department, 129 Decatur St, Berlin, […]"
+                - generic [ref=e526]:
+                  - link "General Fund Budget Work Session - View Event":
+                    - /url: https://berlinmd.gov/event/general-fund-budget-work-session-3/
+                  - link "MORE INFO" [ref=e527] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/general-fund-budget-work-session-3/
+          - generic [ref=e528]:
+            - link "VIEW TOWN CALENDAR" [ref=e529] [cursor=pointer]:
+              - /url: https://berlinmd.gov/town-events/
+            - link "TOWN NEWS" [ref=e530] [cursor=pointer]:
+              - /url: https://berlinmd.gov//news
+            - link "MORE EVENTS" [ref=e531] [cursor=pointer]:
+              - /url: https://berlinmd.gov//special-events
+      - generic [ref=e534]:
+        - link "Town of Berlin" [ref=e536] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103257/image5.jpg
+          - img "Town of Berlin" [ref=e537]
+        - link "Town of Berlin" [ref=e539] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103258/image6.jpg
+          - img "Town of Berlin" [ref=e540]
+        - link "Town of Berlin" [ref=e542] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103258/image7.jpg
+          - img "Town of Berlin" [ref=e543]
+        - link "Town of Berlin" [ref=e545] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103259/image8.jpg
+          - img "Town of Berlin" [ref=e546]
+        - generic [ref=e548]:
+          - link "See more of Berlin in pictures" [ref=e549] [cursor=pointer]:
+            - /url: https://www.facebook.com/pg/townofberlinmd/photos/?ref=page_internal
+          - generic [ref=e550]: SEE MORE OF BERLIN IN PICTURES
+    - contentinfo [ref=e551]:
+      - generic [ref=e552]:
+        - generic [ref=e553]:
+          - generic [ref=e554]:
+            - heading "Get Berlin eNews" [level=2] [ref=e555]
+            - generic [ref=e606]:
+              - generic [ref=e607]:
+                - heading "News & Announcements" [level=2] [ref=e608]
+                - paragraph [ref=e609]: Sign up for electronic delivery of The Berlin Bulletin newsletter.
+                - generic [ref=e610]:
+                  - generic [ref=e611]: ∗ Email
+                  - textbox "∗ Email" [ref=e612]
+                - generic [ref=e613]:
+                  - generic [ref=e614]: First Name
+                  - textbox "First Name" [ref=e615]
+                - generic [ref=e616]:
+                  - generic [ref=e617]: Last Name
+                  - textbox "Last Name" [ref=e618]
+                - group "∗ Email Lists" [ref=e619]:
+                  - generic [ref=e620]: ∗ Email Lists
+                  - generic [ref=e621]:
+                    - checkbox "Berlin Bulletin" [ref=e622]
+                    - generic [ref=e623]: Berlin Bulletin
+                  - generic [ref=e624]:
+                    - checkbox "Employment Opportunities" [ref=e625]
+                    - generic [ref=e626]: Employment Opportunities
+                  - generic [ref=e627]:
+                    - checkbox "Press Releases" [ref=e628]
+                    - generic [ref=e629]: Press Releases
+                - paragraph [ref=e631]:
+                  - text: "By submitting this form, you are consenting to receive marketing emails from: Town of Berlin, 10 William Street , Berlin, MD, 21811, US, http://www.berlinmd.gov. You can revoke your consent to receive emails at any time by using the SafeUnsubscribe® link, found at the bottom of every email."
+                  - link "Emails are serviced by Constant Contact." [ref=e632] [cursor=pointer]:
+                    - /url: https://www.constantcontact.com/legal/service-provider
+                - button "Sign Up!" [ref=e633] [cursor=pointer]
+                - iframe [ref=e636]:
+                  - generic [ref=f2e5]:
+                    - generic [ref=f2e6]:
+                      - text: protected by
+                      - strong [ref=f2e7]: reCAPTCHA
+                    - generic [ref=f2e9]:
+                      - text: This site is exceeding
+                      - link "reCAPTCHA Enterprise free quota" [ref=f2e10] [cursor=pointer]:
+                        - /url: https://cloud.google.com/recaptcha/docs/billing-information
+                      - text: .
+              - paragraph [ref=e637]:
+                - link [ref=e639] [cursor=pointer]:
+                  - /url: http://www.constantcontact.com/index.jsp?cc=forms_inline
+          - generic [ref=e642]:
+            - generic [ref=e643]:
+              - heading "Public Meetings Packets & Information" [level=2] [ref=e644]
+              - paragraph [ref=e645]: Receive email notifications of meetings and agendas
+              - generic [ref=e646]:
+                - generic [ref=e647]: ∗ Email
+                - textbox "∗ Email" [ref=e648]
+              - generic [ref=e649]:
+                - generic [ref=e650]: First Name
+                - textbox "First Name" [ref=e651]
+              - generic [ref=e652]:
+                - generic [ref=e653]: Last Name
+                - textbox "Last Name" [ref=e654]
+              - group "∗ Email Lists" [ref=e655]:
+                - generic [ref=e656]: ∗ Email Lists
+                - generic [ref=e657]:
+                  - checkbox "Board of Appeals" [ref=e658]
+                  - generic [ref=e659]: Board of Appeals
+                - generic [ref=e660]:
+                  - checkbox "Board of Supervisors of Elections" [ref=e661]
+                  - generic [ref=e662]: Board of Supervisors of Elections
+                - generic [ref=e663]:
+                  - checkbox "Ethics Commission" [ref=e664]
+                  - generic [ref=e665]: Ethics Commission
+                - generic [ref=e666]:
+                  - checkbox "Heron Park Advisory Committee" [ref=e667]
+                  - generic [ref=e668]: Heron Park Advisory Committee
+                - generic [ref=e669]:
+                  - checkbox "Historic District Commission" [ref=e670]
+                  - generic [ref=e671]: Historic District Commission
+                - generic [ref=e672]:
+                  - checkbox "Housing Board of Review" [ref=e673]
+                  - generic [ref=e674]: Housing Board of Review
+                - generic [ref=e675]:
+                  - checkbox "Mayor and Council" [ref=e676]
+                  - generic [ref=e677]: Mayor and Council
+                - generic [ref=e678]:
+                  - checkbox "Parks Commission" [ref=e679]
+                  - generic [ref=e680]: Parks Commission
+                - generic [ref=e681]:
+                  - checkbox "Planning Commission" [ref=e682]
+                  - generic [ref=e683]: Planning Commission
+              - paragraph [ref=e685]:
+                - text: "By submitting this form, you are consenting to receive marketing emails from: Town of Berlin, 10 William Street , Berlin, MD, 21811, US, http://www.berlinmd.gov. You can revoke your consent to receive emails at any time by using the SafeUnsubscribe® link, found at the bottom of every email."
+                - link "Emails are serviced by Constant Contact." [ref=e686] [cursor=pointer]:
+                  - /url: https://www.constantcontact.com/legal/service-provider
+              - button "Sign Up!" [ref=e687] [cursor=pointer]
+            - paragraph [ref=e688]:
+              - link [ref=e690] [cursor=pointer]:
+                - /url: http://www.constantcontact.com/index.jsp?cc=forms_inline
+          - generic [ref=e557]:
+            - heading "Recent News" [level=2] [ref=e558]
+            - heading "Public Meeting on Hudson Branch Restoration Project" [level=3] [ref=e559]:
+              - link "Public Meeting on Hudson Branch Restoration Project" [ref=e560] [cursor=pointer]:
+                - /url: https://berlinmd.gov/2026/04/10/public-meeting-on-hudson-branch-restoration-project/
+            - text: "For more information, contact: Kate Daub, Special Projects Administrator 410-641-4002 / kdaub@berlinmd.gov April 10, 2026..."
+            - link "MORE" [ref=e561] [cursor=pointer]:
+              - /url: https://berlinmd.gov/2026/04/10/public-meeting-on-hudson-branch-restoration-project/
+            - heading "April 2026 Berlin Bulletin" [level=3] [ref=e563]:
+              - link "April 2026 Berlin Bulletin" [ref=e564] [cursor=pointer]:
+                - /url: https://berlinmd.gov/2026/04/01/april-2026-berlin-bulletin/
+            - text: The April 2026 edition of the Berlin Bulletin is now available! Click below to read...
+            - link "MORE" [ref=e565] [cursor=pointer]:
+              - /url: https://berlinmd.gov/2026/04/01/april-2026-berlin-bulletin/
+            - heading "Town-wide Power Outages Scheduled for Transformer Maintenance" [level=3] [ref=e567]:
+              - link "Town-wide Power Outages Scheduled for Transformer Maintenance" [ref=e568] [cursor=pointer]:
+                - /url: https://berlinmd.gov/2026/03/31/town-wide-power-outages-scheduled-for-transformer-maintenance/
+            - text: "For more information, contact: Mary Bohlen, Town Administrator 410-641-4314 mbohlen@berlinmd.gov For Immediate Release… Town-wide Power..."
+            - link "MORE" [ref=e569] [cursor=pointer]:
+              - /url: https://berlinmd.gov/2026/03/31/town-wide-power-outages-scheduled-for-transformer-maintenance/
+            - link "VIEW ALL" [ref=e571] [cursor=pointer]:
+              - /url: https://berlinmd.gov/category/the-berlin-bulletin/
+          - iframe [ref=e573]:
+            - generic [ref=f1e3]:
+              - link:
+                - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+              - generic [ref=f1e6]:
+                - generic [ref=f1e8]:
+                  - generic [ref=f1e9]:
+                    - link:
+                      - /url: https://www.facebook.com/348695934316?ref=embed_page
+                    - link "Play unseen Stories" [ref=f1e10] [cursor=pointer]:
+                      - /url: /stories/102942175206822/?source=EMBED_PAGE&ref=embed_page
+                      - img "Town of Berlin Maryland" [ref=f1e13]
+                    - generic [ref=f1e14]:
+                      - link "Town of Berlin Maryland" [ref=f1e16] [cursor=pointer]:
+                        - /url: https://www.facebook.com/348695934316?ref=embed_page
+                      - generic [ref=f1e17]: 27,860 followers
+                  - button "Follow Page" [ref=f1e22] [cursor=pointer]: Follow Page
+                - generic [ref=f1e30]:
+                  - feed [ref=f1e32]:
+                    - generic [ref=f1e35]:
+                      - generic [ref=f1e36]:
+                        - link [ref=f1e41] [cursor=pointer]:
+                          - /url: https://www.facebook.com/photo.php?fbid=1386300630204297&set=a.334139272087110&type=3&ref=embed_page
+                        - generic [ref=f1e43]:
+                          - link "Play unseen Stories" [ref=f1e45] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f1e48]
+                          - link [ref=f1e51] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl?ref=embed_page
+                          - generic [ref=f1e56]:
+                            - link "Town of Berlin Maryland" [ref=f1e57] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f1e58]: Town of Berlin Maryland
+                            - link "6 hours ago" [ref=f1e59] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl?ref=embed_page
+                              - generic [ref=f1e60]: 6 hours ago
+                      - table [ref=f1e62]:
+                        - rowgroup [ref=f1e63]:
+                          - row "1 Comment 2" [ref=f1e64]:
+                            - cell "1" [ref=f1e65]:
+                              - button "1" [ref=f1e66]:
+                                - generic "Like" [ref=f1e67] [cursor=pointer]: "1"
+                            - cell "Comment" [ref=f1e69]:
+                              - link "Comment" [ref=f1e70] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl?ref=embed_page
+                                - generic "Comment" [ref=f1e71]: Comment
+                            - cell "2" [ref=f1e73]:
+                              - link "2" [ref=f1e74] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f1e75]: "2"
+                    - generic [ref=f1e79]:
+                      - generic [ref=f1e81]:
+                        - generic [ref=f1e82]:
+                          - link "Play unseen Stories" [ref=f1e84] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f1e87]
+                          - link [ref=f1e90] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                          - generic [ref=f1e95]:
+                            - link "Town of Berlin Maryland" [ref=f1e96] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f1e97]: Town of Berlin Maryland
+                            - link "7 hours ago" [ref=f1e98] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                              - generic [ref=f1e99]: 7 hours ago
+                        - generic [ref=f1e101]:
+                          - paragraph [ref=f1e102]: The agenda packet for tonight's Closed Session and Regular Session meetings of the Mayor & Council starting at 5:00 PM are available by clicking below.
+                          - paragraph [ref=f1e103]:
+                            - text: "ATTENTION:"
+                            - text: Monday's meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left unlocked after hours.
+                          - generic [ref=f1e104]: ...
+                          - link "See more" [ref=f1e107] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                        - generic [ref=f1e114]:
+                          - link "Mayor & Council Meeting Information" [ref=f1e116] [cursor=pointer]:
+                            - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F3Q638x9%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252F9bbbef89-e746-4f01-8af9-59192eec119e.png&h=AT7pRSWN0UvwFqwq21FWsKtgyjNjvmqwMSBx4lpXhmZHfiCK_o6KDpoX9qV99DZfEqS6Aj7FA4MCWAZOrFnHVUCoPKYzipnDi4oG7LMsyqt16fYerOgJGcNCmS8lh66Uzxx3OsCTYLK1Wrd3MX5Gr4OLqRaFqC-JkJALQBnJbo1yDA
+                            - generic [ref=f1e117]: Email from Town of Berlin Upcoming Mayor and Council Meeting MAYOR & COUNCIL MEETING Monday, April 13, 2026 5:00 PM Closed Session Worcester County Library – Berlin Branch, 2nd Floor 13 Harrison Ave
+                            - img "May be an image of text that says 'BERLIN, (ល) OF TOWN KOW WN W N TC To ESTD JC 1868 MAYOR MAYOR AND COUNCIL COUNCIL'" [ref=f1e120]
+                          - generic [ref=f1e121]:
+                            - generic [ref=f1e122]:
+                              - generic [ref=f1e125]: web-extract.constantcontact.com
+                              - generic [ref=f1e126]:
+                                - link "Mayor & Council Meeting Information" [ref=f1e128] [cursor=pointer]:
+                                  - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F3Q638x9%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252F9bbbef89-e746-4f01-8af9-59192eec119e.png&h=AT74gsQv-r_fqBgJxS4b9FmSiNzGbFNl9BVxOoWVaZKXoGORA51_K6VKbFwMP7CBtXe2lgv2mUuASunujZBkjcpHYcPpmGhDLysemVVYOpARjeD-NZIhEeDamfcmrDN6VTalhOTsV86cy-ss-E0vQBdux4vqxQBfnvcqwtqvYqUICw
+                                - generic [ref=f1e129]: Email from Town of Berlin Upcoming Mayor and Council Meeting MAYOR & COUNCIL MEETING Monday, April 13, 2026 5:00 PM Closed Session Worcester County Library – Berlin Branch, 2nd Floor 13 Harrison Ave
+                            - link "Mayor & Council Meeting Information" [ref=f1e130] [cursor=pointer]:
+                              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F3Q638x9%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252F9bbbef89-e746-4f01-8af9-59192eec119e.png&h=AT76Z-vGbc5k3nQa71e37fvuGGQHkVScFUOaACibxiIpN8KNsEKUR0Qc2SDsKHfYBPh6NSYYl2JZ1u4OuKTOIDbf_Ep1IDc6SOa-gI307Knst51dCr-PhfyhnOu0vSl-gy8od-O6r6-Ds9dysVgR4r5zoq5v2C9z68zU646C-Bsrh46Vnh_eD0Q
+                              - generic [ref=f1e131]: Email from Town of Berlin Upcoming Mayor and Council Meeting MAYOR & COUNCIL MEETING Monday, April 13, 2026 5:00 PM Closed Session Worcester County Library – Berlin Branch, 2nd Floor 13 Harrison Ave
+                      - table [ref=f1e133]:
+                        - rowgroup [ref=f1e134]:
+                          - row "Like Comment Share" [ref=f1e135]:
+                            - cell "Like" [ref=f1e136]:
+                              - button "Like" [ref=f1e137]:
+                                - generic "Like" [ref=f1e138] [cursor=pointer]: Like
+                            - cell "Comment" [ref=f1e140]:
+                              - link "Comment" [ref=f1e141] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                                - generic "Comment" [ref=f1e142]: Comment
+                            - cell "Share" [ref=f1e144]:
+                              - link "Share" [ref=f1e145] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f1e146]: Share
+                    - generic [ref=f1e150]:
+                      - generic [ref=f1e151]:
+                        - link [ref=f1e156] [cursor=pointer]:
+                          - /url: https://www.facebook.com/photo.php?fbid=1384184340415926&set=a.334139272087110&type=3&ref=embed_page
+                        - generic [ref=f1e158]:
+                          - link "Play unseen Stories" [ref=f1e160] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f1e163]
+                          - link [ref=f1e166] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl?ref=embed_page
+                          - generic [ref=f1e171]:
+                            - link "Town of Berlin Maryland" [ref=f1e172] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f1e173]: Town of Berlin Maryland
+                            - link "on Friday" [ref=f1e174] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl?ref=embed_page
+                              - generic [ref=f1e175]: on Friday
+                      - table [ref=f1e177]:
+                        - rowgroup [ref=f1e178]:
+                          - row "9 Comment 5" [ref=f1e179]:
+                            - cell "9" [ref=f1e180]:
+                              - button "9" [ref=f1e181]:
+                                - generic "Like" [ref=f1e182] [cursor=pointer]: "9"
+                            - cell "Comment" [ref=f1e184]:
+                              - link "Comment" [ref=f1e185] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl?ref=embed_page
+                                - generic "Comment" [ref=f1e186]: Comment
+                            - cell "5" [ref=f1e188]:
+                              - link "5" [ref=f1e189] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f1e190]: "5"
+                    - generic [ref=f1e194]:
+                      - generic [ref=f1e195]:
+                        - link [ref=f1e200] [cursor=pointer]:
+                          - /url: https://www.facebook.com/photo.php?fbid=1384121823755511&set=a.334139272087110&type=3&ref=embed_page
+                        - generic [ref=f1e202]:
+                          - link "Play unseen Stories" [ref=f1e204] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f1e207]
+                          - link [ref=f1e210] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl?ref=embed_page
+                          - generic [ref=f1e215]:
+                            - link "Town of Berlin Maryland" [ref=f1e216] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f1e217]: Town of Berlin Maryland
+                            - link "on Friday" [ref=f1e218] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl?ref=embed_page
+                              - generic [ref=f1e219]: on Friday
+                      - table [ref=f1e221]:
+                        - rowgroup [ref=f1e222]:
+                          - row "2 Comment 19" [ref=f1e223]:
+                            - cell "2" [ref=f1e224]:
+                              - button "2" [ref=f1e225]:
+                                - generic "Like" [ref=f1e226] [cursor=pointer]: "2"
+                            - cell "Comment" [ref=f1e228]:
+                              - link "Comment" [ref=f1e229] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl?ref=embed_page
+                                - generic "Comment" [ref=f1e230]: Comment
+                            - cell "19" [ref=f1e232]:
+                              - link "19" [ref=f1e233] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f1e234]: "19"
+                    - generic [ref=f1e238]:
+                      - generic [ref=f1e240]:
+                        - generic [ref=f1e241]:
+                          - link "Play unseen Stories" [ref=f1e243] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f1e246]
+                          - link [ref=f1e249] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l?ref=embed_page
+                          - generic [ref=f1e254]:
+                            - link "Town of Berlin Maryland" [ref=f1e255] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f1e256]: Town of Berlin Maryland
+                            - link "on Friday" [ref=f1e257] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l?ref=embed_page
+                              - generic [ref=f1e258]: on Friday
+                        - generic [ref=f1e259]:
+                          - paragraph [ref=f1e260]: "News Release: Public Meeting on Hudson Branch Restoration Project"
+                          - paragraph [ref=f1e261]:
+                            - text: "Click the link below to read more:"
+                            - link "https://conta.cc/4vlVU8n" [ref=f1e262] [cursor=pointer]:
+                              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fconta.cc%2F4vlVU8n&h=AT758qYHjhSVVsHq9LRJItG1hwTrsMTHYjPJXZCzb9pDKc6RJy_Y1YGWgeBZ8I9J5LVrJ8JKGTpun6OI_wzow2J9MKlikpCJevsuRAaUTOR_HsjUDhVeUwEwmE2-J95__zuDtUgcKIxM2cNc4WqzZAejzXvmsszxVCtK4iHK3fIgiv6Lol6anLY
+                        - generic [ref=f1e269]:
+                          - 'link "News Release: Public Meeting on Hudson Branch Restoration Project" [ref=f1e271] [cursor=pointer]':
+                            - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F4vlVU8n%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252Fa70605fb-6553-4159-8c5f-f91c552fe44b.png&h=AT6AF3V9FFmwe4SjMHTu2gll0nr8r1_rUpKSz5B53cQkoFeeZdKn7bNLSDd_vqEi-TRvxV9sMDbT5cUw09nZSKY8IR-qUqodQNBd8aldBkvtG2tdkbu0jTVi3Yrr8H7DfdscT8Aq9kaZlenJ4cMygXSFLZdtgb-mPr2hCOheHzBiuQ
+                            - generic [ref=f1e272]: Email from Town of Berlin Town of Berlin News Release April 10, 2026 Public Meeting on Hudson Branch Restoration Project April 10, 2026 For Immediate Release… Public Meeting on Hudson Branch Resto
+                            - img "No photo description available." [ref=f1e275]
+                          - generic [ref=f1e276]:
+                            - generic [ref=f1e277]:
+                              - generic [ref=f1e280]: web-extract.constantcontact.com
+                              - generic [ref=f1e281]:
+                                - 'link "News Release: Public Meeting on Hudson Branch Restoration Project" [ref=f1e283] [cursor=pointer]':
+                                  - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F4vlVU8n%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252Fa70605fb-6553-4159-8c5f-f91c552fe44b.png&h=AT7EVUAyWatyuK3Hvfdvo2lT4pGxxLwOBw_wxvNXxutlpVhHe-Y6eA4jnPhvhFfGrsFtZb_ou45pYPPFsfAx9ga0tsD0g-A3pwECJpku_pssiT3_O9j4JHtdg99xS4_dUC8NcnP5c2YgFn4u75Ct6FsnvVq8c_5gwldXKVfWW9GyoQ
+                                - generic [ref=f1e284]: Email from Town of Berlin Town of Berlin News Release April 10, 2026 Public Meeting on Hudson Branch Restoration Project April 10, 2026 For Immediate Release… Public Meeting on Hudson Branch Resto
+                            - 'link "News Release: Public Meeting on Hudson Branch Restoration Project" [ref=f1e285] [cursor=pointer]':
+                              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F4vlVU8n%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252Fa70605fb-6553-4159-8c5f-f91c552fe44b.png&h=AT4Kk2HMxsEu9d98DozurzA7a_j0I-iAvd2YotOouu_5NL4J1v5u6E_IlBHQ-hH97g2X3aqrQO_4ylNv4LTMqxo5fMniUNbtPddv5qEc1mEx3Rra5MVEDyWcqCiO2OKMbUtOtkkH4scMRjeOXjzk3ZX74EG6Gh_4KjeVSjfBD1sgLJow-VfS9PE
+                              - generic [ref=f1e286]: Email from Town of Berlin Town of Berlin News Release April 10, 2026 Public Meeting on Hudson Branch Restoration Project April 10, 2026 For Immediate Release… Public Meeting on Hudson Branch Resto
+                      - table [ref=f1e288]:
+                        - rowgroup [ref=f1e289]:
+                          - row "3 Comment 1" [ref=f1e290]:
+                            - cell "3" [ref=f1e291]:
+                              - button "3" [ref=f1e292]:
+                                - generic "Like" [ref=f1e293] [cursor=pointer]: "3"
+                            - cell "Comment" [ref=f1e295]:
+                              - link "Comment" [ref=f1e296] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l?ref=embed_page
+                                - generic "Comment" [ref=f1e297]: Comment
+                            - cell "1" [ref=f1e299]:
+                              - link "1" [ref=f1e300] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f1e301]: "1"
+                  - progressbar [ref=f1e304]
+                  - link "Find us on Facebook" [ref=f1e305] [cursor=pointer]:
+                    - /url: https://www.facebook.com/348695934316?ref=embed_page
+                    - generic [ref=f1e306]: Find us on Facebook
+        - generic [ref=e574]:
+          - generic [ref=e575]:
+            - heading "Contact Us" [level=2] [ref=e576]
+            - heading "Town of Berlin, Maryland" [level=3] [ref=e577]
+            - link "10 William Street | Berlin, MD 21811" [ref=e578] [cursor=pointer]:
+              - /url: https://goo.gl/maps/ELZPrM4iwBz
+              - paragraph [ref=e579]: 10 William Street | Berlin, MD 21811
+          - generic [ref=e580]:
+            - text: "Phone:"
+            - link "410-641-2770" [ref=e581] [cursor=pointer]:
+              - /url: tel:+1-410-641-2770
+            - text: "Fax: 410-641-2316"
+            - text: "Email:"
+            - link "info@berlinmd.gov" [ref=e582] [cursor=pointer]:
+              - /url: mailto:info@berlinmd.gov
+          - generic [ref=e584]:
+            - link "Visit" [ref=e585] [cursor=pointer]:
+              - /url: https://www.facebook.com/townofberlinmd
+              - generic [ref=e586]: 
+            - link "Visit" [ref=e587] [cursor=pointer]:
+              - /url: https://www.twitter.com/berlinmd
+              - generic [ref=e588]: 
+            - link "Visit" [ref=e589] [cursor=pointer]:
+              - /url: https://www.youtube.com/channel/UC0Z2ZVJTUkUr7vpY5H6RZag
+              - generic [ref=e590]: 
+          - generic [ref=e591]:
+            - img "Coolest Small Town in America"
+            - img "Certificate of Excellence - Trip Advisor" [ref=e592]
+          - link "CodeRED" [ref=e593] [cursor=pointer]:
+            - /url: https://accountportal.onsolve.net/berlintownmd
+            - img "CodeRED" [ref=e594]
+          - paragraph [ref=e596]:
+            - link "Site Map" [ref=e597] [cursor=pointer]:
+              - /url: /site-map
+              - strong [ref=e598]: Site Map
+            - text: "|"
+            - link "Accessibility" [ref=e599] [cursor=pointer]:
+              - /url: /accessibility
+              - strong [ref=e600]: Accessibility
+            - text: COPYRIGHT © 2026
+            - link "TOWN OF BERLIN, MARYLAND" [ref=e601] [cursor=pointer]:
+              - /url: https://berlinmd.gov
+            - link "WEBSITE DESIGN BY D3" [ref=e602] [cursor=pointer]:
+              - /url: https://d3corp.com/
+            - link "OCEAN CITY MARYLAND" [ref=e603] [cursor=pointer]:
+              - /url: http://visitoceancity.com/
+  - generic: t t t t t t

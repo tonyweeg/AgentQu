@@ -1,0 +1,329 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isModerator() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isModerator == true;
+    }
+
+    // ========================================================================
+    // USERS COLLECTION
+    // ========================================================================
+
+    match /users/{userId} {
+      // Anyone can read public user profiles
+      allow read: if true;
+
+      // Users can only create/update their own profile
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) &&
+                       // Prevent privilege escalation
+                       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isModerator', 'isBanned']));
+
+      // No deletion allowed
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // ACTIVITIES COLLECTION
+    // ========================================================================
+
+    match /activities/{activityId} {
+      // Anyone can read active activities
+      allow read: if resource.data.expiration.isActive == true;
+
+      // No direct writes - only through Cloud Functions
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // SEARCH CACHE COLLECTION
+    // ========================================================================
+
+    match /search_cache/{cacheId} {
+      // Read-only for everyone
+      allow read: if true;
+
+      // No direct writes - only through Cloud Functions
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // REVIEWS COLLECTION
+    // ========================================================================
+
+    match /reviews/{reviewId} {
+      // Anyone can read approved reviews
+      allow read: if resource.data.moderation.status == 'approved';
+
+      // Moderators can read all reviews
+      allow read: if isModerator();
+
+      // Users can read their own reviews (even if pending)
+      allow read: if isOwner(resource.data.userId);
+
+      // Only Cloud Functions can create reviews (for profanity filtering)
+      allow create: if false;
+
+      // Users can update their own reviews (content only, not moderation status)
+      allow update: if isOwner(resource.data.userId) &&
+                       request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['content', 'title', 'updatedAt', 'photos']);
+
+      // Moderators can update moderation status
+      allow update: if isModerator();
+
+      // Users can delete their own reviews
+      allow delete: if isOwner(resource.data.userId);
+
+      // Moderators can delete any review
+      allow delete: if isModerator();
+    }
+
+    // ========================================================================
+    // USER VOTES COLLECTION (Legacy - kept for backwards compatibility)
+    // ========================================================================
+
+    match /user_votes/{voteId} {
+      // Anyone can read votes
+      allow read: if true;
+
+      // Only Cloud Functions can write votes
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // USER QU-UPS COLLECTION
+    // ========================================================================
+
+    match /user_qups/{qupId} {
+      // Anyone can read Qu-ups
+      allow read: if true;
+
+      // Only Cloud Functions can write Qu-ups (to update ratings atomically)
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // USER ACTIVITY HISTORY COLLECTION
+    // ========================================================================
+
+    match /user_activity_history/{historyId} {
+      // Users can only read their own history
+      allow read: if isAuthenticated() && historyId.matches(request.auth.uid + '_.*');
+
+      // Only Cloud Functions can write (check-ins, visits)
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // ACTIVITY SUGGESTIONS COLLECTION
+    // ========================================================================
+
+    match /activity_suggestions/{suggestionId} {
+      // Anyone can read approved suggestions
+      allow read: if resource.data.status == 'approved';
+
+      // Moderators can read all suggestions
+      allow read: if isModerator();
+
+      // Users can read their own suggestions
+      allow read: if isOwner(resource.data.userId);
+
+      // Only Cloud Functions can create suggestions (for validation)
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // ACTIVITY SHARES COLLECTION
+    // ========================================================================
+
+    match /activity_shares/{shareId} {
+      // Users can read shares they created or received
+      allow read: if isAuthenticated() &&
+                     (request.auth.uid == resource.data.sharedBy ||
+                      request.auth.uid in resource.data.sharedWith);
+
+      // Only Cloud Functions can create shares
+      allow write: if false;
+    }
+
+    // ========================================================================
+    // TRIPS COLLECTION (There-Then Trip Planning)
+    // ========================================================================
+
+    match /trips/{tripId} {
+      // Users can read trips they created or are invited to
+      allow read: if isAuthenticated() &&
+                     (resource.data.createdBy == request.auth.uid ||
+                      resource.data.sharing.isPublic == true);
+
+      // Users can create trips
+      allow create: if isAuthenticated() && request.resource.data.createdBy == request.auth.uid;
+
+      // Users can update their own trips
+      allow update: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+
+      // Users can delete their own trips
+      allow delete: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+    }
+
+    // ========================================================================
+    // CIRQLES COLLECTION (Family & Friends Circles)
+    // ========================================================================
+
+    match /cirqles/{cirqleId} {
+      // Users can read their own Cirqle (cirqleId matches their userId)
+      allow read: if isAuthenticated() && cirqleId == request.auth.uid;
+
+      // Users can create their own Cirqle (cirqleId must match userId)
+      allow create: if isAuthenticated() &&
+                       cirqleId == request.auth.uid &&
+                       request.resource.data.ownerId == request.auth.uid;
+
+      // Users can update their own Cirqle
+      allow update: if isAuthenticated() && cirqleId == request.auth.uid;
+
+      // Users can delete their own Cirqle
+      allow delete: if isAuthenticated() && cirqleId == request.auth.uid;
+    }
+
+    // ========================================================================
+    // POLISCAI: CONSTITUTIONAL CLAUSES
+    // ========================================================================
+
+    match /clauses/{clauseId} {
+      // Anyone can read clauses (V1.0 and V2.0 text)
+      allow read: if true;
+
+      // Only Cloud Functions can write (seeding, V2.0 updates)
+      allow write: if false;
+
+      // Audit log subcollection - write once, never update/delete
+      match /auditLog/{entryId} {
+        allow read: if true;
+        allow create: if false; // Only Cloud Functions
+        allow update, delete: if false;
+      }
+    }
+
+    // ========================================================================
+    // POLISCAI: AMBIGUITY SUBMISSIONS
+    // ========================================================================
+
+    match /submissions/{submissionId} {
+      // Anyone can read submissions
+      allow read: if true;
+
+      // Authenticated users can create submissions
+      allow create: if isAuthenticated() &&
+                       request.resource.data.submittedBy == request.auth.uid;
+
+      // Users can update their own drafts, community can update votes via Cloud Functions
+      allow update: if isAuthenticated() &&
+                       (
+                         // Own draft updates
+                         (resource.data.submittedBy == request.auth.uid &&
+                          resource.data.status == 'draft') ||
+                         // Community response additions (via function)
+                         false
+                       );
+
+      // No deletions - immutable record
+      allow delete: if false;
+
+      // Audit log subcollection
+      match /auditLog/{entryId} {
+        allow read: if true;
+        allow create: if false; // Only Cloud Functions
+        allow update, delete: if false;
+      }
+    }
+
+    // ========================================================================
+    // POLISCAI: VOTES
+    // ========================================================================
+
+    match /poliscai_votes/{voteId} {
+      // Anyone can read votes (transparency)
+      allow read: if true;
+
+      // Users can create their own vote (voteId = {userId}_{submissionId})
+      allow create: if isAuthenticated() &&
+                       voteId.matches(request.auth.uid + '_.*') &&
+                       request.resource.data.userId == request.auth.uid;
+
+      // Users can update their own vote within 24 hours
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid &&
+                       resource.data.locked == false;
+
+      // No deletions
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // POLISCAI: CONSTITUTIONALITY QUERIES
+    // ========================================================================
+
+    match /queries/{queryId} {
+      // Users can read public queries OR their own queries
+      allow read: if resource.data.isPublic == true ||
+                     (isAuthenticated() && resource.data.userId == request.auth.uid);
+
+      // Authenticated users can create queries with their userId
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+
+      // No updates or deletions - immutable record
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // POLISCAI: ANNOTATION VOTES
+    // ========================================================================
+
+    match /annotationVotes/{annotationId} {
+      // Anyone can read annotation votes (public transparency)
+      allow read: if true;
+
+      // Authenticated users can create/update annotation votes
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+
+      // No deletions
+      allow delete: if false;
+    }
+
+    // ========================================================================
+    // POLISCAI: USER PROFILES (extends existing users collection)
+    // ========================================================================
+    // Note: PoliScai user fields are added to existing users collection
+    // Additional fields: role, submissionCount, approvedSubmissionCount,
+    // votesCast, disputesSubmitted, queriesRun, isSuspended
+
+    // ========================================================================
+    // DEFAULT DENY
+    // ========================================================================
+
+    // Deny access to all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

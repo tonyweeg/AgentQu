@@ -1,0 +1,69 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - img "NASA logo with text to the right that reads 'Landsat Science'" [ref=e3]
+    - generic [ref=e4]: help_outline
+    - generic [ref=e5]: Your Name In Landsat
+  - generic:
+    - generic:
+      - img "Image Composite"
+      - button "Close QR code popup":
+        - generic: 
+      - heading "Share your image!" [level=2]
+      - img "QR Code"
+      - paragraph: Scan this QR code with your mobile device to open the image externally.
+      - button " Copy Link":
+        - generic: 
+        - generic: Copy Link
+  - generic:
+    - generic:
+      - button "Close help popup":
+        - generic: 
+      - heading "Info" [level=2]
+      - paragraph: The satellite images used in this interactive are part of Landsat's extensive record, spanning more than 50 years.
+      - paragraph:
+        - text: The Landsat series of Earth-observing satellites are jointly managed by NASA and the
+        - link "U.S. Geological Survey (USGS)":
+          - /url: https://www.usgs.gov/landsat-missions
+        - text: .
+  - generic [ref=e6]:
+    - img "a_0" [ref=e25]
+    - img "b_0"
+    - img "c_1"
+    - img "d_0"
+    - img "e_1"
+    - img "f_0"
+    - img "g_0"
+    - img "h_0"
+    - img "i_3"
+    - img "j_0"
+    - img "k_1"
+    - img "l_3"
+    - img "m_1"
+    - img "n_2" [ref=e26]
+    - img "o_0"
+    - img "p_0"
+    - img "q_1"
+    - img "r_3"
+    - img "s_0" [ref=e27]
+    - img "t_1"
+    - img "u_1"
+    - img "v_2"
+    - img "w_0"
+    - img "x_0"
+    - img "y_2"
+    - img "z_0"
+  - generic [ref=e14]:
+    - generic [ref=e15]: Type in your name to see it spelled out in Landsat imagery of Earth!
+    - generic [ref=e16]:
+      - textbox "Enter a name" [active] [ref=e17]: ABCDEFGHIJKLMNOPQRSTUVWXYZ
+      - button "Enter"
+      - generic [ref=e20] [cursor=pointer]: 
+      - generic [ref=e22] [cursor=pointer]: 
+      - generic:
+        - generic:
+          - paragraph: Please enter letters from A-Z
+    - generic [ref=e23]:
+      - link "Title of image":
+        - /url: ""
+      - link "40°41'24\" N, 116°58'03\" E" [ref=e24] [cursor=pointer]:
+        - /url: ""

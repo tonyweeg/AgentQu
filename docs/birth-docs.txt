@@ -1,0 +1,2478 @@
+
+AgentQu
+A real-time where-I-am-tell-me-what-I-can-do-in-the-time-I-have-app. For all humans, and a few non-human animals too!
+
+
+
+Firebase configuration setup
+Last message 6 days ago
+Naming a new company
+Last message 7 days ago
+Instructions
+Add instructions to tailor Claude’s responses
+
+Files
+2% of project capacity used
+
+zipquest-birth-documents.txt
+2,450 lines
+
+txt
+
+
+
+zipquest-birth-documents.txt
+66.56 KB •2,450 lines
+•
+Formatting may be inconsistent from source
+
+Zipquest Platform - Complete Technical Specification
+Executive Summary
+Zipquest is a real-time activity discovery platform that helps users find last-minute things to do based on their location, accessibility needs, and current context (weather, time of day). The platform prioritizes accessibility-first design and deterministic, explainable results over black-box algorithms.
+Core Value Proposition
+"What should I do right now?" - answered in under 2 seconds with personalized, accessible suggestions for venues, events, hikes, and daytime activities.
+Platform Principles
+
+Accessibility First - Every activity must have complete accessibility metadata
+Deterministic Scoring - Same inputs always produce same outputs, fully explainable
+Real-Time Context - Weather, time, and location-aware suggestions
+Privacy-Focused - Minimal data collection, user control over location
+Free Tier Viable - Architecture stays within Firebase/GCP free tiers during development
+
+
+System Architecture Overview
+Tech Stack
+Backend:
+
+Google Cloud Functions (2nd gen) - Serverless API orchestration
+Cloud Firestore - Primary database (NoSQL, geospatial queries)
+Firebase Authentication - User management and OAuth
+Cloud Scheduler - Background jobs (cache warming, data updates)
+Secret Manager - API key management
+Cloud Storage - Static assets, backup data
+
+Frontend:
+
+Next.js 14 (React) - SSR for performance
+Tailwind CSS - Rapid UI development
+Firebase SDK - Direct Firestore queries for real-time updates
+Mapbox/Leaflet - Maps (free tier)
+Progressive Web App (PWA) - Mobile-like experience
+
+External APIs (Free Tiers):
+
+Foursquare Places API - Venue data ($200/month credit)
+Ticketmaster Discovery API - Events (5,000 calls/day)
+Hiking Project Data API - Trails (200 calls/day)
+OpenWeatherMap - Weather context (60/min, 1000/day)
+Recreation.gov API - Federal lands activities
+
+
+Database Schema (Firestore)
+Collection: activities
+Primary collection storing all discoverable items (venues, events, hikes, outdoor activities).
+javascript// Document ID: {source}_{id} (e.g., "fsq_123abc", "tm_456def", "hike_789ghi")
+{
+  // === IDENTITY ===
+  id: "fsq_123abc",
+  source: "foursquare", // foursquare, ticketmaster, hikingproject, recreation
+  type: "venue", // venue, event, hike, outdoor
+  name: "Blue Bottle Coffee",
+  description: "Specialty coffee roaster with pour-over bar",
+  
+  // === LOCATION ===
+  lat: 37.7749,
+  lng: -122.4194,
+  geohash: "9q8yyk", // 6 chars for precise queries (~1.2km)
+  geohash4: "9q8y",   // 4 chars for broader queries (~20km)
+  address: "315 Linden St, San Francisco, CA 94102",
+  neighborhood: "Hayes Valley",
+  city: "San Francisco",
+  state: "CA",
+  
+  // === CATEGORIES ===
+  categories: ["coffee", "cafe", "breakfast"],
+  primaryCategory: "coffee",
+  
+  // === ACCESSIBILITY (REQUIRED) ===
+  accessibility: {
+    // Mobility
+    wheelchairAccessible: true,
+    wheelchairDetails: "Level entrance, wide aisles, accessible restroom",
+    mobilityLevel: "easy", // easy, moderate, difficult
+    accessibleParking: true,
+    accessibleEntrance: true,
+    accessibleRestrooms: true,
+    elevatorAvailable: false,
+    
+    // Visual
+    visualImpairment: {
+      suitable: true,
+      audioGuide: false,
+      tactileElements: false,
+      guideDogFriendly: true,
+      brailleSignage: false
+    },
+    
+    // Hearing
+    hearingImpairment: {
+      suitable: true,
+      captionsAvailable: false,
+      visualAlerts: true,
+      signLanguageStaff: false
+    },
+    
+    // Cognitive
+    cognitiveAccessibility: {
+      suitable: true,
+      clearSignage: true,
+      simplifiedInfo: true,
+      quietEnvironment: false
+    },
+    
+    // Sensory
+    sensoryFriendly: {
+      quietSpace: false,
+      lowStimulation: false,
+      noFlashingLights: true,
+      fragranceFree: false
+    },
+    
+    // General
+    serviceAnimalFriendly: true,
+    familyRestroom: false,
+    
+    // Age
+    ageAppropriate: {
+      minAge: 0,
+      maxAge: null,
+      kidFriendly: true,
+      supervisionRequired: false
+    },
+    
+    // Verification
+    verified: true,
+    verifiedDate: timestamp,
+    verifiedBy: "foursquare" // source, user_report, manual
+  },
+  
+  // === TRANSPORTATION ===
+  transportation: {
+    publicTransit: {
+      accessible: true,
+      lines: ["N-Judah", "5-Fulton", "Bus 6"],
+      nearestStop: "9th Ave & Judah",
+      walkFromStopMiles: 0.2
+    },
+    parking: {
+      available: true,
+      free: false,
+      pricePerHour: 3.50,
+      accessibleSpaces: 2,
+      nearestLot: "Public lot on Fell St"
+    },
+    bikeAccessible: true,
+    bikeParking: true,
+    rideshareDropoff: "Main entrance on Linden St"
+  },
+  
+  // === TIME AVAILABILITY ===
+  hours: {
+    monday: { open: "07:00", close: "18:00" },
+    tuesday: { open: "07:00", close: "18:00" },
+    wednesday: { open: "07:00", close: "18:00" },
+    thursday: { open: "07:00", close: "18:00" },
+    friday: { open: "07:00", close: "18:00" },
+    saturday: { open: "08:00", close: "19:00" },
+    sunday: { open: "08:00", close: "19:00" }
+  },
+  hoursToday: {
+    open: "07:00",
+    close: "18:00",
+    openNow: true,
+    closingSoon: false // true if <1 hour until close
+  },
+  
+  // For events
+  eventTime: {
+    startTime: timestamp,
+    endTime: timestamp,
+    startDate: "2025-09-30", // YYYY-MM-DD for range queries
+    duration: 120 // minutes
+  },
+  
+  // === COST ===
+  cost: {
+    free: false,
+    price: 5.50, // average price
+    priceRange: { min: 3, max: 8 },
+    priceLevel: 2, // 1-4 scale
+    currency: "USD",
+    acceptsCash: true,
+    acceptsCards: true,
+    additionalFees: []
+  },
+  
+  // === ACTIVITY DETAILS ===
+  details: {
+    // For hikes
+    difficulty: "moderate", // easy, moderate, difficult
+    length: 3.4, // miles
+    elevationGain: 500, // feet
+    routeType: "loop", // loop, out-and-back, point-to-point
+    estimatedTime: 90, // minutes
+    trailCondition: "Good",
+    lastConditionUpdate: timestamp,
+    
+    // For venues
+    cuisine: "coffee",
+    atmosphere: "casual",
+    noiseLevel: "moderate",
+    
+    // For events
+    genre: "jazz",
+    ageRestriction: "21+",
+    dressCode: "casual"
+  },
+  
+  // === WEATHER REQUIREMENTS ===
+  weatherRequirements: {
+    requiresGoodWeather: true,
+    indoorOption: false,
+    minTemp: 50,
+    maxTemp: 85,
+    avoidRain: true,
+    avoidWind: false,
+    idealConditions: ["sunny", "partly_cloudy"]
+  },
+  
+  // === FEATURES ===
+  features: {
+    dogFriendly: false,
+    hasWifi: true,
+    hasOutdoorSeating: true,
+    hasRestrooms: true,
+    hasParking: true,
+    requiresReservation: false,
+    scenicViews: false,
+    waterFeature: false
+  },
+  
+  // === QUALITY SIGNALS ===
+  rating: 4.5, // 0-5 scale
+  reviewCount: 342,
+  popularity: 0.78, // 0-1 normalized
+  
+  // === METADATA ===
+  images: ["url1", "url2"],
+  website: "https://bluebottlecoffee.com",
+  phone: "+14155551234",
+  
+  // Cache control
+  lastFetched: timestamp,
+  expiresAt: timestamp,
+  cacheStatus: "fresh", // fresh, stale, expired
+  
+  // Stats (updated by background jobs)
+  stats: {
+    views7d: 234,
+    clicks7d: 45,
+    bookings7d: 12
+  }
+}
+Critical Firestore Indexes:
+javascript// 1. Geospatial + open now
+{
+  collection: "activities",
+  fields: [
+    { fieldPath: "geohash", order: "ASCENDING" },
+    { fieldPath: "hoursToday.openNow", order: "ASCENDING" },
+    { fieldPath: "rating", order: "DESCENDING" }
+  ]
+}
+
+// 2. Accessibility filtering
+{
+  collection: "activities",
+  fields: [
+    { fieldPath: "geohash4", order: "ASCENDING" },
+    { fieldPath: "accessibility.wheelchairAccessible", order: "ASCENDING" },
+    { fieldPath: "accessibility.mobilityLevel", order: "ASCENDING" }
+  ]
+}
+
+// 3. Category filtering
+{
+  collection: "activities",
+  fields: [
+    { fieldPath: "geohash", order: "ASCENDING" },
+    { fieldPath: "primaryCategory", order: "ASCENDING" },
+    { fieldPath: "rating", order: "DESCENDING" }
+  ]
+}
+
+// 4. Events by date
+{
+  collection: "activities",
+  fields: [
+    { fieldPath: "type", order: "ASCENDING" },
+    { fieldPath: "eventTime.startDate", order: "ASCENDING" },
+    { fieldPath: "geohash", order: "ASCENDING" }
+  ]
+}
+Collection: users
+javascript// Document ID: {userId} (Firebase Auth UID)
+{
+  // === PROFILE ===
+  email: "user@example.com",
+  displayName: "Jane Doe",
+  createdAt: timestamp,
+  lastActive: timestamp,
+  
+  // === LOCATION ===
+  location: {
+    lat: 37.7749,
+    lng: -122.4194,
+    lastUpdated: timestamp,
+    city: "San Francisco",
+    state: "CA"
+  },
+  homeGeohash: "9q8yyk",
+  
+  // === ACCESSIBILITY NEEDS ===
+  accessibilityNeeds: {
+    // Hard requirements (filter)
+    requiresWheelchair: false,
+    mobilityLevel: "moderate", // easy, moderate, difficult (max they can handle)
+    requiresServiceAnimal: false,
+    requiresSensoryFriendly: false,
+    
+    // Soft preferences (score adjustment)
+    preferVisualAccommodations: false,
+    preferHearingAccommodations: false,
+    preferCognitiveSupport: false,
+    
+    notes: "Prefers quiet environments" // user-entered
+  },
+  
+  // === PREFERENCES ===
+  preferences: {
+    // Activity types
+    activityTypes: {
+      venues: true,
+      events: true,
+      hiking: true,
+      outdoor: true
+    },
+    
+    // Categories
+    favoriteCategories: ["coffee", "hiking", "music", "museums"],
+    avoidCategories: ["bars", "nightlife"],
+    
+    // Time
+    timePreferences: {
+      morning: true,   // 6am-12pm
+      afternoon: true, // 12pm-6pm
+      evening: true,   // 6pm-10pm
+      night: false     // 10pm-2am
+    },
+    
+    // Distance
+    maxDistanceMiles: 10,
+    preferWithin: 5, // ideal distance
+    
+    // Cost
+    pricePreference: {
+      maxBudget: 50, // dollars
+      preferFree: true
+    },
+    
+    // Transportation
+    transportation: {
+      hasVehicle: false,
+      preferPublicTransit: true,
+      maxWalkFromTransitMiles: 0.5,
+      bikeAvailable: true
+    },
+    
+    // Weather sensitivity
+    weatherSensitivity: "moderate", // high, moderate, low
+    
+    // Outdoor preferences
+    outdoorPreferences: {
+      maxHikeDistance: 5,
+      maxElevationGain: 1000,
+      difficultiesOk: ["easy", "moderate"]
+    }
+  },
+  
+  // === LEARNED AFFINITIES ===
+  affinities: {
+    coffee: 0.92,
+    hiking: 0.89,
+    nature: 0.85,
+    music: 0.78,
+    italian: 0.65
+    // ... learned from interactions
+  },
+  
+  // === STATS ===
+  stats: {
+    totalViews: 1234,
+    totalClicks: 234,
+    totalBookings: 45,
+    favoritesCount: 23
+  }
+}
+Collection: interactions
+Tracks user behavior for learning affinities (not for ML training).
+javascript// Document ID: auto-generated
+{
+  userId: "user_123",
+  activityId: "fsq_456",
+  activityType: "venue",
+  action: "view", // view, click, book, dismiss, favorite
+  
+  // Context at interaction
+  context: {
+    timestamp: timestamp,
+    dayOfWeek: 2,
+    hour: 14,
+    weather: "sunny",
+    temperature: 72,
+    userLat: 37.7749,
+    userLng: -122.4194,
+    distanceFromUser: 0.8
+  },
+  
+  // Activity snapshot
+  activitySnapshot: {
+    categories: ["coffee", "cafe"],
+    primaryCategory: "coffee",
+    rating: 4.5,
+    priceLevel: 2
+  },
+  
+  // Outcome
+  outcome: {
+    timeOnPage: 45, // seconds
+    converted: false, // did they book?
+    returnedLater: false
+  }
+}
+Index:
+javascript{
+  collection: "interactions",
+  fields: [
+    { fieldPath: "userId", order: "ASCENDING" },
+    { fieldPath: "context.timestamp", order: "DESCENDING" }
+  ]
+}
+Collection: cache_control
+Rate limiting and API quota tracking.
+javascript// Document ID: {apiName} (e.g., "foursquare", "ticketmaster")
+{
+  apiName: "foursquare",
+  
+  // Rate limit tracking
+  rateLimits: {
+    perSecond: 50,
+    perDay: 40000,
+    
+    currentWindow: {
+      windowStart: timestamp,
+      requestCount: 1247
+    }
+  },
+  
+  // Quota tracking
+  quotas: {
+    monthlyCredit: 200, // dollars
+    usedThisMonth: 47.32,
+    resetDate: "2025-10-01"
+  },
+  
+  // Health
+  status: "healthy", // healthy, degraded, down
+  lastError: null,
+  lastSuccess: timestamp,
+  
+  // Circuit breaker state
+  circuitBreaker: {
+    state: "closed", // closed, open, half-open
+    failureCount: 0,
+    lastFailure: null,
+    nextRetry: null
+  }
+}
+
+Backend Implementation (Cloud Functions)
+Core Functions
+1. discoverActivities - Main Discovery Endpoint
+javascript/**
+ * Primary discovery function
+ * Returns scored and ranked activities based on user location and preferences
+ * 
+ * MUST BE DETERMINISTIC - same inputs always produce same outputs
+ */
+exports.discoverActivities = functions.https.onCall(async (data, context) => {
+  const startTime = Date.now();
+  
+  // === VALIDATION ===
+  const { lat, lng, radius = 10, filters = {} } = data;
+  
+  if (!lat || !lng || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    throw new functions.https.HttpsError('invalid-argument', 'Invalid coordinates');
+  }
+  
+  // === USER CONTEXT ===
+  const userId = context.auth?.uid;
+  const user = userId 
+    ? await db.collection('users').doc(userId).get().then(d => d.data())
+    : getDefaultUserPreferences();
+  
+  // === CURRENT CONTEXT ===
+  const currentContext = {
+    userLat: lat,
+    userLng: lng,
+    timestamp: Date.now(),
+    hour: new Date().getHours(),
+    dayOfWeek: new Date().getDay(),
+    isWeekend: [0, 6].includes(new Date().getDay()),
+    weather: await fetchWeather(lat, lng)
+  };
+  
+  // === GEOSPATIAL QUERY ===
+  const bounds = calculateGeohashBounds(lat, lng, radius);
+  
+  let query = db.collection('activities')
+    .where('geohash', '>=', bounds.lower)
+    .where('geohash', '<=', bounds.upper);
+  
+  // Apply open now filter by default
+  if (!filters.includeClosedVenues) {
+    query = query.where('hoursToday.openNow', '==', true);
+  }
+  
+  const snapshot = await query.get();
+  
+  let activities = snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+  
+  console.log(`Found ${activities.length} activities in radius`);
+  
+  // === HARD ACCESSIBILITY FILTERS ===
+  activities = applyAccessibilityFilters(activities, user.accessibilityNeeds);
+  console.log(`${activities.length} activities after accessibility filters`);
+  
+  // === CATEGORY FILTERS ===
+  if (filters.categories && filters.categories.length > 0) {
+    activities = activities.filter(a => 
+      filters.categories.some(cat => a.categories.includes(cat))
+    );
+  }
+  
+  if (user.preferences.avoidCategories.length > 0) {
+    activities = activities.filter(a =>
+      !user.preferences.avoidCategories.some(cat => a.categories.includes(cat))
+    );
+  }
+  
+  // === CALCULATE DISTANCE ===
+  activities = activities.map(activity => ({
+    ...activity,
+    distance: calculateDistance(lat, lng, activity.lat, activity.lng)
+  }));
+  
+  // === DISTANCE FILTER ===
+  activities = activities.filter(a => 
+    a.distance <= (filters.maxDistance || user.preferences.maxDistanceMiles)
+  );
+  
+  console.log(`${activities.length} activities within distance`);
+  
+  // === SCORE EACH ACTIVITY ===
+  const scored = activities.map(activity => {
+    const scoring = calculateScore(activity, user, currentContext);
+    return {
+      ...activity,
+      totalScore: scoring.totalScore,
+      scoreBreakdown: scoring.breakdown,
+      scoreWeights: scoring.weights
+    };
+  });
+  
+  // === SORT (DETERMINISTIC) ===
+  scored.sort((a, b) => {
+    // Primary: Total score
+    if (b.totalScore !== a.totalScore) {
+      return b.totalScore - a.totalScore;
+    }
+    // Tiebreaker 1: Distance
+    if (a.distance !== b.distance) {
+      return a.distance - b.distance;
+    }
+    // Tiebreaker 2: Review count
+    return b.reviewCount - a.reviewCount;
+  });
+  
+  // === DIVERSITY FILTER ===
+  const diverse = diversifyResults(scored, {
+    maxPerType: 4,
+    maxPerPrimaryCategory: 3
+  });
+  
+  // === PREPARE RESPONSE ===
+  const results = diverse.slice(0, 20).map(activity => ({
+    id: activity.id,
+    name: activity.name,
+    type: activity.type,
+    primaryCategory: activity.primaryCategory,
+    distance: Math.round(activity.distance * 10) / 10, // round to 1 decimal
+    score: activity.totalScore,
+    scoreBreakdown: activity.scoreBreakdown,
+    
+    // Core info
+    address: activity.address,
+    lat: activity.lat,
+    lng: activity.lng,
+    
+    // Accessibility
+    accessibility: activity.accessibility,
+    
+    // Practical info
+    cost: activity.cost,
+    hoursToday: activity.hoursToday,
+    duration: activity.details?.estimatedTime || activity.details?.duration,
+    transportation: activity.transportation,
+    
+    // Quality
+    rating: activity.rating,
+    reviewCount: activity.reviewCount,
+    
+    // Media
+    images: activity.images?.slice(0, 2) || [],
+    
+    // Deep link
+    detailsUrl: `/activity/${activity.id}`
+  }));
+  
+  const queryTime = Date.now() - startTime;
+  
+  // === LOG QUERY (for analytics) ===
+  if (userId) {
+    logQuery(userId, {
+      resultsCount: results.length,
+      queryTimeMs: queryTime,
+      context: currentContext
+    });
+  }
+  
+  return {
+    success: true,
+    results,
+    metadata: {
+      totalFound: scored.length,
+      returned: results.length,
+      queryTimeMs: queryTime,
+      context: {
+        weather: currentContext.weather,
+        timeOfDay: getTimeOfDay(currentContext.hour),
+        isWeekend: currentContext.isWeekend
+      },
+      appliedFilters: {
+        accessibility: user.accessibilityNeeds,
+        maxDistance: filters.maxDistance || user.preferences.maxDistanceMiles,
+        categories: filters.categories || []
+      }
+    }
+  };
+});
+
+/**
+ * Helper: Apply hard accessibility filters
+ * Returns only activities that meet REQUIRED accessibility needs
+ */
+function applyAccessibilityFilters(activities, needs) {
+  if (!needs || Object.keys(needs).length === 0) {
+    return activities;
+  }
+  
+  return activities.filter(activity => {
+    const access = activity.accessibility;
+    
+    // Wheelchair requirement (HARD FILTER)
+    if (needs.requiresWheelchair) {
+      if (!access.wheelchairAccessible) return false;
+      if (!access.accessibleRestrooms) return false;
+    }
+    
+    // Service animal requirement (HARD FILTER)
+    if (needs.requiresServiceAnimal) {
+      if (!access.serviceAnimalFriendly) return false;
+    }
+    
+    // Mobility level requirement (HARD FILTER)
+    if (needs.mobilityLevel) {
+      const mobilityLevels = { easy: 1, moderate: 2, difficult: 3 };
+      const activityLevel = mobilityLevels[access.mobilityLevel];
+      const userMaxLevel = mobilityLevels[needs.mobilityLevel];
+      
+      if (activityLevel > userMaxLevel) return false;
+    }
+    
+    // Sensory requirements (HARD FILTER)
+    if (needs.requiresSensoryFriendly) {
+      if (!access.sensoryFriendly.quietSpace) return false;
+    }
+    
+    return true;
+  });
+}
+
+/**
+ * Helper: Calculate deterministic score
+ * CRITICAL: This function must be pure - same inputs = same outputs
+ */
+function calculateScore(activity, user, context) {
+  const scores = {
+    accessibility: 0,
+    distance: 0,
+    time: 0,
+    cost: 0,
+    quality: 0,
+    weather: 0
+  };
+  
+  const weights = {
+    accessibility: 0.30,
+    distance: 0.25,
+    time: 0.15,
+    cost: 0.15,
+    quality: 0.10,
+    weather: 0.05
+  };
+  
+  // 1. ACCESSIBILITY SCORE (0-100)
+  scores.accessibility = calculateAccessibilityScore(
+    activity.accessibility,
+    user.accessibilityNeeds
+  );
+  
+  // 2. DISTANCE SCORE (0-100)
+  if (activity.distance <= 1) scores.distance = 100;
+  else if (activity.distance <= 3) scores.distance = 80;
+  else if (activity.distance <= 5) scores.distance = 60;
+  else if (activity.distance <= 10) scores.distance = 40;
+  else if (activity.distance <= 20) scores.distance = 20;
+  else scores.distance = 0;
+  
+  // 3. TIME SCORE (0-100)
+  if (activity.hoursToday.openNow) {
+    const hoursOpen = calculateHoursUntilClose(activity.hoursToday.close, context.hour);
+    const needed = (activity.details?.estimatedTime || 60) / 60;
+    
+    if (hoursOpen >= needed * 2) scores.time = 100;
+    else if (hoursOpen >= needed) scores.time = 80;
+    else scores.time = 40;
+  } else {
+    scores.time = 0;
+  }
+  
+  // 4. COST SCORE (0-100)
+  if (activity.cost.free) {
+    scores.cost = 100;
+  } else if (user.preferences.pricePreference.maxBudget) {
+    const maxBudget = user.preferences.pricePreference.maxBudget;
+    const price = activity.cost.price || activity.cost.priceRange?.min || 0;
+    
+    if (price <= maxBudget * 0.5) scores.cost = 100;
+    else if (price <= maxBudget) scores.cost = 80;
+    else if (price <= maxBudget * 1.2) scores.cost = 50;
+    else scores.cost = 20;
+  } else {
+    scores.cost = 70; // neutral
+  }
+  
+  // 5. QUALITY SCORE (0-100)
+  if (activity.reviewCount >= 100) {
+    scores.quality = (activity.rating / 5.0) * 100;
+  } else if (activity.reviewCount >= 10) {
+    scores.quality = ((activity.rating / 5.0) * 100) * 0.8;
+  } else {
+    scores.quality = 50; // neutral for unreviewed
+  }
+  
+  // 6. WEATHER SCORE (0-100)
+  scores.weather = calculateWeatherScore(activity, context.weather);
+  
+  // Calculate weighted total
+  const totalScore = Object.keys(weights).reduce((sum, key) => {
+    return sum + (scores[key] * weights[key]);
+  }, 0);
+  
+  return {
+    totalScore: Math.round(totalScore),
+    breakdown: scores,
+    weights: weights
+  };
+}
+
+/**
+ * Helper: Calculate accessibility score with soft preferences
+ */
+function calculateAccessibilityScore(activityAccess, userNeeds) {
+  if (!userNeeds || Object.keys(userNeeds).length === 0) {
+    return 100; // No needs = all activities accessible
+  }
+  
+  let score = 100;
+  
+  // Note: Hard requirements already filtered in applyAccessibilityFilters
+  // This function handles SOFT PREFERENCES
+  
+  // Visual preferences
+  if (userNeeds.preferVisualAccommodations) {
+    if (activityAccess.visualImpairment.suitable) {
+      score += 0; // Already perfect
+    } else {
+      score -= 20; // Less ideal but not filtered
+    }
+  }
+  
+  // Hearing preferences
+  if (userNeeds.preferHearingAccommodations) {
+    if (activityAccess.hearingImpairment.suitable) {
+      score += 0;
+    } else {
+      score -= 20;
+    }
+  }
+  
+  // Cognitive preferences
+  if (userNeeds.preferCognitiveSupport) {
+    if (activityAccess.cognitiveAccessibility.suitable) {
+      score += 0;
+    } else {
+      score -= 15;
+    }
+  }
+  
+  return Math.max(0, Math.min(100, score));
+}
+
+/**
+ * Helper: Calculate weather score
+ */
+function calculateWeatherScore(activity, weather) {
+  // Indoor activities not affected by weather
+  if (!activity.weatherRequirements.requiresGoodWeather) {
+    return 100;
+  }
+  
+  const { condition, temp } = weather;
+  const reqs = activity.weatherRequirements;
+  
+  // Temperature check
+  if (temp < reqs.minTemp || temp > reqs.maxTemp) {
+    return 30; // Poor weather match
+  }
+  
+  // Condition check
+  if (reqs.idealConditions.includes(condition)) {
+    return 100; // Perfect weather
+  }
+  
+  if (reqs.avoidRain && condition.includes('rain')) {
+    return 20; // Bad weather
+  }
+  
+  if (condition === 'cloudy') {
+    return 70; // Acceptable
+  }
+  
+  return 60; // Default
+}
+
+/**
+ * Helper: Diversify results by type and category
+ */
+function diversifyResults(scored, options) {
+  const { maxPerType, maxPerPrimaryCategory } = options;
+  const typeCounts = {};
+  const categoryCounts = {};
+  const results = [];
+  
+  for (const activity of scored) {
+    // Check type limit
+    typeCounts[activity.type] = (typeCounts[activity.type] || 0);
+    if (typeCounts[activity.type] >= maxPerType) continue;
+    
+    // Check category limit
+    const cat = activity.primaryCategory;
+    categoryCounts[cat] = (categoryCounts[cat] || 0);
+    if (categoryCounts[cat] >= maxPerPrimaryCategory) continue;
+    
+    results.push(activity);
+    typeCounts[activity.type]++;
+    categoryCounts[cat]++;
+    
+    if (results.length >= 40) break; // Enough candidates
+  }
+  
+  return results;
+}
+2. fetchAndCacheActivities - Background Cache Warming
+javascript/**
+ * Scheduled function to fetch and cache activities from external APIs
+ * Runs every 15 minutes for hot zones
+ */
+exports.warmCache = functions.pubsub
+  .schedule('every 15 minutes')
+  .onRun(async (context) => {
+    console.log('Starting cache warming job');
+    
+    // Get hot zones (areas with recent user activity)
+    const hotZones = await getHotZones();
+    
+    for (const zone of hotZones) {
+      try {
+        await refreshZoneCache(zone.lat, zone.lng, zone.geohash);
+      } catch (error) {
+        console.error(`Failed to refresh zone ${zone.geohash}:`, error);
+      }
+    }
+    
+    console.log(`Warmed cache for ${hotZones.length} zones`);
+  });
+
+async function refreshZoneCache(lat, lng, geohash) {
+  const radius = 5; // miles
+  
+  // Fetch from all sources in parallel
+  const [venues, events, hikes] = await Promise.all([
+    fetchFoursquareWithRateLimit(lat, lng, radius),
+    fetchTicketmasterWithRateLimit(lat, lng),
+    fetchHikingProjectWithRateLimit(lat, lng, radius)
+  ]);
+  
+  // Batch write to Firestore
+  const batch = db.batch();
+  const now = Date.now();
+  const expiresAt = now + (60 * 60 * 1000); // 1 hour
+  
+  venues.forEach(venue => {
+    const docRef = db.collection('activities').doc(`fsq_${venue.fsq_id}`);
+    batch.set(docRef, {
+      ...venue,
+      lastFetched: now,
+      expiresAt: expiresAt,
+      geohash: geohash
+    }, { merge: true });
+  });
+  
+  events.forEach(event => {
+    const docRef = db.collection('activities').doc(`tm_${event.id}`);
+    batch.set(docRef, {
+      ...event,
+      lastFetched: now,
+      expiresAt: expiresAt,
+      geohash: geohash
+    }, { merge: true });
+  });
+  
+  hikes.forEach(hike => {
+    const docRef = db.collection('activities').doc(`hike_${hike.id}`);
+    batch.set(docRef, {
+      ...hike,
+      lastFetched: now,
+      expiresAt: expiresAt,
+      geohash: geohash
+    }, { merge: true });
+  });
+  
+  await batch.commit();
+  console.log(`Cached ${venues.length + events.length + hikes.length} activities for zone ${geohash}`);
+}
+3. API Fetcher Functions with Rate Limiting
+javascript/**
+ * Fetch venues from Foursquare with rate limiting
+ */
+async function fetchFoursquareWithRateLimit(lat, lng, radius) {
+  // Check rate limit
+  const canProceed = await checkAndIncrementRateLimit('foursquare', 50); // 50/sec
+  
+  if (!canProceed) {
+    console.warn('Foursquare rate limit reached, using cached data');
+    return [];
+  }
+  
+  try {
+    const response = await fetch(
+      `https://api.foursquare.com/v3/places/search?` +
+      `ll=${lat},${lng}&radius=${radius * 1609}&` + // miles to meters
+      `fields=fsq_id,name,location,categories,hours,rating,popularity,price,features`,
+      {
+        headers: {
+          'Authorization': process.env.FOURSQUARE_API_KEY,
+          'Accept': 'application/json'
+        }
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Foursquare API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Transform to our schema
+    return data.results.map(transformFoursquareVenue);
+    
+  } catch (error) {
+    console.error('Foursquare API error:', error);
+    await updateCircuitBreaker('foursquare', 'failure');
+    return [];
+  }
+}
+
+/**
+ * Fetch events from Ticketmaster with rate limiting
+ */
+async function fetchTicketmasterWithRateLimit(lat, lng) {
+  const canProceed = await checkAndIncrementRateLimit('ticketmaster', 5000 / 86400); // 5000/day
+  
+  if (!canProceed) {
+    console.warn('Ticketmaster rate limit reached');
+    return [];
+  }
+  
+  try {
+    const response = await fetch(
+      `https://app.ticketmaster.com/discovery/v2/events.json?` +
+      `latlong=${lat},${lng}&radius=25&unit=miles&` +
+      `size=50&apikey=${process.env.TICKETMASTER_API_KEY}`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Ticketmaster API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data._embedded?.events) {
+      return [];
+    }
+    
+    return data._embedded.events.map(transformTicketmasterEvent);
+    
+  } catch (error) {
+    console.error('Ticketmaster API error:', error);
+    await updateCircuitBreaker('ticketmaster', 'failure');
+    return [];
+  }
+}
+
+/**
+ * Fetch trails from Hiking Project with rate limiting
+ */
+async function fetchHikingProjectWithRateLimit(lat, lng, radius) {
+  const canProceed = await checkAndIncrementRateLimit('hikingproject', 200 / 86400); // 200/day
+  
+  if (!canProceed) {
+    console.warn('Hiking Project rate limit reached');
+    return [];
+  }
+  
+  try {
+    const response = await fetch(
+      `https://www.hikingproject.com/data/get-trails?` +
+      `lat=${lat}&lon=${lng}&maxDistance=${radius}&` +
+      `key=${process.env.HIKING_PROJECT_API_KEY}`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Hiking Project API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    return data.trails.map(transformHikingProjectTrail);
+    
+  } catch (error) {
+    console.error('Hiking Project API error:', error);
+    await updateCircuitBreaker('hikingproject', 'failure');
+    return [];
+  }
+}
+
+/**
+ * Rate limiting using Firestore transactions
+ */
+async function checkAndIncrementRateLimit(apiName, maxPerSecond) {
+  const limitsRef = db.collection('cache_control').doc(apiName);
+  
+  return db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(limitsRef);
+    const now = Date.now();
+    const windowSize = 1000; // 1 second
+    
+    let data = doc.exists ? doc.data() : {
+      rateLimits: {
+        perSecond: maxPerSecond,
+        currentWindow: {
+          windowStart: now,
+          requestCount: 0
+        }
+      }
+    };
+    
+    const window = data.rateLimits.currentWindow;
+    
+    // Reset if new window
+    if (now - window.windowStart > windowSize) {
+      window.windowStart = now;
+      window.requestCount = 0;
+    }
+    
+    // Check limit
+    if (window.requestCount >= maxPerSecond) {
+      return false; // Rate limited
+    }
+    
+    // Increment
+    window.requestCount++;
+    transaction.set(limitsRef, data);
+    
+    return true; // Allowed
+  });
+}
+4. Data Transform Functions
+javascript/**
+ * Transform Foursquare venue to our schema
+ */
+function transformFoursquareVenue(fsqVenue) {
+  return {
+    id: `fsq_${fsqVenue.fsq_id}`,
+    source: 'foursquare',
+    type: 'venue',
+    name: fsqVenue.name,
+    
+    lat: fsqVenue.geocodes.main.latitude,
+    lng: fsqVenue.geocodes.main.longitude,
+    geohash: generateGeohash(
+      fsqVenue.geocodes.main.latitude,
+      fsqVenue.geocodes.main.longitude
+    ),
+    geohash4: generateGeohash(
+      fsqVenue.geocodes.main.latitude,
+      fsqVenue.geocodes.main.longitude,
+      4
+    ),
+    
+    address: fsqVenue.location.formatted_address,
+    neighborhood: fsqVenue.location.neighborhood?.[0],
+    city: fsqVenue.location.locality,
+    state: fsqVenue.location.region,
+    
+    categories: fsqVenue.categories.map(c => c.name.toLowerCase().replace(/\s+/g, '_')),
+    primaryCategory: fsqVenue.categories[0]?.name.toLowerCase().replace(/\s+/g, '_'),
+    
+    // TODO: Foursquare doesn't provide accessibility data
+    // Need to supplement with Google Places or manual entry
+    accessibility: {
+      wheelchairAccessible: null,
+      verified: false,
+      mobilityLevel: 'unknown'
+    },
+    
+    transportation: {
+      publicTransit: {
+        accessible: null,
+        lines: [],
+        nearestStop: null
+      },
+      parking: {
+        available: null
+      },
+      bikeAccessible: null
+    },
+    
+    hours: parseHours(fsqVenue.hours),
+    hoursToday: {
+      openNow: fsqVenue.hours?.open_now || false,
+      open: fsqVenue.hours?.regular?.[0]?.open || null,
+      close: fsqVenue.hours?.regular?.[0]?.close || null
+    },
+    
+    cost: {
+      free: fsqVenue.price === 0,
+      priceLevel: fsqVenue.price || null,
+      price: null // Foursquare doesn't give specific prices
+    },
+    
+    weatherRequirements: {
+      requiresGoodWeather: false,
+      indoorOption: true
+    },
+    
+    features: {
+      hasWifi: fsqVenue.features?.wifi || false,
+      hasOutdoorSeating: fsqVenue.features?.outdoor_seating || false
+    },
+    
+    rating: fsqVenue.rating || null,
+    reviewCount: fsqVenue.stats?.total_ratings || 0,
+    popularity: fsqVenue.popularity || 0,
+    
+    images: fsqVenue.photos?.map(p => p.prefix + '300x200' + p.suffix) || [],
+    website: fsqVenue.website,
+    
+    lastFetched: Date.now(),
+    dataSource: 'foursquare'
+  };
+}
+
+/**
+ * Transform Ticketmaster event to our schema
+ */
+function transformTicketmasterEvent(tmEvent) {
+  const startDateTime = new Date(tmEvent.dates.start.dateTime);
+  
+  return {
+    id: `tm_${tmEvent.id}`,
+    source: 'ticketmaster',
+    type: 'event',
+    name: tmEvent.name,
+    description: tmEvent.info || tmEvent.pleaseNote,
+    
+    lat: parseFloat(tmEvent._embedded?.venues?.[0]?.location?.latitude),
+    lng: parseFloat(tmEvent._embedded?.venues?.[0]?.location?.longitude),
+    geohash: generateGeohash(
+      parseFloat(tmEvent._embedded?.venues?.[0]?.location?.latitude),
+      parseFloat(tmEvent._embedded?.venues?.[0]?.location?.longitude)
+    ),
+    
+    address: tmEvent._embedded?.venues?.[0]?.address?.line1,
+    city: tmEvent._embedded?.venues?.[0]?.city?.name,
+    state: tmEvent._embedded?.venues?.[0]?.state?.stateCode,
+    
+    categories: [
+      tmEvent.classifications?.[0]?.segment?.name?.toLowerCase(),
+      tmEvent.classifications?.[0]?.genre?.name?.toLowerCase(),
+      'event',
+      'music' // most TM events are music
+    ].filter(Boolean),
+    primaryCategory: tmEvent.classifications?.[0]?.segment?.name?.toLowerCase(),
+    
+    accessibility: {
+      wheelchairAccessible: tmEvent._embedded?.venues?.[0]?.accessibleSeatingDetail ? true : null,
+      verified: false,
+      mobilityLevel: 'unknown'
+    },
+    
+    eventTime: {
+      startTime: startDateTime.getTime(),
+      endTime: null, // Ticketmaster doesn't provide end time
+      startDate: startDateTime.toISOString().split('T')[0],
+      duration: null
+    },
+    
+    hoursToday: {
+      openNow: true, // Events are "open" for booking
+      open: null,
+      close: null
+    },
+    
+    cost: {
+      free: tmEvent.priceRanges?.[0]?.min === 0,
+      priceRange: tmEvent.priceRanges?.[0] ? {
+        min: tmEvent.priceRanges[0].min,
+        max: tmEvent.priceRanges[0].max
+      } : null,
+      currency: tmEvent.priceRanges?.[0]?.currency || 'USD'
+    },
+    
+    details: {
+      genre: tmEvent.classifications?.[0]?.genre?.name,
+      ageRestriction: tmEvent.ageRestrictions?.legalAgeEnforced ? '18+' : null,
+      dressCode: null
+    },
+    
+    weatherRequirements: {
+      requiresGoodWeather: false,
+      indoorOption: true // Most TM events are indoor
+    },
+    
+    rating: null,
+    reviewCount: 0,
+    popularity: 0.5,
+    
+    images: tmEvent.images?.map(img => img.url).slice(0, 3) || [],
+    website: tmEvent.url,
+    
+    lastFetched: Date.now(),
+    dataSource: 'ticketmaster'
+  };
+}
+
+/**
+ * Transform Hiking Project trail to our schema
+ */
+function transformHikingProjectTrail(trail) {
+  return {
+    id: `hike_${trail.id}`,
+    source: 'hikingproject',
+    type: 'hike',
+    name: trail.name,
+    description: trail.summary,
+    
+    lat: trail.latitude,
+    lng: trail.longitude,
+    geohash: generateGeohash(trail.latitude, trail.longitude),
+    geohash4: generateGeohash(trail.latitude, trail.longitude, 4),
+    
+    address: trail.location,
+    city: null, // Not provided
+    state: null,
+    
+    categories: ['hiking', 'outdoor', 'nature'],
+    primaryCategory: 'hiking',
+    
+    accessibility: {
+      wheelchairAccessible: trail.difficulty === 'green', // Only easiest trails
+      wheelchairDetails: trail.difficulty === 'green' ? 'Easy, mostly flat trail' : null,
+      mobilityLevel: trail.difficulty === 'green' ? 'easy' : 
+                     trail.difficulty === 'blue' ? 'moderate' : 'difficult',
+      verified: true,
+      verifiedBy: 'hikingproject'
+    },
+    
+    transportation: {
+      publicTransit: {
+        accessible: false // Most trails not accessible by transit
+      },
+      parking: {
+        available: true // Most trailheads have parking
+      },
+      bikeAccessible: false
+    },
+    
+    hoursToday: {
+      openNow: isDaylight(), // Only accessible during daylight
+      open: '06:00',
+      close: '20:00' // Approximate
+    },
+    
+    cost: {
+      free: true,
+      price: 0
+    },
+    
+    details: {
+      difficulty: trail.difficulty, // green, greenBlue, blue, blueBlack, black
+      length: trail.length,
+      elevationGain: trail.ascent,
+      routeType: trail.type, // loop, out-and-back, point-to-point
+      estimatedTime: Math.ceil(trail.length * 30), // Estimate 30 min/mile
+      trailCondition: trail.conditionStatus,
+      lastConditionUpdate: new Date(trail.conditionDate).getTime()
+    },
+    
+    weatherRequirements: {
+      requiresGoodWeather: true,
+      indoorOption: false,
+      minTemp: 40,
+      maxTemp: 90,
+      avoidRain: true,
+      idealConditions: ['sunny', 'partly_cloudy']
+    },
+    
+    features: {
+      dogFriendly: trail.difficulty !== 'black', // Assume easier trails are dog-friendly
+      scenicViews: true,
+      waterFeature: trail.summary?.toLowerCase().includes('waterfall') ||
+                   trail.summary?.toLowerCase().includes('lake'),
+      hasParking: true
+    },
+    
+    rating: trail.stars,
+    reviewCount: trail.starVotes || 0,
+    popularity: trail.stars / 5.0,
+    
+    images: [trail.imgMedium, trail.imgSmall].filter(Boolean),
+    website: trail.url,
+    
+    lastFetched: Date.now(),
+    dataSource: 'hikingproject'
+  };
+}
+5. Weather API Integration
+javascript/**
+ * Fetch current weather from OpenWeatherMap
+ */
+async function fetchWeather(lat, lng) {
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?` +
+      `lat=${lat}&lon=${lng}&units=imperial&` +
+      `appid=${process.env.OPENWEATHER_API_KEY}`
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Weather API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      condition: data.weather[0].main.toLowerCase(), // sunny, rain, clouds, etc
+      description: data.weather[0].description,
+      temp: Math.round(data.main.temp),
+      feelsLike: Math.round(data.main.feels_like),
+      humidity: data.main.humidity,
+      windSpeed: Math.round(data.wind.speed)
+    };
+    
+  } catch (error) {
+    console.error('Weather API error:', error);
+    // Return default weather if API fails
+    return {
+      condition: 'unknown',
+      temp: 70,
+      feelsLike: 70,
+      humidity: 50,
+      windSpeed: 5
+    };
+  }
+}
+6. Affinity Learning Function
+javascript/**
+ * Update user affinities based on interactions
+ * Triggered when user interacts with an activity
+ */
+exports.updateUserAffinities = functions.firestore
+  .document('interactions/{interactionId}')
+  .onCreate(async (snap, context) => {
+    
+    const interaction = snap.data();
+    const userId = interaction.userId;
+    
+    if (!userId) return; // Anonymous user
+    
+    const userRef = db.collection('users').doc(userId);
+    
+    return db.runTransaction(async (transaction) => {
+      const userDoc = await transaction.get(userRef);
+      
+      if (!userDoc.exists) return;
+      
+      const userData = userDoc.data();
+      const affinities = userData.affinities || {};
+      
+      // Learning rates based on action type
+      const learningRates = {
+        view: 0.05,
+        click: 0.15,
+        book: 0.30,
+        favorite: 0.25,
+        dismiss: -0.10
+      };
+      
+      const learningRate = learningRates[interaction.action] || 0.05;
+      const targetValue = interaction.action === 'dismiss' ? 0.3 : 1.0;
+      
+      // Update affinity for each category
+      interaction.activitySnapshot.categories.forEach(category => {
+        const currentAffinity = affinities[category] || 0.5;
+        
+        // Exponential moving average
+        affinities[category] = 
+          currentAffinity * (1 - Math.abs(learningRate)) +
+          targetValue * learningRate;
+        
+        // Clamp to [0, 1]
+        affinities[category] = Math.max(0, Math.min(1, affinities[category]));
+      });
+      
+      transaction.update(userRef, {
+        affinities: affinities,
+        'stats.totalViews': admin.firestore.FieldValue.increment(
+          interaction.action === 'view' ? 1 : 0
+        ),
+        'stats.totalClicks': admin.firestore.FieldValue.increment(
+          interaction.action === 'click' ? 1 : 0
+        ),
+        'stats.totalBookings': admin.firestore.FieldValue.increment(
+          interaction.action === 'book' ? 1 : 0
+        ),
+        lastActive: admin.firestore.FieldValue.serverTimestamp()
+      });
+    });
+  });
+7. Utility Functions
+javascript/**
+ * Calculate distance between two points (Haversine formula)
+ */
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 3959; // Earth radius in miles
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toRad(degrees) {
+  return degrees * (Math.PI / 180);
+}
+
+/**
+ * Generate geohash for a location
+ */
+const geofirex = require('geofirex');
+const geo = geofirex.init(admin);
+
+function generateGeohash(lat, lng, precision = 6) {
+  const point = geo.point(lat, lng);
+  return point.geohash.slice(0, precision);
+}
+
+/**
+ * Calculate geohash bounds for radius query
+ */
+function calculateGeohashBounds(lat, lng, radiusMiles) {
+  const point = geo.point(lat, lng);
+  const radiusKm = radiusMiles * 1.609;
+  
+  // Get geohash range for the radius
+  const bounds = geo.query('activities')
+    .within(point, radiusKm, 'geohash')
+    .getBounds();
+  
+  return {
+    lower: bounds[0],
+    upper: bounds[1]
+  };
+}
+
+/**
+ * Get time of day category
+ */
+function getTimeOfDay(hour) {
+  if (hour >= 6 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  if (hour >= 18 && hour < 22) return 'evening';
+  return 'night';
+}
+
+/**
+ * Check if current time is daylight
+ */
+function isDaylight() {
+  const hour = new Date().getHours();
+  return hour >= 6 && hour <= 20;
+}
+
+/**
+ * Get default user preferences for anonymous users
+ */
+function getDefaultUserPreferences() {
+  return {
+    accessibilityNeeds: {},
+    preferences: {
+      activityTypes: {
+        venues: true,
+        events: true,
+        hiking: true,
+        outdoor: true
+      },
+      favoriteCategories: [],
+      avoidCategories: [],
+      maxDistanceMiles: 10,
+      pricePreference: {
+        maxBudget: 50,
+        preferFree: false
+      },
+      transportation: {
+        hasVehicle: true,
+        preferPublicTransit: false,
+        maxWalkFromTransitMiles: 0.5
+      }
+    },
+    affinities: {}
+  };
+}
+
+/**
+ * Get hot zones (areas with recent user activity)
+ */
+async function getHotZones() {
+  const oneHourAgo = Date.now() - (60 * 60 * 1000);
+  
+  // Query recent user locations
+  const usersSnapshot = await db.collection('users')
+    .where('location.lastUpdated', '>', oneHourAgo)
+    .limit(100)
+    .get();
+  
+  // Group by geohash4 to find hot zones
+  const zoneMap = new Map();
+  
+  usersSnapshot.docs.forEach(doc => {
+    const userData = doc.data();
+    const geohash4 = userData.homeGeohash?.slice(0, 4);
+    
+    if (geohash4) {
+      const zone = zoneMap.get(geohash4) || {
+        geohash: geohash4,
+        lat: userData.location.lat,
+        lng: userData.location.lng,
+        count: 0
+      };
+      zone.count++;
+      zoneMap.set(geohash4, zone);
+    }
+  });
+  
+  // Return top 20 hot zones
+  return Array.from(zoneMap.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20);
+}
+
+Frontend Implementation (Next.js + React)
+Project Structure
+zipquest-frontend/
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ app/
+â”‚   â”‚   â”œâ”€â”€ page.tsx                 # Home/Discovery page
+â”‚   â”‚   â”œâ”€â”€ layout.tsx               # Root layout
+â”‚   â”‚   â”œâ”€â”€ activity/[id]/page.tsx   # Activity detail page
+â”‚   â”‚   â”œâ”€â”€ profile/page.tsx         # User profile/settings
+â”‚   â”‚   â””â”€â”€ auth/page.tsx            # Sign in/up
+â”‚   â”œâ”€â”€ components/
+â”‚   â”‚   â”œâ”€â”€ ActivityCard.tsx         # Activity display card
+â”‚   â”‚   â”œâ”€â”€ ActivityList.tsx         # List of activities
+â”‚   â”‚   â”œâ”€â”€ FilterPanel.tsx          # Filter controls
+â”‚   â”‚   â”œâ”€â”€ Map.tsx                  # Interactive map
+â”‚   â”‚   â”œâ”€â”€ ScoreBreakdown.tsx       # Score explanation
+â”‚   â”‚   â”œâ”€â”€ AccessibilityBadge.tsx   # Accessibility indicators
+â”‚   â”‚   â””â”€â”€ WeatherWidget.tsx        # Current weather display
+â”‚   â”œâ”€â”€ hooks/
+â”‚   â”‚   â”œâ”€â”€ useLocation.ts           # Get user location
+â”‚   â”‚   â”œâ”€â”€ useDiscovery.ts          # Main discovery hook
+â”‚   â”‚   â”œâ”€â”€ useAuth.ts               # Firebase auth
+â”‚   â”‚   â””â”€â”€ usePreferences.ts        # User preferences
+â”‚   â”œâ”€â”€ lib/
+â”‚   â”‚   â”œâ”€â”€ firebase.ts              # Firebase config
+â”‚   â”‚   â””â”€â”€ types.ts                 # TypeScript types
+â”‚   â””â”€â”€ styles/
+â”‚       â””â”€â”€ globals.css              # Tailwind styles
+â”œâ”€â”€ public/
+â”‚   â””â”€â”€ icons/
+â””â”€â”€ package.json
+Core Components
+Home Page - Discovery Interface
+typescript// src/app/page.tsx
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useLocation } from '@/hooks/useLocation';
+import { useDiscovery } from '@/hooks/useDiscovery';
+import ActivityList from '@/components/ActivityList';
+import FilterPanel from '@/components/FilterPanel';
+import WeatherWidget from '@/components/WeatherWidget';
+import Map from '@/components/Map';
+
+export default function HomePage() {
+  const [filters, setFilters] = useState({});
+  const [showMap, setShowMap] = useState(false);
+  
+  // Get user location
+  const {
+    location,
+    loading: locationLoading,
+    error: locationError,
+    requestLocation
+  } = useLocation();
+  
+  // Fetch activities
+  const {
+    activities,
+    loading: activitiesLoading,
+    error: activitiesError,
+    metadata,
+    refetch
+  } = useDiscovery(location, filters);
+  
+  // Request location on mount
+  useEffect(() => {
+    requestLocation();
+  }, []);
+  
+  if (locationLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Getting your location...</p>
+          <p className="text-sm text-gray-500 mt-2">
+            Please allow location access to find activities near you
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (locationError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-md p-6">
+          <div className="text-red-600 text-5xl mb-4">ðŸ“</div>
+          <h2 className="text-xl font-semibold mb-2">Location Access Required</h2>
+          <p className="text-gray-600 mb-4">
+            Zipquest needs your location to find activities near you.
+          </p>
+          <button
+            onClick={requestLocation}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Enable Location
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-blue-600">Zipquest</h1>
+            
+            <div className="flex items-center gap-4">
+              <WeatherWidget weather={metadata?.context?.weather} />
+              
+              <button
+                onClick={() => setShowMap(!showMap)}
+                className="p-2 rounded-lg hover:bg-gray-100"
+              >
+                {showMap ? 'ðŸ“‹ List' : 'ðŸ—ºï¸ Map'}
+              </button>
+              
+              <a href="/profile" className="p-2 rounded-lg hover:bg-gray-100">
+                âš™ï¸ Settings
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Filters Sidebar */}
+          <aside className="lg:col-span-1">
+            <FilterPanel
+              filters={filters}
+              onChange={setFilters}
+              metadata={metadata}
+            />
+          </aside>
+          
+          {/* Results */}
+          <div className="lg:col-span-3">
+            {/* Results Header */}
+            <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">
+                    {activities.length} activities near you
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {metadata?.context?.timeOfDay} â€¢ {metadata?.context?.weather?.condition}
+                  </p>
+                </div>
+                
+                {metadata?.queryTimeMs && (
+                  <span className="text-xs text-gray-400">
+                    {metadata.queryTimeMs}ms
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Loading State */}
+            {activitiesLoading && (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                <p className="text-gray-600">Finding activities...</p>
+              </div>
+            )}
+            
+            {/* Error State */}
+            {activitiesError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800">Error loading activities. Please try again.</p>
+                <button
+                  onClick={refetch}
+                  className="mt-2 text-red-600 hover:text-red-700 underline"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+            
+            {/* Results */}
+            {!activitiesLoading && !activitiesError && (
+              <>
+                {showMap ? (
+                  <Map
+                    activities={activities}
+                    center={location}
+                  />
+                ) : (
+                  <ActivityList activities={activities} />
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+Activity Card Component
+typescript// src/components/ActivityCard.tsx
+import Link from 'next/link';
+import AccessibilityBadge from './AccessibilityBadge';
+import ScoreBreakdown from './ScoreBreakdown';
+
+interface ActivityCardProps {
+  activity: Activity;
+}
+
+export default function ActivityCard({ activity }: ActivityCardProps) {
+  const [showScore, setShowScore] = useState(false);
+  
+  return (
+    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+      {/* Image */}
+      {activity.images?.[0] && (
+        <div className="relative h-48 bg-gray-200">
+          <img
+            src={activity.images[0]}
+            alt={activity.name}
+            className="w-full h-full object-cover"
+          />
+          
+          {/* Type Badge */}
+          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-medium">
+            {activity.type}
+          </div>
+        </div>
+      )}
+      
+      <div className="p-4">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg mb-1">
+              <Link href={`/activity/${activity.id}`} className="hover:text-blue-600">
+                {activity.name}
+              </Link>
+            </h3>
+            
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span>{activity.distance} mi</span>
+              <span>â€¢</span>
+              <span>{activity.primaryCategory}</span>
+              {activity.cost.free && (
+                <>
+                  <span>â€¢</span>
+                  <span className="text-green-600 font-medium">Free</span>
+                </>
+              )}
+            </div>
+          </div>
+          
+          {/* Score */}
+          <div className="ml-4">
+            <button
+              onClick={() => setShowScore(!showScore)}
+              className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold hover:bg-blue-100"
+            >
+              {activity.score}
+            </button>
+          </div>
+        </div>
+        
+        {/* Score Breakdown */}
+        {showScore && (
+          <ScoreBreakdown
+            breakdown={activity.scoreBreakdown}
+            weights={activity.scoreWeights}
+          />
+        )}
+        
+        {/* Accessibility Badges */}
+        {activity.accessibility && (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {activity.accessibility.wheelchairAccessible && (
+              <AccessibilityBadge type="wheelchair" />
+            )}
+            {activity.accessibility.serviceAnimalFriendly && (
+              <AccessibilityBadge type="service-animal" />
+            )}
+            {activity.accessibility.sensoryFriendly?.quietSpace && (
+              <AccessibilityBadge type="sensory-friendly" />
+            )}
+          </div>
+        )}
+        
+        {/* Quick Info */}
+        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+          {activity.hoursToday?.openNow && (
+            <span className="text-green-600">ðŸŸ¢ Open now</span>
+          )}
+          
+          {activity.rating && (
+            <span>â­ {activity.rating} ({activity.reviewCount})</span>
+          )}
+          
+          {activity.duration && (
+            <span>â±ï¸ {activity.duration} min</span>
+          )}
+        </div>
+        
+        {/* Transportation */}
+        {activity.transportation?.publicTransit?.accessible && (
+          <div className="text-sm text-gray-600">
+            ðŸš‡ {activity.transportation.publicTransit.lines.join(', ')}
+          </div>
+        )}
+        
+        {/* Actions */}
+        <div className="flex gap-2 mt-4">
+          <Link
+            href={`/activity/${activity.id}`}
+            className="flex-1 bg-blue-600 text-white text-center py-2 rounded-lg hover:bg-blue-700"
+          >
+            View Details
+          </Link>
+          
+          <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            â¤ï¸
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+Location Hook
+typescript// src/hooks/useLocation.ts
+import { useState, useCallback } from 'react';
+
+interface Location {
+  lat: number;
+  lng: number;
+  accuracy: number;
+}
+
+export function useLocation() {
+  const [location, setLocation] = useState<Location | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setError(new Error('Geolocation not supported'));
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        });
+        setLoading(false);
+      },
+      (err) => {
+        setError(err as GeolocationPositionError);
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: false, // Faster, uses WiFi/IP
+        timeout: 5000,
+        maximumAge: 60000 // Cache for 1 minute
+      }
+    );
+  }, []);
+  
+  return {
+    location,
+    loading,
+    error,
+    requestLocation
+  };
+}
+Discovery Hook
+typescript// src/hooks/useDiscovery.ts
+import { useState, useEffect } from 'react';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { app } from '@/lib/firebase';
+
+const functions = getFunctions(app);
+const discoverActivities = httpsCallable(functions, 'discoverActivities');
+
+export function useDiscovery(location: Location | null, filters: any) {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [metadata, setMetadata] = useState<any>(null);
+  
+  const fetchActivities = useCallback(async () => {
+    if (!location) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const result = await discoverActivities({
+        lat: location.lat,
+        lng: location.lng,
+        radius: filters.radius || 10,
+        filters: filters
+      });
+      
+      const data = result.data as any;
+      
+      setActivities(data.results);
+      setMetadata(data.metadata);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [location, filters]);
+  
+  useEffect(() => {
+    fetchActivities();
+  }, [fetchActivities]);
+  
+  return {
+    activities,
+    loading,
+    error,
+    metadata,
+    refetch: fetchActivities
+  };
+}
+
+Development Phases
+Phase 1: Foundation (Weeks 1-2)
+Goal: Basic discovery working end-to-end
+Backend:
+
+ Set up Firebase project
+ Create Firestore database with indexes
+ Implement discoverActivities Cloud Function
+ Integrate Foursquare API with rate limiting
+ Implement deterministic scoring algorithm
+ Create data transform functions
+ Add weather API integration
+
+Frontend:
+
+ Set up Next.js project
+ Implement location hook
+ Create discovery hook
+ Build basic activity card component
+ Create home page layout
+ Add loading/error states
+
+Testing:
+
+ Test scoring algorithm with unit tests
+ Test API rate limiting
+ Test geospatial queries
+ Manual E2E test on localhost
+
+Phase 2: Accessibility & Data (Weeks 3-4)
+Goal: Complete accessibility features and expand data sources
+Backend:
+
+ Add Ticketmaster API integration
+ Add Hiking Project API integration
+ Implement accessibility filtering
+ Create cache warming job
+ Add circuit breaker for API failures
+ Implement affinity learning function
+
+Frontend:
+
+ Create accessibility badge component
+ Build filter panel with accessibility options
+ Add score breakdown visualization
+ Create user profile/settings page
+ Implement Firebase authentication
+
+Testing:
+
+ Test accessibility filters
+ Test with real API data
+ Test cache warming
+ User testing with accessibility needs
+
+Phase 3: Polish & Deploy (Weeks 5-6)
+Goal: Production-ready platform
+Backend:
+
+ Optimize Firestore queries
+ Add API quota monitoring
+ Implement background cleanup jobs
+ Add analytics/logging
+ Performance testing and optimization
+
+Frontend:
+
+ Add map view
+ Implement activity detail page
+ Add favorites functionality
+ Create onboarding flow
+ Make PWA installable
+ Add offline support
+
+Deployment:
+
+ Deploy Cloud Functions to production
+ Set up custom domain
+ Configure Firebase hosting
+ Set up monitoring/alerts
+ Load testing
+ Beta launch
+
+
+Testing Strategy
+Unit Tests
+javascript// tests/scoring.test.js
+describe('Zipquest Scoring Algorithm', () => {
+  
+  test('wheelchair user gets 0 score for non-accessible venue', () => {
+    const activity = {
+      accessibility: { wheelchairAccessible: false }
+    };
+    const user = {
+      accessibilityNeeds: { requiresWheelchair: true }
+    };
+    
+    const filtered = applyAccessibilityFilters([activity], user.accessibilityNeeds);
+    expect(filtered).toHaveLength(0);
+  });
+  
+  test('distance scoring is consistent', () => {
+    const activity = { lat: 37.7749, lng: -122.4194 };
+    const user = {};
+    const context = { userLat: 37.7849, userLng: -122.4294 };
+    
+    activity.distance = calculateDistance(
+      context.userLat,
+      context.userLng,
+      activity.lat,
+      activity.lng
+    );
+    
+    const score = calculateScore(activity, user, context);
+    
+    // Should be consistent
+    const score2 = calculateScore(activity, user, context);
+    expect(score.totalScore).toBe(score2.totalScore);
+  });
+  
+  test('free activities score 100 on cost', () => {
+    const activity = {
+      cost: { free: true },
+      // ... other required fields
+    };
+    const user = {};
+    const context = {};
+    
+    const score = calculateScore(activity, user, context);
+    expect(score.breakdown.cost).toBe(100);
+  });
+});
+Integration Tests
+javascript// tests/discovery.integration.test.js
+describe('Discovery API', () => {
+  
+  test('returns activities within radius', async () => {
+    const result = await discoverActivities({
+      lat: 37.7749,
+      lng: -122.4194,
+      radius: 5
+    });
+    
+    expect(result.success).toBe(true);
+    expect(result.results).toBeInstanceOf(Array);
+    
+    // All results should be within 5 miles
+    result.results.forEach(activity => {
+      expect(activity.distance).toBeLessThanOrEqual(5);
+    });
+  });
+  
+  test('respects accessibility filters', async () => {
+    // Create test user with wheelchair requirement
+    const userId = await createTestUser({
+      accessibilityNeeds: {
+        requiresWheelchair: true
+      }
+    });
+    
+    const result = await discoverActivities(
+      { lat: 37.7749, lng: -122.4194 },
+      { auth: { uid: userId } }
+    );
+    
+    // All results should be wheelchair accessible
+    result.results.forEach(activity => {
+      expect(activity.accessibility.wheelchairAccessible).toBe(true);
+    });
+  });
+});
+
+Monitoring & Analytics
+Key Metrics to Track
+
+Performance:
+
+API response times (target: <200ms)
+Cloud Function execution times
+Firestore query latency
+External API latency
+
+
+Usage:
+
+Daily active users
+Queries per user
+Activity clicks/bookings
+Filter usage patterns
+
+
+Quality:
+
+Result relevance (click-through rate)
+User satisfaction (bookings/views ratio)
+Accessibility filter usage
+Error rates
+
+
+Cost:
+
+Firestore reads/writes per day
+Cloud Function invocations
+External API quota usage
+Cloud Storage usage
+
+
+
+Logging Strategy
+javascript// Add structured logging to all functions
+exports.discoverActivities = functions.https.onCall(async (data, context) => {
+  const requestId = generateRequestId();
+  
+  console.log({
+    requestId,
+    event: 'discovery_request_start',
+    userId: context.auth?.uid,
+    location: { lat: data.lat, lng: data.lng },
+    filters: data.filters,
+    timestamp: Date.now()
+  });
+  
+  try {
+    // ... function logic ...
+    
+    console.log({
+      requestId,
+      event: 'discovery_request_success',
+      resultsCount: results.length,
+      queryTimeMs: queryTime,
+      timestamp: Date.now()
+    });
+    
+    return { success: true, results };
+    
+  } catch (error) {
+    console.error({
+      requestId,
+      event: 'discovery_request_error',
+      error: error.message,
+      stack: error.stack,
+      timestamp: Date.now()
+    });
+    
+    throw error;
+  }
+});
+
+Cost Management
+Firebase Free Tier Limits
+Firestore:
+
+50K reads, 20K writes, 20K deletes per day
+1GB storage
+
+Cloud Functions:
+
+2M invocations per month
+400K GB-seconds compute
+200K CPU-seconds
+
+Authentication:
+
+Unlimited (free)
+
+Staying Within Free Tier
+Strategy:
+
+Cache aggressively - 1 hour TTL for venues, 6 hours for hikes
+Batch writes - Use Firestore batch operations
+Optimize queries - Use composite indexes, limit results
+Rate limit users - Max 10 queries per minute per user
+Background jobs - Run cache warming only during peak hours
+
+Estimated Usage (100 daily users):
+
+Queries: 100 users Ã— 10 queries = 1,000 queries/day
+Firestore reads: 1,000 Ã— 20 results = 20,000 reads/day âœ…
+Function invocations: 1,000 + 96 (cache warming) = 1,096/day âœ…
+External APIs: 1,000 queries, distributed across sources âœ…
+
+
+Deployment Checklist
+Pre-Deployment
+
+ All unit tests passing
+ Integration tests passing
+ Manual testing complete
+ Accessibility testing with screen readers
+ Performance testing (load test with 100 concurrent users)
+ API keys secured in Secret Manager
+ Environment variables configured
+ Firestore indexes deployed
+ Security rules tested
+
+Deployment
+
+ Deploy Firestore rules: firebase deploy --only firestore:rules
+ Deploy Firestore indexes: firebase deploy --only firestore:indexes
+ Deploy Cloud Functions: firebase deploy --only functions
+ Deploy frontend: firebase deploy --only hosting
+ Verify all functions deployed successfully
+ Smoke test production endpoints
+
+Post-Deployment
+
+ Monitor error logs for first hour
+ Check API quota usage
+ Verify analytics tracking
+ Test user flows in production
+ Set up alerting for errors
+ Document any issues
+
+
+API Reference
+discoverActivities
+Description: Main discovery endpoint that returns scored and ranked activities based on user location, preferences, and current context.
+Type: HTTPS Callable Function (requires Firebase SDK)
+Authentication: Optional (better results when authenticated)
+Request:
+typescript{
+  lat: number;        // Latitude (-90 to 90)
+  lng: number;        // Longitude (-180 to 180)
+  radius?: number;    // Search radius in miles (default: 10)
+  filters?: {
+    categories?: string[];        // Filter by categories
+    maxDistance?: number;         // Override user preference
+    includeClosedVenues?: boolean; // Include closed venues (default: false)
+  }
+}
+Response:
+typescript{
+  success: boolean;
+  results: Activity[];
+  metadata: {
+    totalFound: number;
+    returned: number;
+    queryTimeMs: number;
+    context: {
+      weather: Weather;
+      timeOfDay: string;
+      isWeekend: boolean;
+    };
+    appliedFilters: {
+      accessibility: AccessibilityNeeds;
+      maxDistance: number;
+      categories: string[];
+    };
+  };
+}
+Example Usage:
+javascriptimport { getFunctions, httpsCallable } from 'firebase/functions';
+
+const functions = getFunctions(app);
+const discover = httpsCallable(functions, 'discoverActivities');
+
+const { data } = await discover({
+  lat: 37.7749,
+  lng: -122.4194,
+  radius: 5,
+  filters: {
+    categories: ['coffee', 'hiking']
+  }
+});
+
+console.log(data.results); // Array of activities
+
+Conclusion
+This document provides a complete specification for building Zipquest, a deterministic, accessibility-first activity discovery platform. The architecture prioritizes:
+
+Accessibility - Every activity has complete accessibility metadata
+Determinism - Same inputs always produce same outputs
+Transparency - Users see exactly why activities are scored
+Performance - Sub-200ms response times with intelligent caching
+Cost efficiency - Stays within free tiers during development
+
+The platform uses Firebase/GCP for backend infrastructure, Next.js for frontend, and integrates with free APIs from Foursquare, Ticketmaster, Hiking Project, and OpenWeatherMap.
+Key differentiators:
+
+Accessibility-first design (not an afterthought)
+Explainable scoring (no black box algorithms)
+Real-time context awareness (weather, time, location)
+Multi-source data (venues, events, hikes, outdoor activities)
+Privacy-focused (minimal data collection)
+
+Next steps:
+
+Create Firebase project
+Set up development environment
+Begin Phase 1 implementation
+Start with core discovery function
+Test with real data from APIs

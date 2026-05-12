@@ -1,0 +1,888 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - link "Skip to content" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "" [ref=e4] [cursor=pointer]:
+      - /url: javascript:void(0);
+      - generic [ref=e5]: 
+    - banner [ref=e6]:
+      - generic [ref=e9]:
+        - link "Town of Berlin, Maryland - Mayor and Council SealTown of Berlin, Maryland" [ref=e11] [cursor=pointer]:
+          - /url: https://berlinmd.gov/
+          - img "Town of Berlin, Maryland - Mayor and Council Seal" [ref=e12]
+          - img "Town of Berlin, Maryland" [ref=e13]
+        - generic [ref=e14]:
+          - link "en English" [ref=e18] [cursor=pointer]:
+            - /url: "#"
+            - img "en" [ref=e19]
+            - text: English
+          - search [ref=e20]:
+            - generic [ref=e21]:
+              - generic [ref=e22]: "Search for:"
+              - textbox "Search for:" [ref=e23]:
+                - /placeholder: Search Our Site
+              - button "Search" [ref=e24] [cursor=pointer]
+          - link "Online Payments" [ref=e25] [cursor=pointer]:
+            - /url: https://berlinmd.municipalonlinepayments.com/berlinmd
+          - link "Utilities E-Billing Registration" [ref=e26] [cursor=pointer]:
+            - /url: /berlin-utilities-e-billing-registration/
+          - link "Energy Assistance" [ref=e27] [cursor=pointer]:
+            - /url: https://media.berlinmd.gov/wp-content/uploads/2023/12/15093634/tob-energy-assistance-letter-fy-2024-1.pdf
+          - link "CodeRED" [ref=e28] [cursor=pointer]:
+            - /url: https://accountportal.onsolve.net/berlintownmd
+            - img "CodeRED" [ref=e29]
+      - navigation [ref=e30]:
+        - list [ref=e32]:
+          - listitem [ref=e33]:
+            - link "Government" [ref=e34] [cursor=pointer]:
+              - /url: https://berlinmd.gov/government/
+          - listitem [ref=e35]:
+            - link "Departments & Services" [ref=e36] [cursor=pointer]:
+              - /url: https://berlinmd.gov/departments-services/
+          - listitem [ref=e37]:
+            - link "News" [ref=e38] [cursor=pointer]:
+              - /url: https://berlinmd.gov/news/
+          - listitem [ref=e39]:
+            - link "Employment" [ref=e40] [cursor=pointer]:
+              - /url: https://berlinmd.gov/employment/
+          - listitem [ref=e41]:
+            - link "About Our Town" [ref=e42] [cursor=pointer]:
+              - /url: https://berlinmd.gov/about-our-town/
+          - listitem [ref=e43]:
+            - link "Visit Us" [ref=e44] [cursor=pointer]:
+              - /url: https://www.berlinmainstreet.com/
+          - listitem [ref=e45]:
+            - link "Contact Us" [ref=e46] [cursor=pointer]:
+              - /url: https://berlinmd.gov/contact-us/
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - heading "Boards, Commissions and Committees" [level=1] [ref=e51]
+        - generic [ref=e52]:
+          - heading "How Can We Help You?" [level=2] [ref=e53]
+          - button "HOW DO I?" [ref=e55] [cursor=pointer]
+      - article [ref=e56]:
+        - generic [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e63]:
+              - heading "If you are interested in volunteering for a Board or Commission, please click here to apply." [level=4] [ref=e66]:
+                - generic [ref=e67]:
+                  - text: If you are interested in volunteering for a Board or Commission,
+                  - link "please click here to apply." [ref=e68] [cursor=pointer]:
+                    - /url: http://berlinmd.gov/mayor/become-involved/
+              - paragraph [ref=e69]: "***"
+              - paragraph [ref=e70]
+              - generic [ref=e72]:
+                - link [ref=e73] [cursor=pointer]:
+                  - /url: https://media.berlinmd.gov/wp-content/uploads/2026/02/12142949/Copy-of-2026-Boards-Commissions-Meeting-Schedule-2.pdf
+                - strong [ref=e74]: Meeting dates and formats may be subject to change.
+                - strong [ref=e75]: Sign up at the bottom of the page to get Meeting Packets delivered to your inbox.
+                - paragraph
+                - paragraph [ref=e76]: "To submit questions and comments in advance of the meeting:"
+                - list [ref=e77]:
+                  - listitem [ref=e78]:
+                    - list [ref=e79]:
+                      - listitem [ref=e80]: Meeting packets will be posted by 5:00 p.m. on the Friday before Mayor & Council and Board or Commission Meetings
+                      - listitem [ref=e81]: "Written questions will be accepted UNTIL 12:00 PM/NOON on the day of the meeting. Submit to:"
+                      - listitem [ref=e82]:
+                        - text: "Email:"
+                        - link "info@berlinmd.gov" [ref=e83] [cursor=pointer]:
+                          - /url: mailto:info@berlinmd.gov
+                        - text: ", please use Meeting Comments as your subject."
+                      - listitem [ref=e84]: "Fax to: 410-641-2316."
+                      - listitem [ref=e85]: Drop off in one of the two drop boxes at Town Hall – one is at the rear of the building behind the stair tower, and the other is at the corner of Bay and Williams Street on the building.
+                      - listitem [ref=e86]: "Mail to: Berlin Town Hall, Attn: Meeting Comments, 10 William St., Berlin, MD 21811. The Town of Berlin is not responsible for delays or delivery failures on the part of the USPS or other delivery service."
+                    - paragraph [ref=e87]:
+                      - text: To access the Meeting packet, please select the meeting date below for the most up-to-date information about meeting access. You may also click on the blue Facebook icon at the top of any page on the Town website,
+                      - link "www.berlinmd.gov" [ref=e88] [cursor=pointer]:
+                        - /url: http://berlinmd.gov/
+                      - text: ", or type @townofberlinmd in the Facebook search bar."
+                - list [ref=e89]:
+                  - listitem [ref=e90]: No response will be given to questions and comments submitted via Facebook during any meeting including Public Hearings.
+                - paragraph [ref=e91]:
+                  - strong [ref=e92]: Video recordings of meetings will be available within 72-hours (usually by the next morning) via the meeting date under “Past Meetings” below.
+                - paragraph [ref=e93]:
+                  - strong [ref=e94]: Sign up at the bottom of the page to get Meeting Packets delivered to your inbox.
+                - heading "Due to technical difficulties, some meetings do not appear in the “Past Meetings” list below. For information about past meetings not available below, please submit a Request for Public Information." [level=4] [ref=e95]:
+                  - text: Due to technical difficulties, some meetings do not appear in the “Past Meetings” list below. For information about past meetings not available below, please submit a
+                  - generic [ref=e96]:
+                    - link "Request for Public Information" [ref=e97] [cursor=pointer]:
+                      - /url: https://media.berlinmd.gov/app/uploads/2019/03/22103215/PIA-Req-Form-04.10.18-edits.pdf
+                    - text: .
+                - heading [level=5]
+            - generic [ref=e99]:
+              - button "Arts and Entertainment (A&E) Advisory Board" [ref=e102] [cursor=pointer]:
+                - heading "Arts and Entertainment (A&E) Advisory Board" [level=2] [ref=e103]
+              - generic [ref=e104]:
+                - button "Bee City Committee (Meets as needed)" [ref=e106] [cursor=pointer]:
+                  - heading "Bee City Committee (Meets as needed)" [level=2] [ref=e107]
+                - text: 
+              - button "Berlin Horticultural Advisory Committee" [ref=e110] [cursor=pointer]:
+                - heading "Berlin Horticultural Advisory Committee" [level=2] [ref=e111]
+              - generic [ref=e112]:
+                - button "Board of Zoning Appeals (Meets as needed)" [ref=e114] [cursor=pointer]:
+                  - heading "Board of Zoning Appeals (Meets as needed)" [level=2] [ref=e115]
+                - text:                                              
+              - generic [ref=e116]:
+                - button "Board of Supervisors of Elections (Meets as needed)" [ref=e118] [cursor=pointer]:
+                  - heading "Board of Supervisors of Elections (Meets as needed)" [level=2] [ref=e119]
+                - text:                        
+              - button "Community Center Advisory Committee" [ref=e122] [cursor=pointer]:
+                - heading "Community Center Advisory Committee" [level=2] [ref=e123]
+              - generic [ref=e124]:
+                - button "Ethics Commission (Meets as needed)" [ref=e126] [cursor=pointer]:
+                  - heading "Ethics Commission (Meets as needed)" [level=2] [ref=e127]
+                - text:               
+              - generic [ref=e128]:
+                - button "Historic District Commission" [ref=e130] [cursor=pointer]:
+                  - heading "Historic District Commission" [level=2] [ref=e131]
+                - text:                                                                                                                                                        
+              - button "Housing Board of Review (Meets as needed)" [ref=e134] [cursor=pointer]:
+                - heading "Housing Board of Review (Meets as needed)" [level=2] [ref=e135]
+              - generic [ref=e136]:
+                - button "Parks Commission" [ref=e138] [cursor=pointer]:
+                  - heading "Parks Commission" [level=2] [ref=e139]
+                - text:                                                                                                       
+              - generic [ref=e140]:
+                - button "Planning Commission" [expanded] [active] [ref=e142] [cursor=pointer]:
+                  - heading "Planning Commission" [level=2] [ref=e143]
+                - generic "Planning Commission" [ref=e608]:
+                  - generic [ref=e609]:
+                    - generic [ref=e610]:
+                      - heading "Upcoming Meetings/Events" [level=3] [ref=e611]
+                      - generic [ref=e612]:
+                        - heading "April 21, 2026, 6:00pm (Comprehensive Plan Community Open House)" [level=3] [ref=e613]
+                        - paragraph [ref=e614]: NOTICE OF QUORUM Tuesday, April 21, 2026 6 PM Please take notice that three or more members of the Town of Berlin Planning Commission may be together on the above […]
+                      - heading "May 13, 2026, 5:30pm (Planning Commission)" [level=3] [ref=e616]
+                      - heading "June 10, 2026, 5:30pm (Planning Commission)" [level=3] [ref=e618]
+                      - heading "July 08, 2026, 5:30pm (Planning Commission)" [level=3] [ref=e620]
+                      - heading "August 12, 2026, 5:30pm (Planning Commission)" [level=3] [ref=e622]
+                      - heading "September 09, 2026, 5:30pm (Planning Commission)" [level=3] [ref=e624]
+                    - generic [ref=e626]:
+                      - button "Past Meetings/Events" [ref=e628] [cursor=pointer]:
+                        - heading "Past Meetings/Events" [level=3] [ref=e629]
+                      - text:                                                                                                                                            
+                    - button "About The Planning Commission" [ref=e633] [cursor=pointer]:
+                      - heading "About The Planning Commission" [level=3] [ref=e634]
+              - generic [ref=e144]:
+                - button "Heron Park Advisory Committee- Inactive as of 01.25.2021" [ref=e146] [cursor=pointer]:
+                  - heading "Heron Park Advisory Committee- Inactive as of 01.25.2021" [level=2] [ref=e147]
+                - text:                    
+          - generic [ref=e149]:
+            - generic [ref=e150]:
+              - heading "Government Links" [level=3] [ref=e151]
+              - link "Elected Officials" [ref=e152] [cursor=pointer]:
+                - /url: /government/elected-officials/
+              - link "Council Meetings" [ref=e153] [cursor=pointer]:
+                - /url: /government/council-meetings/
+              - link "Boards, Commissions and Committees" [ref=e154] [cursor=pointer]:
+                - /url: /government/boards-commissions-and-committees/
+              - link "Town Charter & Code" [ref=e155] [cursor=pointer]:
+                - /url: https://library.municode.com/md/berlin/codes/code_of_ordinances
+              - link "Municipal Elections" [ref=e156] [cursor=pointer]:
+                - /url: /government/municipal-elections/
+              - link "Request for Proposals" [ref=e157] [cursor=pointer]:
+                - /url: /government/request-for-proposals/
+              - link "Strategic Plan" [ref=e158] [cursor=pointer]:
+                - /url: https://media.berlinmd.gov/app/uploads/2025/02/21105812/Berlin-Strategic-Plan_Report_FY24.pdf
+            - generic [ref=e159]:
+              - heading "Contact Info" [level=3] [ref=e160]
+              - link "10 William Street | Berlin, MD 21811" [ref=e161] [cursor=pointer]:
+                - /url: https://goo.gl/maps/ELZPrM4iwBz
+                - paragraph [ref=e162]: 10 William Street | Berlin, MD 21811
+              - paragraph [ref=e163]:
+                - text: "Email:"
+                - link "info@berlinmd.gov" [ref=e164] [cursor=pointer]:
+                  - /url: mailto:info@berlinmd.gov
+              - paragraph [ref=e165]:
+                - text: "Phone:"
+                - link "410-641-2770" [ref=e166] [cursor=pointer]:
+                  - /url: tel:+1-410-641-2770
+              - paragraph [ref=e167]: "Fax: 410-641-2316"
+              - paragraph [ref=e168]: Office Hours are Monday-Friday, 8:00 AM to 4:00 PM. Closed Weekends and Holidays.
+              - paragraph [ref=e169]: "After Hours / Emergency Contact:"
+              - paragraph [ref=e170]:
+                - text: Please call the Berlin Police Department at
+                - link "410-641-1333" [ref=e171] [cursor=pointer]:
+                  - /url: tel:+1-410-641-1333
+      - generic [ref=e173]:
+        - heading "Town Calendar" [level=2] [ref=e174]
+        - generic [ref=e175]:
+          - generic [ref=e176]:
+            - generic [ref=e180]:
+              - navigation [ref=e183]:
+                - list [ref=e184]:
+                  - listitem [ref=e185]:
+                    - button "Previous month" [ref=e186] [cursor=pointer]:
+                      - img [ref=e187]
+                  - listitem [ref=e189]: April 2026
+                  - listitem [ref=e190]:
+                    - button "Next month" [ref=e191] [cursor=pointer]:
+                      - img [ref=e192]
+              - heading "Calendar of Events" [level=2] [ref=e194]
+              - table [ref=e195]:
+                - rowgroup [ref=e196]:
+                  - row "Monday Tuesday Wednesday Thursday Friday Saturday Sunday" [ref=e197]:
+                    - columnheader "Monday" [ref=e198]:
+                      - generic:
+                        - text: M
+                        - generic [ref=e199]: Monday
+                    - columnheader "Tuesday" [ref=e200]:
+                      - generic:
+                        - text: T
+                        - generic [ref=e201]: Tuesday
+                    - columnheader "Wednesday" [ref=e202]:
+                      - generic:
+                        - text: W
+                        - generic [ref=e203]: Wednesday
+                    - columnheader "Thursday" [ref=e204]:
+                      - generic:
+                        - text: T
+                        - generic [ref=e205]: Thursday
+                    - columnheader "Friday" [ref=e206]:
+                      - generic:
+                        - text: F
+                        - generic [ref=e207]: Friday
+                    - columnheader "Saturday" [ref=e208]:
+                      - generic:
+                        - text: S
+                        - generic [ref=e209]: Saturday
+                    - columnheader "Sunday" [ref=e210]:
+                      - generic:
+                        - text: S
+                        - generic [ref=e211]: Sunday
+                - rowgroup [ref=e212]:
+                  - row [ref=e213]:
+                    - cell "1 event, March 30 5:00 pm - 7:00 pm Work Session of the Mayor & Council March 30 @ 5:00 pm - 7:00 pm Work Session of the Mayor & Council FY26 Contracted Work Session with Berlin Fire Company & Emergency Medical Services. Held at Berlin Police Department, 129 Decatur Street, Berlin, MD. Work Sessions are open to the public with […]" [ref=e214]:
+                      - button "March 30, 1 event" [ref=e215] [cursor=pointer]:
+                        - generic [ref=e216]:
+                          - generic [ref=e217]: 1 event
+                          - time [ref=e218]: "30"
+                    - cell "0 events, 31" [ref=e220]:
+                      - button "March 31, 0 events" [ref=e221] [cursor=pointer]:
+                        - generic [ref=e222]:
+                          - generic [ref=e223]: 0 events
+                          - time [ref=e224]: "31"
+                    - cell "2 events, April 1 5:30 pm - 6:30 pm Historic District Commission April 1 @ 5:30 pm - 6:30 pm Historic District Commission Filing deadline is March 4, 2026. *This meeting will be held at the Berlin Police Department, 129 Decatur Street, Berlin, MD, 21811. 6:30 pm - 7:30 pm Board of Appeals – No Meeting April 1 @ 6:30 pm - 7:30 pm Board of Appeals – No Meeting Filing deadline March 4, 2026. **Meets only when case is filed." [ref=e225]:
+                      - button "April 1, 2 events" [ref=e226] [cursor=pointer]:
+                        - generic [ref=e227]:
+                          - generic [ref=e228]: 2 events
+                          - time [ref=e229]: "1"
+                    - cell "0 events, 2" [ref=e231]:
+                      - button "April 2, 0 events" [ref=e232] [cursor=pointer]:
+                        - generic [ref=e233]:
+                          - generic [ref=e234]: 0 events
+                          - time [ref=e235]: "2"
+                    - cell "0 events, 3" [ref=e236]:
+                      - button "April 3, 0 events" [ref=e237] [cursor=pointer]:
+                        - generic [ref=e238]:
+                          - generic [ref=e239]: 0 events
+                          - time [ref=e240]: "3"
+                    - cell "2 events, April 4 2026-04-04 Community Yard Sale Community Yard Sale April 4 Community Yard Sale Berlin residents sign up to participate in a town wide yard sale. Event hosted by the Town of Berlin 10:00 am - 4:00 pm Spring Celebration April 4 @ 10:00 am - 4:00 pm Spring Celebration Celebrate the start of Spring in downtown Berlin! Bonnet Parade at 10 AM starting in front of World of Toys. Easter Egg Hunt at 11 AM at Taylor House Museum, […]" [ref=e241]:
+                      - button "April 4, 2 events" [ref=e242] [cursor=pointer]:
+                        - generic [ref=e243]:
+                          - generic [ref=e244]: 2 events
+                          - time [ref=e245]: "4"
+                    - cell "0 events, 5" [ref=e247]:
+                      - button "April 5, 0 events" [ref=e248] [cursor=pointer]:
+                        - generic [ref=e249]:
+                          - generic [ref=e250]: 0 events
+                          - time [ref=e251]: "5"
+                  - 'row "0 events, 6 0 events, 7 2 events, April 8 5:00 pm - 5:30 pm Planning Commission – Closed Session April 8 @ 5:00 pm - 5:30 pm Planning Commission – Closed Session STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): (7) To consult with counsel to obtain legal advice on a legal matter; Regular Session meeting of the Planning Commission to […] 5:30 pm - 6:30 pm Planning Commission April 8 @ 5:30 pm - 6:30 pm Planning Commission Meeting to be held at the Berlin Police Department, Training Room, located at 129 Decatur Street, Berlin, MD, 21811. 0 events, 9 0 events, 10 0 events, 11 0 events, 12" [ref=e252]':
+                    - cell "0 events, 6" [ref=e253]:
+                      - button "April 6, 0 events" [ref=e254] [cursor=pointer]:
+                        - generic [ref=e255]:
+                          - generic [ref=e256]: 0 events
+                          - time [ref=e257]: "6"
+                    - cell "0 events, 7" [ref=e258]:
+                      - button "April 7, 0 events" [ref=e259] [cursor=pointer]:
+                        - generic [ref=e260]:
+                          - generic [ref=e261]: 0 events
+                          - time [ref=e262]: "7"
+                    - 'cell "2 events, April 8 5:00 pm - 5:30 pm Planning Commission – Closed Session April 8 @ 5:00 pm - 5:30 pm Planning Commission – Closed Session STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): (7) To consult with counsel to obtain legal advice on a legal matter; Regular Session meeting of the Planning Commission to […] 5:30 pm - 6:30 pm Planning Commission April 8 @ 5:30 pm - 6:30 pm Planning Commission Meeting to be held at the Berlin Police Department, Training Room, located at 129 Decatur Street, Berlin, MD, 21811." [ref=e263]':
+                      - button "April 8, 2 events" [ref=e264] [cursor=pointer]:
+                        - generic [ref=e265]:
+                          - generic [ref=e266]: 2 events
+                          - time [ref=e267]: "8"
+                    - cell "0 events, 9" [ref=e269]:
+                      - button "April 9, 0 events" [ref=e270] [cursor=pointer]:
+                        - generic [ref=e271]:
+                          - generic [ref=e272]: 0 events
+                          - time [ref=e273]: "9"
+                    - cell "0 events, 10" [ref=e274]:
+                      - button "April 10, 0 events" [ref=e275] [cursor=pointer]:
+                        - generic [ref=e276]:
+                          - generic [ref=e277]: 0 events
+                          - time [ref=e278]: "10"
+                    - cell "0 events, 11" [ref=e279]:
+                      - button "April 11, 0 events" [ref=e280] [cursor=pointer]:
+                        - generic [ref=e281]:
+                          - generic [ref=e282]: 0 events
+                          - time [ref=e283]: "11"
+                    - cell "0 events, 12" [ref=e284]:
+                      - button "April 12, 0 events" [ref=e285] [cursor=pointer]:
+                        - generic [ref=e286]:
+                          - generic [ref=e287]: 0 events
+                          - time [ref=e288]: "12"
+                  - 'row "2 events, April 13 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 13 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […] 6:00 pm - 8:00 pm Mayor & Council Meeting April 13 @ 6:00 pm - 8:00 pm Mayor & Council Meeting ATTENTION: Monday''s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […] 0 events, 14 0 events, 15 0 events, 16 0 events, 17 1 event, April 18 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day April 18 @ 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day 0 events, 19" [ref=e289]':
+                    - 'cell "2 events, April 13 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 13 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […] 6:00 pm - 8:00 pm Mayor & Council Meeting April 13 @ 6:00 pm - 8:00 pm Mayor & Council Meeting ATTENTION: Monday''s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […]" [ref=e290]':
+                      - button "April 13, 2 events" [expanded] [ref=e291] [cursor=pointer]:
+                        - generic [ref=e292]:
+                          - generic [ref=e293]: 2 events
+                          - time [ref=e294]: "13"
+                    - cell "0 events, 14" [ref=e296]:
+                      - button "April 14, 0 events" [ref=e297] [cursor=pointer]:
+                        - generic [ref=e298]:
+                          - generic [ref=e299]: 0 events
+                          - time [ref=e300]: "14"
+                    - cell "0 events, 15" [ref=e301]:
+                      - button "April 15, 0 events" [ref=e302] [cursor=pointer]:
+                        - generic [ref=e303]:
+                          - generic [ref=e304]: 0 events
+                          - time [ref=e305]: "15"
+                    - cell "0 events, 16" [ref=e306]:
+                      - button "April 16, 0 events" [ref=e307] [cursor=pointer]:
+                        - generic [ref=e308]:
+                          - generic [ref=e309]: 0 events
+                          - time [ref=e310]: "16"
+                    - cell "0 events, 17" [ref=e311]:
+                      - button "April 17, 0 events" [ref=e312] [cursor=pointer]:
+                        - generic [ref=e313]:
+                          - generic [ref=e314]: 0 events
+                          - time [ref=e315]: "17"
+                    - cell "1 event, April 18 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day April 18 @ 11:00 am - 4:00 pm Vintage & Vinyl Record Store Day" [ref=e316]:
+                      - button "April 18, 1 event" [ref=e317] [cursor=pointer]:
+                        - generic [ref=e318]:
+                          - generic [ref=e319]: 1 event
+                          - time [ref=e320]: "18"
+                    - cell "0 events, 19" [ref=e322]:
+                      - button "April 19, 0 events" [ref=e323] [cursor=pointer]:
+                        - generic [ref=e324]:
+                          - generic [ref=e325]: 0 events
+                          - time [ref=e326]: "19"
+                  - row [ref=e327]:
+                    - 'cell "1 event, April 20 5:00 pm - 7:00 pm General Fund Budget Work Session April 20 @ 5:00 pm - 7:00 pm General Fund Budget Work Session General Fund Work Session Meeting of the Mayor & Council: Town Departments, Fire Company, and Fire Company EMS. Will be held at the Berlin Police Department, 129 Decatur St, Berlin, […]" [ref=e328]':
+                      - button "April 20, 1 event" [ref=e329] [cursor=pointer]:
+                        - generic [ref=e330]:
+                          - generic [ref=e331]: 1 event
+                          - time [ref=e332]: "20"
+                    - cell "2 events, April 21 6:00 pm - 8:00 pm Comprehensive Plan Community Open House April 21 @ 6:00 pm - 8:00 pm Comprehensive Plan Community Open House NOTICE OF QUORUM Tuesday, April 21, 2026 6 PM Please take notice that three or more members of the Town of Berlin Mayor and Council may be together on the […] 6:00 pm - 8:00 pm Comprehensive Plan Community Open House April 21 @ 6:00 pm - 8:00 pm Comprehensive Plan Community Open House NOTICE OF QUORUM Tuesday, April 21, 2026 6 PM Please take notice that three or more members of the Town of Berlin Planning Commission may be together on the above […]" [ref=e334]:
+                      - button "April 21, 2 events" [ref=e335] [cursor=pointer]:
+                        - generic [ref=e336]:
+                          - generic [ref=e337]: 2 events
+                          - time [ref=e338]: "21"
+                    - cell "0 events, 22" [ref=e340]:
+                      - button "April 22, 0 events" [ref=e341] [cursor=pointer]:
+                        - generic [ref=e342]:
+                          - generic [ref=e343]: 0 events
+                          - time [ref=e344]: "22"
+                    - cell "0 events, 23" [ref=e345]:
+                      - button "April 23, 0 events" [ref=e346] [cursor=pointer]:
+                        - generic [ref=e347]:
+                          - generic [ref=e348]: 0 events
+                          - time [ref=e349]: "23"
+                    - cell "0 events, 24" [ref=e350]:
+                      - button "April 24, 0 events" [ref=e351] [cursor=pointer]:
+                        - generic [ref=e352]:
+                          - generic [ref=e353]: 0 events
+                          - time [ref=e354]: "24"
+                    - cell "0 events, 25" [ref=e355]:
+                      - button "April 25, 0 events" [ref=e356] [cursor=pointer]:
+                        - generic [ref=e357]:
+                          - generic [ref=e358]: 0 events
+                          - time [ref=e359]: "25"
+                    - cell "0 events, 26" [ref=e360]:
+                      - button "April 26, 0 events" [ref=e361] [cursor=pointer]:
+                        - generic [ref=e362]:
+                          - generic [ref=e363]: 0 events
+                          - time [ref=e364]: "26"
+                  - 'row "2 events, April 27 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 27 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council 6:00 pm - 8:00 pm Mayor & Council Meeting April 27 @ 6:00 pm - 8:00 pm Mayor & Council Meeting 0 events, 28 0 events, 29 0 events, 30 0 events, 1 1 event, May 2 8:00 am - 2:00 pm Spring Cruisers May 2 @ 8:00 am - 2:00 pm Spring Cruisers Classic cruiser cars line Main Street for a feel from the past. Event hosted by the Berlin Chamber of Commerce 1 event, May 3 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market May 3 @ 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market Main, Commerce, & Pitts Streets Producers only market featuring local farms, breweries, seafood, live music, free kids crafts, a petting farm and more featuring 40+ vendors. Hosted by Berlin Main […]" [ref=e365]':
+                    - cell "2 events, April 27 5:00 pm - 6:00 pm Closed Session of the Mayor & Council April 27 @ 5:00 pm - 6:00 pm Closed Session of the Mayor & Council 6:00 pm - 8:00 pm Mayor & Council Meeting April 27 @ 6:00 pm - 8:00 pm Mayor & Council Meeting" [ref=e366]:
+                      - button "April 27, 2 events" [ref=e367] [cursor=pointer]:
+                        - generic [ref=e368]:
+                          - generic [ref=e369]: 2 events
+                          - time [ref=e370]: "27"
+                    - cell "0 events, 28" [ref=e372]:
+                      - button "April 28, 0 events" [ref=e373] [cursor=pointer]:
+                        - generic [ref=e374]:
+                          - generic [ref=e375]: 0 events
+                          - time [ref=e376]: "28"
+                    - cell "0 events, 29" [ref=e377]:
+                      - button "April 29, 0 events" [ref=e378] [cursor=pointer]:
+                        - generic [ref=e379]:
+                          - generic [ref=e380]: 0 events
+                          - time [ref=e381]: "29"
+                    - cell "0 events, 30" [ref=e382]:
+                      - button "April 30, 0 events" [ref=e383] [cursor=pointer]:
+                        - generic [ref=e384]:
+                          - generic [ref=e385]: 0 events
+                          - time [ref=e386]: "30"
+                    - cell "0 events, 1" [ref=e387]:
+                      - button "May 1, 0 events" [ref=e388] [cursor=pointer]:
+                        - generic [ref=e389]:
+                          - generic [ref=e390]: 0 events
+                          - time [ref=e391]: "1"
+                    - cell "1 event, May 2 8:00 am - 2:00 pm Spring Cruisers May 2 @ 8:00 am - 2:00 pm Spring Cruisers Classic cruiser cars line Main Street for a feel from the past. Event hosted by the Berlin Chamber of Commerce" [ref=e392]:
+                      - button "May 2, 1 event" [ref=e393] [cursor=pointer]:
+                        - generic [ref=e394]:
+                          - generic [ref=e395]: 1 event
+                          - time [ref=e396]: "2"
+                    - 'cell "1 event, May 3 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market May 3 @ 9:00 am - 1:00 pm Event series: The Berlin Farmers Market The Berlin Farmers Market Main, Commerce, & Pitts Streets Producers only market featuring local farms, breweries, seafood, live music, free kids crafts, a petting farm and more featuring 40+ vendors. Hosted by Berlin Main […]" [ref=e398]':
+                      - button "May 3, 1 event" [ref=e399] [cursor=pointer]:
+                        - generic [ref=e400]:
+                          - generic [ref=e401]: 1 event
+                          - time [ref=e402]: "3"
+            - generic [ref=e405]:
+              - generic [ref=e408]:
+                - 'link "Closed Session of the Mayor & Council April 13 @ 5:00pm - 6:00pm Worcester County Library – Berlin Branch STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […]" [ref=e409] [cursor=pointer]':
+                  - /url: https://berlinmd.gov/event/closed-session-of-the-mayor-council-61/
+                  - heading "Closed Session of the Mayor & Council" [level=2] [ref=e410]
+                  - generic [ref=e411]: April 13 @ 5:00pm - 6:00pm
+                  - generic [ref=e412]: Worcester County Library – Berlin Branch
+                  - generic [ref=e413]: "STATUTORY AUTHORITY TO CLOSE SESSION, General Provisions Article, §3- 305(b): Agenda Item I: (7) To consult with counsel to obtain legal advice on a legal matter; Update to ongoing contract […]"
+                - generic [ref=e414]:
+                  - link "Closed Session of the Mayor & Council - View Event":
+                    - /url: https://berlinmd.gov/event/closed-session-of-the-mayor-council-61/
+                  - link "MORE INFO" [ref=e415] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/closed-session-of-the-mayor-council-61/
+              - generic [ref=e418]:
+                - 'link "Mayor & Council Meeting April 13 @ 6:00pm - 8:00pm Worcester County Library – Berlin Branch ATTENTION: Monday’s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […]" [ref=e419] [cursor=pointer]':
+                  - /url: https://berlinmd.gov/event/mayor-council-meeting-74/
+                  - heading "Mayor & Council Meeting" [level=2] [ref=e420]
+                  - generic [ref=e421]: April 13 @ 6:00pm - 8:00pm
+                  - generic [ref=e422]: Worcester County Library – Berlin Branch
+                  - generic [ref=e423]: "ATTENTION: Monday’s meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left […]"
+                - generic [ref=e424]:
+                  - link "Mayor & Council Meeting - View Event":
+                    - /url: https://berlinmd.gov/event/mayor-council-meeting-74/
+                  - link "MORE INFO" [ref=e425] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/mayor-council-meeting-74/
+              - generic [ref=e428]:
+                - link "Vintage & Vinyl Record Store Day April 18 @ 11:00am - 4:00pm" [ref=e429] [cursor=pointer]:
+                  - /url: https://berlinmd.gov/event/vintage-vinyl-record-store-day/
+                  - heading "Vintage & Vinyl Record Store Day" [level=2] [ref=e430]
+                  - generic [ref=e431]: April 18 @ 11:00am - 4:00pm
+                - generic [ref=e432]:
+                  - link "Vintage & Vinyl Record Store Day - View Event":
+                    - /url: https://berlinmd.gov/event/vintage-vinyl-record-store-day/
+                  - link "MORE INFO" [ref=e433] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/vintage-vinyl-record-store-day/
+              - generic [ref=e436]:
+                - 'link "General Fund Budget Work Session April 20 @ 5:00pm - 7:00pm Berlin Police Department General Fund Work Session Meeting of the Mayor & Council: Town Departments, Fire Company, and Fire Company EMS. Will be held at the Berlin Police Department, 129 Decatur St, Berlin, […]" [ref=e437] [cursor=pointer]':
+                  - /url: https://berlinmd.gov/event/general-fund-budget-work-session-3/
+                  - heading "General Fund Budget Work Session" [level=2] [ref=e438]
+                  - generic [ref=e439]: April 20 @ 5:00pm - 7:00pm
+                  - generic [ref=e440]: Berlin Police Department
+                  - generic [ref=e441]: "General Fund Work Session Meeting of the Mayor & Council: Town Departments, Fire Company, and Fire Company EMS. Will be held at the Berlin Police Department, 129 Decatur St, Berlin, […]"
+                - generic [ref=e442]:
+                  - link "General Fund Budget Work Session - View Event":
+                    - /url: https://berlinmd.gov/event/general-fund-budget-work-session-3/
+                  - link "MORE INFO" [ref=e443] [cursor=pointer]:
+                    - /url: https://berlinmd.gov/event/general-fund-budget-work-session-3/
+          - generic [ref=e444]:
+            - link "VIEW TOWN CALENDAR" [ref=e445] [cursor=pointer]:
+              - /url: https://berlinmd.gov/town-events/
+            - link "TOWN NEWS" [ref=e446] [cursor=pointer]:
+              - /url: https://berlinmd.gov//news
+            - link "MORE EVENTS" [ref=e447] [cursor=pointer]:
+              - /url: https://berlinmd.gov//special-events
+      - generic [ref=e450]:
+        - link "Town of Berlin" [ref=e452] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103257/image5.jpg
+          - img "Town of Berlin" [ref=e453]
+        - link "Town of Berlin" [ref=e455] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103258/image6.jpg
+          - img "Town of Berlin" [ref=e456]
+        - link "Town of Berlin" [ref=e458] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103258/image7.jpg
+          - img "Town of Berlin" [ref=e459]
+        - link "Town of Berlin" [ref=e461] [cursor=pointer]:
+          - /url: https://media.berlinmd.gov/wp-content/uploads/2019/03/22103259/image8.jpg
+          - img "Town of Berlin" [ref=e462]
+        - generic [ref=e464]:
+          - link "See more of Berlin in pictures" [ref=e465] [cursor=pointer]:
+            - /url: https://www.facebook.com/pg/townofberlinmd/photos/?ref=page_internal
+          - generic [ref=e466]: SEE MORE OF BERLIN IN PICTURES
+    - contentinfo [ref=e467]:
+      - generic [ref=e468]:
+        - generic [ref=e469]:
+          - generic [ref=e470]:
+            - heading "Get Berlin eNews" [level=2] [ref=e471]
+            - generic [ref=e523]:
+              - generic [ref=e524]:
+                - heading "News & Announcements" [level=2] [ref=e525]
+                - paragraph [ref=e526]: Sign up for electronic delivery of The Berlin Bulletin newsletter.
+                - generic [ref=e527]:
+                  - generic [ref=e528]: ∗ Email
+                  - textbox "∗ Email" [ref=e529]
+                - generic [ref=e530]:
+                  - generic [ref=e531]: First Name
+                  - textbox "First Name" [ref=e532]
+                - generic [ref=e533]:
+                  - generic [ref=e534]: Last Name
+                  - textbox "Last Name" [ref=e535]
+                - group "∗ Email Lists" [ref=e536]:
+                  - generic [ref=e537]: ∗ Email Lists
+                  - generic [ref=e538]:
+                    - checkbox "Berlin Bulletin" [ref=e539]
+                    - generic [ref=e540]: Berlin Bulletin
+                  - generic [ref=e541]:
+                    - checkbox "Employment Opportunities" [ref=e542]
+                    - generic [ref=e543]: Employment Opportunities
+                  - generic [ref=e544]:
+                    - checkbox "Press Releases" [ref=e545]
+                    - generic [ref=e546]: Press Releases
+                - paragraph [ref=e548]:
+                  - text: "By submitting this form, you are consenting to receive marketing emails from: Town of Berlin, 10 William Street , Berlin, MD, 21811, US, http://www.berlinmd.gov. You can revoke your consent to receive emails at any time by using the SafeUnsubscribe® link, found at the bottom of every email."
+                  - link "Emails are serviced by Constant Contact." [ref=e549] [cursor=pointer]:
+                    - /url: https://www.constantcontact.com/legal/service-provider
+                - button "Sign Up!" [ref=e550] [cursor=pointer]
+                - iframe [ref=e553]:
+                  - generic [ref=f14e5]:
+                    - generic [ref=f14e6]:
+                      - text: protected by
+                      - strong [ref=f14e7]: reCAPTCHA
+                    - generic [ref=f14e9]:
+                      - text: This site is exceeding
+                      - link "reCAPTCHA Enterprise free quota" [ref=f14e10] [cursor=pointer]:
+                        - /url: https://cloud.google.com/recaptcha/docs/billing-information
+                      - text: .
+              - paragraph [ref=e554]:
+                - link [ref=e556] [cursor=pointer]:
+                  - /url: http://www.constantcontact.com/index.jsp?cc=forms_inline
+          - generic [ref=e559]:
+            - generic [ref=e560]:
+              - heading "Public Meetings Packets & Information" [level=2] [ref=e561]
+              - paragraph [ref=e562]: Receive email notifications of meetings and agendas
+              - generic [ref=e563]:
+                - generic [ref=e564]: ∗ Email
+                - textbox "∗ Email" [ref=e565]
+              - generic [ref=e566]:
+                - generic [ref=e567]: First Name
+                - textbox "First Name" [ref=e568]
+              - generic [ref=e569]:
+                - generic [ref=e570]: Last Name
+                - textbox "Last Name" [ref=e571]
+              - group "∗ Email Lists" [ref=e572]:
+                - generic [ref=e573]: ∗ Email Lists
+                - generic [ref=e574]:
+                  - checkbox "Board of Appeals" [ref=e575]
+                  - generic [ref=e576]: Board of Appeals
+                - generic [ref=e577]:
+                  - checkbox "Board of Supervisors of Elections" [ref=e578]
+                  - generic [ref=e579]: Board of Supervisors of Elections
+                - generic [ref=e580]:
+                  - checkbox "Ethics Commission" [ref=e581]
+                  - generic [ref=e582]: Ethics Commission
+                - generic [ref=e583]:
+                  - checkbox "Heron Park Advisory Committee" [ref=e584]
+                  - generic [ref=e585]: Heron Park Advisory Committee
+                - generic [ref=e586]:
+                  - checkbox "Historic District Commission" [ref=e587]
+                  - generic [ref=e588]: Historic District Commission
+                - generic [ref=e589]:
+                  - checkbox "Housing Board of Review" [ref=e590]
+                  - generic [ref=e591]: Housing Board of Review
+                - generic [ref=e592]:
+                  - checkbox "Mayor and Council" [ref=e593]
+                  - generic [ref=e594]: Mayor and Council
+                - generic [ref=e595]:
+                  - checkbox "Parks Commission" [ref=e596]
+                  - generic [ref=e597]: Parks Commission
+                - generic [ref=e598]:
+                  - checkbox "Planning Commission" [ref=e599]
+                  - generic [ref=e600]: Planning Commission
+              - paragraph [ref=e602]:
+                - text: "By submitting this form, you are consenting to receive marketing emails from: Town of Berlin, 10 William Street , Berlin, MD, 21811, US, http://www.berlinmd.gov. You can revoke your consent to receive emails at any time by using the SafeUnsubscribe® link, found at the bottom of every email."
+                - link "Emails are serviced by Constant Contact." [ref=e603] [cursor=pointer]:
+                  - /url: https://www.constantcontact.com/legal/service-provider
+              - button "Sign Up!" [ref=e604] [cursor=pointer]
+            - paragraph [ref=e605]:
+              - link [ref=e607] [cursor=pointer]:
+                - /url: http://www.constantcontact.com/index.jsp?cc=forms_inline
+          - generic [ref=e473]:
+            - heading "Recent News" [level=2] [ref=e474]
+            - heading "Public Meeting on Hudson Branch Restoration Project" [level=3] [ref=e475]:
+              - link "Public Meeting on Hudson Branch Restoration Project" [ref=e476] [cursor=pointer]:
+                - /url: https://berlinmd.gov/2026/04/10/public-meeting-on-hudson-branch-restoration-project/
+            - text: "For more information, contact: Kate Daub, Special Projects Administrator 410-641-4002 / kdaub@berlinmd.gov April 10, 2026..."
+            - link "MORE" [ref=e477] [cursor=pointer]:
+              - /url: https://berlinmd.gov/2026/04/10/public-meeting-on-hudson-branch-restoration-project/
+            - heading "April 2026 Berlin Bulletin" [level=3] [ref=e479]:
+              - link "April 2026 Berlin Bulletin" [ref=e480] [cursor=pointer]:
+                - /url: https://berlinmd.gov/2026/04/01/april-2026-berlin-bulletin/
+            - text: The April 2026 edition of the Berlin Bulletin is now available! Click below to read...
+            - link "MORE" [ref=e481] [cursor=pointer]:
+              - /url: https://berlinmd.gov/2026/04/01/april-2026-berlin-bulletin/
+            - heading "Town-wide Power Outages Scheduled for Transformer Maintenance" [level=3] [ref=e483]:
+              - link "Town-wide Power Outages Scheduled for Transformer Maintenance" [ref=e484] [cursor=pointer]:
+                - /url: https://berlinmd.gov/2026/03/31/town-wide-power-outages-scheduled-for-transformer-maintenance/
+            - text: "For more information, contact: Mary Bohlen, Town Administrator 410-641-4314 mbohlen@berlinmd.gov For Immediate Release… Town-wide Power..."
+            - link "MORE" [ref=e485] [cursor=pointer]:
+              - /url: https://berlinmd.gov/2026/03/31/town-wide-power-outages-scheduled-for-transformer-maintenance/
+            - link "VIEW ALL" [ref=e487] [cursor=pointer]:
+              - /url: https://berlinmd.gov/category/the-berlin-bulletin/
+          - iframe [ref=e489]:
+            - generic [ref=f13e3]:
+              - link:
+                - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+              - generic [ref=f13e6]:
+                - generic [ref=f13e8]:
+                  - generic [ref=f13e9]:
+                    - link:
+                      - /url: https://www.facebook.com/348695934316?ref=embed_page
+                    - link "Play unseen Stories" [ref=f13e10] [cursor=pointer]:
+                      - /url: /stories/102942175206822/?source=EMBED_PAGE&ref=embed_page
+                      - img "Town of Berlin Maryland" [ref=f13e13]
+                    - generic [ref=f13e14]:
+                      - link "Town of Berlin Maryland" [ref=f13e16] [cursor=pointer]:
+                        - /url: https://www.facebook.com/348695934316?ref=embed_page
+                      - generic [ref=f13e17]: 27,860 followers
+                  - button "Follow Page" [ref=f13e22] [cursor=pointer]: Follow Page
+                - generic [ref=f13e32]:
+                  - feed [ref=f13e34]:
+                    - generic [ref=f13e37]:
+                      - generic [ref=f13e38]:
+                        - link [ref=f13e43] [cursor=pointer]:
+                          - /url: https://www.facebook.com/photo.php?fbid=1386300630204297&set=a.334139272087110&type=3&ref=embed_page
+                        - generic [ref=f13e45]:
+                          - link "Play unseen Stories" [ref=f13e47] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f13e50]
+                          - link [ref=f13e53] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl?ref=embed_page
+                          - generic [ref=f13e58]:
+                            - link "Town of Berlin Maryland" [ref=f13e59] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f13e60]: Town of Berlin Maryland
+                            - link "7 hours ago" [ref=f13e61] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl?ref=embed_page
+                              - generic [ref=f13e62]: 7 hours ago
+                      - table [ref=f13e64]:
+                        - rowgroup [ref=f13e65]:
+                          - row "1 Comment 2" [ref=f13e66]:
+                            - cell "1" [ref=f13e67]:
+                              - button "1" [ref=f13e68]:
+                                - generic "Like" [ref=f13e69] [cursor=pointer]: "1"
+                            - cell "Comment" [ref=f13e71]:
+                              - link "Comment" [ref=f13e72] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl?ref=embed_page
+                                - generic "Comment" [ref=f13e73]: Comment
+                            - cell "2" [ref=f13e75]:
+                              - link "2" [ref=f13e76] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0htheJ1iGQA12de2jCMKb7YEBco5f4NJXgPJTPdHh3FrpdT95exvm5wusmAkHpHKPl&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f13e77]: "2"
+                    - generic [ref=f13e81]:
+                      - generic [ref=f13e83]:
+                        - generic [ref=f13e84]:
+                          - link "Play unseen Stories" [ref=f13e86] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f13e89]
+                          - link [ref=f13e92] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                          - generic [ref=f13e97]:
+                            - link "Town of Berlin Maryland" [ref=f13e98] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f13e99]: Town of Berlin Maryland
+                            - link "8 hours ago" [ref=f13e100] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                              - generic [ref=f13e101]: 8 hours ago
+                        - generic [ref=f13e103]:
+                          - paragraph [ref=f13e104]: The agenda packet for tonight's Closed Session and Regular Session meetings of the Mayor & Council starting at 5:00 PM are available by clicking below.
+                          - paragraph [ref=f13e105]:
+                            - text: "ATTENTION:"
+                            - text: Monday's meetings will take place at the Worcester County Library – Berlin Branch. The library closes at 6 PM, and due to library policy, the doors cannot be left unlocked after hours.
+                          - generic [ref=f13e106]: ...
+                          - link "See more" [ref=f13e109] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                        - generic [ref=f13e116]:
+                          - link "Mayor & Council Meeting Information" [ref=f13e118] [cursor=pointer]:
+                            - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F3Q638x9%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252F9bbbef89-e746-4f01-8af9-59192eec119e.png&h=AT4-dVY73nAEMtXqvP9smNqnOpIivWXpw2c8-dch_qIvE2honLDa5JlrTjPBsLWHb2RQoGa7VXq1jde40VUJpr2OSAX-QY-H9aiKiMJpWEai2gXb8O3sRBhBYuLAslvwaOz3w-KvV9HidVswGHa5PwmBcGcj5dX5C5RMlM-TJmaq-g
+                            - generic [ref=f13e119]: Email from Town of Berlin Upcoming Mayor and Council Meeting MAYOR & COUNCIL MEETING Monday, April 13, 2026 5:00 PM Closed Session Worcester County Library – Berlin Branch, 2nd Floor 13 Harrison Ave
+                            - img "May be an image of text that says 'BERLIN, (ល) OF TOWN KOW WN W N TC To ESTD JC 1868 MAYOR MAYOR AND COUNCIL COUNCIL'" [ref=f13e122]
+                          - generic [ref=f13e123]:
+                            - generic [ref=f13e124]:
+                              - generic [ref=f13e127]: web-extract.constantcontact.com
+                              - generic [ref=f13e128]:
+                                - link "Mayor & Council Meeting Information" [ref=f13e130] [cursor=pointer]:
+                                  - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F3Q638x9%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252F9bbbef89-e746-4f01-8af9-59192eec119e.png&h=AT4MH5KNINFGai9XVTJfXF1_WiphzjvAujhh2Tg4DRRcU6AQKHpEHb_W2WSRxTw8OCznq_iTf-QdswPaxAtYXdtWoQVosY65T0M1UHnmNC617JR4P1NJiQcviHFF4NbpzyVVw04kQlucNbInVA3QnkgMyuuz9MXxJJd-wqnXhrjW5Q
+                                - generic [ref=f13e131]: Email from Town of Berlin Upcoming Mayor and Council Meeting MAYOR & COUNCIL MEETING Monday, April 13, 2026 5:00 PM Closed Session Worcester County Library – Berlin Branch, 2nd Floor 13 Harrison Ave
+                            - link "Mayor & Council Meeting Information" [ref=f13e132] [cursor=pointer]:
+                              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F3Q638x9%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252F9bbbef89-e746-4f01-8af9-59192eec119e.png&h=AT6oZRs9b7SeGgXk5eYNc_LU7ERjIdPbfD1b_frjKbGP9VtPrFEm7y9nlKix0HEGElr1FTlTTghcQxXr9x65gdshRKfNxefxVggInC9mHOzsMkLElpA7hLINP5XADLsA55zYXrnxD5lougA1QWJi5snFDbtxaf0d3xwFXQNQSPB8KSKK7KPdaVE
+                              - generic [ref=f13e133]: Email from Town of Berlin Upcoming Mayor and Council Meeting MAYOR & COUNCIL MEETING Monday, April 13, 2026 5:00 PM Closed Session Worcester County Library – Berlin Branch, 2nd Floor 13 Harrison Ave
+                      - table [ref=f13e135]:
+                        - rowgroup [ref=f13e136]:
+                          - row "Like Comment Share" [ref=f13e137]:
+                            - cell "Like" [ref=f13e138]:
+                              - button "Like" [ref=f13e139]:
+                                - generic "Like" [ref=f13e140] [cursor=pointer]: Like
+                            - cell "Comment" [ref=f13e142]:
+                              - link "Comment" [ref=f13e143] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul?ref=embed_page
+                                - generic "Comment" [ref=f13e144]: Comment
+                            - cell "Share" [ref=f13e146]:
+                              - link "Share" [ref=f13e147] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0X8M6oMtiusw3qLhN5beQmTFCD8PGreLit4XSnfoBvxhQgeMUZi7ZqUM56Aigk2bul&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f13e148]: Share
+                    - generic [ref=f13e152]:
+                      - generic [ref=f13e153]:
+                        - link [ref=f13e158] [cursor=pointer]:
+                          - /url: https://www.facebook.com/photo.php?fbid=1384184340415926&set=a.334139272087110&type=3&ref=embed_page
+                        - generic [ref=f13e160]:
+                          - link "Play unseen Stories" [ref=f13e162] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f13e165]
+                          - link [ref=f13e168] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl?ref=embed_page
+                          - generic [ref=f13e173]:
+                            - link "Town of Berlin Maryland" [ref=f13e174] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f13e175]: Town of Berlin Maryland
+                            - link "on Friday" [ref=f13e176] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl?ref=embed_page
+                              - generic [ref=f13e177]: on Friday
+                      - table [ref=f13e179]:
+                        - rowgroup [ref=f13e180]:
+                          - row "9 Comment 5" [ref=f13e181]:
+                            - cell "9" [ref=f13e182]:
+                              - button "9" [ref=f13e183]:
+                                - generic "Like" [ref=f13e184] [cursor=pointer]: "9"
+                            - cell "Comment" [ref=f13e186]:
+                              - link "Comment" [ref=f13e187] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl?ref=embed_page
+                                - generic "Comment" [ref=f13e188]: Comment
+                            - cell "5" [ref=f13e190]:
+                              - link "5" [ref=f13e191] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0fZwFuvNNnwsyFRfeNhAf9z9b8iHBQZ1qDo6fc8xZioUYdTLQL26wpCxrUFEQLjWVl&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f13e192]: "5"
+                    - generic [ref=f13e196]:
+                      - generic [ref=f13e197]:
+                        - link [ref=f13e202] [cursor=pointer]:
+                          - /url: https://www.facebook.com/photo.php?fbid=1384121823755511&set=a.334139272087110&type=3&ref=embed_page
+                        - generic [ref=f13e204]:
+                          - link "Play unseen Stories" [ref=f13e206] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f13e209]
+                          - link [ref=f13e212] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl?ref=embed_page
+                          - generic [ref=f13e217]:
+                            - link "Town of Berlin Maryland" [ref=f13e218] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f13e219]: Town of Berlin Maryland
+                            - link "on Friday" [ref=f13e220] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl?ref=embed_page
+                              - generic [ref=f13e221]: on Friday
+                      - table [ref=f13e223]:
+                        - rowgroup [ref=f13e224]:
+                          - row "2 Comment 19" [ref=f13e225]:
+                            - cell "2" [ref=f13e226]:
+                              - button "2" [ref=f13e227]:
+                                - generic "Like" [ref=f13e228] [cursor=pointer]: "2"
+                            - cell "Comment" [ref=f13e230]:
+                              - link "Comment" [ref=f13e231] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl?ref=embed_page
+                                - generic "Comment" [ref=f13e232]: Comment
+                            - cell "19" [ref=f13e234]:
+                              - link "19" [ref=f13e235] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid0VzPFax2rBGjpxnL8LhCyAuMmaVMGsuevu2uWa9voiFzn6ikGLffGU4Wmh2KmVjCCl&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f13e236]: "19"
+                    - generic [ref=f13e240]:
+                      - generic [ref=f13e242]:
+                        - generic [ref=f13e243]:
+                          - link "Play unseen Stories" [ref=f13e245] [cursor=pointer]:
+                            - /url: /stories/102942175206822/?source=EMBED_POST&ref=embed_page
+                            - img "Town of Berlin Maryland" [ref=f13e248]
+                          - link [ref=f13e251] [cursor=pointer]:
+                            - /url: /townofberlinmd/posts/pfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l?ref=embed_page
+                          - generic [ref=f13e256]:
+                            - link "Town of Berlin Maryland" [ref=f13e257] [cursor=pointer]:
+                              - /url: https://www.facebook.com/townofberlinmd?ref=embed_page
+                              - generic [ref=f13e258]: Town of Berlin Maryland
+                            - link "on Friday" [ref=f13e259] [cursor=pointer]:
+                              - /url: /townofberlinmd/posts/pfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l?ref=embed_page
+                              - generic [ref=f13e260]: on Friday
+                        - generic [ref=f13e261]:
+                          - paragraph [ref=f13e262]: "News Release: Public Meeting on Hudson Branch Restoration Project"
+                          - paragraph [ref=f13e263]:
+                            - text: "Click the link below to read more:"
+                            - link "https://conta.cc/4vlVU8n" [ref=f13e264] [cursor=pointer]:
+                              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fconta.cc%2F4vlVU8n&h=AT4nWa5e_wQeKKkFfc5tp1iHcU3M1hKxGBwFIW_DOpK4YdZmXx2gtf9MXFQfu2CuG37-jPF0smnvKgrHqjjWtwebhUZ3nBlQwDNRDHXc7MBcA6ICsme8ALuT8_Z7gu15q9ss28AyW-rsMUZp1f7KPqCacTG5wxElN7JCWFml85CIn5zxse-azRg
+                        - generic [ref=f13e271]:
+                          - 'link "News Release: Public Meeting on Hudson Branch Restoration Project" [ref=f13e273] [cursor=pointer]':
+                            - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F4vlVU8n%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252Fa70605fb-6553-4159-8c5f-f91c552fe44b.png&h=AT7Q5Wc3SEL5zaZM_iio2ymD-NVJ4XFtWPuqbveS7L6EGvqNpeRNOMZm9feF_eEtL4iKcuAHLzDVxcvkNdtj8RJMF8i1XfUMBCYE7CMTF9_WGbi_wVE_hdhKUhN6QNnx-2FbL2gid29es8AyjdWv7bmyip84dnigdW6KqB99Gw_WyQ
+                            - generic [ref=f13e274]: Email from Town of Berlin Town of Berlin News Release April 10, 2026 Public Meeting on Hudson Branch Restoration Project April 10, 2026 For Immediate Release… Public Meeting on Hudson Branch Resto
+                            - img "No photo description available." [ref=f13e277]
+                          - generic [ref=f13e278]:
+                            - generic [ref=f13e279]:
+                              - generic [ref=f13e282]: web-extract.constantcontact.com
+                              - generic [ref=f13e283]:
+                                - 'link "News Release: Public Meeting on Hudson Branch Restoration Project" [ref=f13e285] [cursor=pointer]':
+                                  - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F4vlVU8n%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252Fa70605fb-6553-4159-8c5f-f91c552fe44b.png&h=AT5Qg-8lBENOKVdH2Ru3W-2Skg6p1GSE36Z0dj-7nvRwpEJi7wfd56iRkZ-ujM5I6u7gFULz1NzKkWKPM2xSGbqTtXxaBO1Sw9bC9T9sFeai_EcxEH8t2G12XhEp1UtHdWc0rPf6CADkxVcEw1wjNLEtmqhs5rvEfvVv2SMuNN31qQ
+                                - generic [ref=f13e286]: Email from Town of Berlin Town of Berlin News Release April 10, 2026 Public Meeting on Hudson Branch Restoration Project April 10, 2026 For Immediate Release… Public Meeting on Hudson Branch Resto
+                            - 'link "News Release: Public Meeting on Hudson Branch Restoration Project" [ref=f13e287] [cursor=pointer]':
+                              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fweb-extract.constantcontact.com%2Fv1%2Fsocial_annotation_v2%3Fpermalink_uri%3Dhttps%253A%252F%252Fconta.cc%252F4vlVU8n%26image_url%3Dhttps%253A%252F%252Fmlsvc01-prod.s3.amazonaws.com%252Fa955f60e601%252Fa70605fb-6553-4159-8c5f-f91c552fe44b.png&h=AT57nHV0-bNCyUFpRxzPWrNcPnmy6dgaLKUWDcQKnD6wKupw9lOdbH8xdZS4Z4MYiZFG1j4YFHxjPW0B13DeC9137pibY6lGUnFHXq9Yp_gnJlTYq62W6B5GUyW6BOkwUs1MgqgijsusciffnvZbztHtJVNbPjNrmBohOmQ0ltAJpx7TbUNS_fw
+                              - generic [ref=f13e288]: Email from Town of Berlin Town of Berlin News Release April 10, 2026 Public Meeting on Hudson Branch Restoration Project April 10, 2026 For Immediate Release… Public Meeting on Hudson Branch Resto
+                      - table [ref=f13e290]:
+                        - rowgroup [ref=f13e291]:
+                          - row "3 Comment 1" [ref=f13e292]:
+                            - cell "3" [ref=f13e293]:
+                              - button "3" [ref=f13e294]:
+                                - generic "Like" [ref=f13e295] [cursor=pointer]: "3"
+                            - cell "Comment" [ref=f13e297]:
+                              - link "Comment" [ref=f13e298] [cursor=pointer]:
+                                - /url: https://www.facebook.com/townofberlinmd/posts/pfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l?ref=embed_page
+                                - generic "Comment" [ref=f13e299]: Comment
+                            - cell "1" [ref=f13e301]:
+                              - link "1" [ref=f13e302] [cursor=pointer]:
+                                - /url: /sharer/sharer.php?u=https%3A%2F%2Fwww.facebook.com%2Ftownofberlinmd%2Fposts%2Fpfbid025F2yv4emBg9c8RZLPMeUzxYyMTJ3m8ytUG98q7gsEFGpbEf4vSGjtQyowP61n3j5l&display=popup&ref=embed_page&src=post
+                                - generic "Share" [ref=f13e303]: "1"
+                  - progressbar [ref=f13e306]
+                  - link "Find us on Facebook" [ref=f13e307] [cursor=pointer]:
+                    - /url: https://www.facebook.com/348695934316?ref=embed_page
+                    - generic [ref=f13e308]: Find us on Facebook
+        - generic [ref=e490]:
+          - generic [ref=e491]:
+            - heading "Contact Us" [level=2] [ref=e492]
+            - heading "Town of Berlin, Maryland" [level=3] [ref=e493]
+            - link "10 William Street | Berlin, MD 21811" [ref=e494] [cursor=pointer]:
+              - /url: https://goo.gl/maps/ELZPrM4iwBz
+              - paragraph [ref=e495]: 10 William Street | Berlin, MD 21811
+          - generic [ref=e496]:
+            - text: "Phone:"
+            - link "410-641-2770" [ref=e497] [cursor=pointer]:
+              - /url: tel:+1-410-641-2770
+            - text: "Fax: 410-641-2316"
+            - text: "Email:"
+            - link "info@berlinmd.gov" [ref=e498] [cursor=pointer]:
+              - /url: mailto:info@berlinmd.gov
+          - generic [ref=e500]:
+            - link "Visit" [ref=e501] [cursor=pointer]:
+              - /url: https://www.facebook.com/townofberlinmd
+              - generic [ref=e502]: 
+            - link "Visit" [ref=e503] [cursor=pointer]:
+              - /url: https://www.twitter.com/berlinmd
+              - generic [ref=e504]: 
+            - link "Visit" [ref=e505] [cursor=pointer]:
+              - /url: https://www.youtube.com/channel/UC0Z2ZVJTUkUr7vpY5H6RZag
+              - generic [ref=e506]: 
+          - generic [ref=e507]:
+            - img "Coolest Small Town in America" [ref=e508]
+            - img "Certificate of Excellence - Trip Advisor" [ref=e509]
+          - link "CodeRED" [ref=e510] [cursor=pointer]:
+            - /url: https://accountportal.onsolve.net/berlintownmd
+            - img "CodeRED" [ref=e511]
+          - paragraph [ref=e513]:
+            - link "Site Map" [ref=e514] [cursor=pointer]:
+              - /url: /site-map
+              - strong [ref=e515]: Site Map
+            - text: "|"
+            - link "Accessibility" [ref=e516] [cursor=pointer]:
+              - /url: /accessibility
+              - strong [ref=e517]: Accessibility
+            - text: COPYRIGHT © 2026
+            - link "TOWN OF BERLIN, MARYLAND" [ref=e518] [cursor=pointer]:
+              - /url: https://berlinmd.gov
+            - link "WEBSITE DESIGN BY D3" [ref=e519] [cursor=pointer]:
+              - /url: https://d3corp.com/
+            - link "OCEAN CITY MARYLAND" [ref=e520] [cursor=pointer]:
+              - /url: http://visitoceancity.com/
+  - generic: t t t t t t

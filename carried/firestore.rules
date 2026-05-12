@@ -1,0 +1,97 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email in ['tonyweeg@gmail.com'];
+    }
+
+    // Users collection - users can read/write their own document
+    // Admins can read/write all user documents
+    match /users/{userId} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null &&
+        (request.auth.uid == userId || isAdmin());
+    }
+
+    // Customers collection (Stripe Extension) - admins can read
+    match /customers/{customerId} {
+      allow read: if request.auth != null &&
+        (request.auth.uid == customerId || isAdmin());
+
+      match /checkout_sessions/{sessionId} {
+        allow read, write: if request.auth != null &&
+          request.auth.uid == customerId;
+      }
+
+      match /subscriptions/{subscriptionId} {
+        allow read: if request.auth != null &&
+          (request.auth.uid == customerId || isAdmin());
+      }
+    }
+
+    // Groups collection
+    match /groups/{groupId} {
+      // Public groups can be read by anyone
+      // Private/link groups require auth
+      allow read: if resource.data.visibility == 'public' ||
+                     resource.data.visibility == 'link' ||
+                     request.auth != null;
+
+      // Authenticated users can create groups
+      allow create: if request.auth != null;
+
+      // Only group creator can update/delete
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.createdBy;
+    }
+
+    // Group Members collection
+    match /groupMembers/{memberId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.userId;
+    }
+
+    // Meetings collection
+    match /meetings/{meetingId} {
+      // Allow read for public access (group visibility checked at app level)
+      allow read: if true;
+      // Allow create if user is authenticated
+      // Membership check handled at app level (owner or invited members only)
+      allow create: if request.auth != null;
+      // Allow update/delete for meeting creator
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.createdBy;
+    }
+
+    // Motions collection (legacy)
+    match /motions/{motionId} {
+      allow read: if request.auth != null;
+      // Allow create for now (will move to Cloud Functions later)
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+
+    // Segments collection (all meeting content types)
+    match /segments/{segmentId} {
+      // Allow read for public access (group visibility checked at app level)
+      allow read: if true;
+      // Allow create for authenticated users
+      allow create: if request.auth != null;
+      // Allow delete for authenticated users (cleanup operations)
+      allow delete: if request.auth != null;
+      allow update: if false;
+    }
+
+    // Queries collection (search history)
+    match /queries/{queryId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
