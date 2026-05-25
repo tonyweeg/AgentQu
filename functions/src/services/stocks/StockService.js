@@ -107,6 +107,59 @@ class StockService {
         this.logger.info('Sorted trending by volume', {
           top3: sortedStocks.slice(0, 3).map(s => `${s.symbol}: ${(s.quote?.regularMarketVolume / 1000000).toFixed(1)}M vol`)
         });
+      } else if (mode === 'swami') {
+        // SWAMI: Early Entry - Find diamonds in the rough
+        // Decent AI score + negative/flat price action = potential opportunity
+        // Also factor in proximity to 52-week low (closer = better entry)
+        sortedStocks = [...scoredStocks]
+          .map(s => {
+            const score = s.score || s.scoreData?.total || 0;
+            const maxScore = s.scoreData?.maxPossible || 305;
+            const scorePercent = score / maxScore;
+
+            // Price change factor: negative change = higher opportunity
+            const priceChange = s.quote?.regularMarketChangePercent || 0;
+            const priceOpportunity = priceChange <= 0 ? (1 + Math.abs(priceChange) / 10) : (1 / (1 + priceChange / 10));
+
+            // 52-week position: closer to low = better entry
+            const price = s.quote?.regularMarketPrice || 0;
+            const low52 = s.quote?.fiftyTwoWeekLow || price;
+            const high52 = s.quote?.fiftyTwoWeekHigh || price;
+            const range52 = high52 - low52;
+            const position52 = range52 > 0 ? (price - low52) / range52 : 0.5;
+            const lowProximityBonus = 1 + (1 - position52); // Closer to low = higher bonus
+
+            // Recommendation bonus: BUY/STRONG_BUY get extra weight
+            const rec = s.scoreData?.recommendation?.action;
+            const recBonus = rec === 'STRONG_BUY' ? 1.5 : rec === 'BUY' ? 1.3 : rec === 'HOLD' ? 1.0 : 0.7;
+
+            // Combined Swami score
+            s.swamiScore = scorePercent * priceOpportunity * lowProximityBonus * recBonus;
+            s.swamiInsight = {
+              aiScore: Math.round(scorePercent * 100),
+              priceChange: priceChange.toFixed(2),
+              from52Low: Math.round(position52 * 100),
+              opportunityScore: Math.round(s.swamiScore * 100),
+              recommendation: rec || 'N/A'
+            };
+
+            return s;
+          })
+          // Filter: must have decent AI score (at least 50%) and be down or flat today
+          .filter(s => {
+            const scorePercent = (s.score || s.scoreData?.total || 0) / (s.scoreData?.maxPossible || 305);
+            const priceChange = s.quote?.regularMarketChangePercent || 0;
+            // Decent fundamentals AND price hasn't run up
+            return scorePercent >= 0.50 && priceChange <= 2;
+          })
+          .sort((a, b) => (b.swamiScore || 0) - (a.swamiScore || 0));
+
+        this.logger.info('Sorted swami by opportunity score', {
+          found: sortedStocks.length,
+          top3: sortedStocks.slice(0, 3).map(s =>
+            `${s.symbol}: swami=${s.swamiInsight?.opportunityScore}, AI=${s.swamiInsight?.aiScore}%, chg=${s.swamiInsight?.priceChange}%, rec=${s.swamiInsight?.recommendation}`
+          )
+        });
       } else {
         // Default (bluechip, etc.) - sort by AI score
         sortedStocks = scoredStocks;
@@ -435,6 +488,16 @@ class StockService {
       case 'losers':
         return this._getDynamicSymbols('losers');
 
+      case 'swami':
+        // Swami needs a broad pool to find hidden gems
+        // Combine blue chips + trending + losers for best coverage
+        const blueChips = this._getBlueChipSymbols();
+        const dynamic = await this._getDynamicSymbols('losers'); // Losers often have early entry opportunities
+        const trending = await this._getDynamicSymbols('trending');
+        const combined = [...new Set([...blueChips, ...dynamic, ...trending])];
+        this.logger.info(`Swami pool: ${combined.length} symbols`);
+        return combined;
+
       case 'trending':
       default:
         return this._getDynamicSymbols('trending');
@@ -546,6 +609,76 @@ class StockService {
     });
 
     return modules;
+  }
+
+  /**
+   * Save investment profile (AgntNrd)
+   * @param {string} userId - User ID
+   * @param {Object} profile - Investment profile data
+   * @returns {Promise<Object>} Saved profile
+   */
+  async saveInvestmentProfile(userId, profile) {
+    try {
+      this.logger.info('Saving investment profile', { userId, amount: profile.amount });
+
+      const admin = require('firebase-admin');
+      const db = admin.firestore();
+
+      const profileData = {
+        ...profile,
+        userId,
+        createdAt: profile.createdAt || Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      await db
+        .collection('users')
+        .doc(userId)
+        .collection('investmentProfile')
+        .doc('current')
+        .set(profileData, { merge: true });
+
+      this.logger.info('Investment profile saved successfully', { userId });
+
+      return profileData;
+    } catch (error) {
+      this.logger.error('Failed to save investment profile', { userId, error: error.message });
+      throw error;
+    }
+  }
+
+  /**
+   * Get investment profile (AgntNrd)
+   * @param {string} userId - User ID
+   * @returns {Promise<Object|null>} Investment profile or null
+   */
+  async getInvestmentProfile(userId) {
+    try {
+      this.logger.info('Getting investment profile', { userId });
+
+      const admin = require('firebase-admin');
+      const db = admin.firestore();
+
+      const doc = await db
+        .collection('users')
+        .doc(userId)
+        .collection('investmentProfile')
+        .doc('current')
+        .get();
+
+      if (!doc.exists) {
+        this.logger.info('No investment profile found', { userId });
+        return null;
+      }
+
+      const profile = doc.data();
+      this.logger.info('Investment profile retrieved', { userId, amount: profile.amount });
+
+      return profile;
+    } catch (error) {
+      this.logger.error('Failed to get investment profile', { userId, error: error.message });
+      throw error;
+    }
   }
 }
 

@@ -94,6 +94,8 @@ exports.addToPortfolio = functions.addToPortfolio;
 exports.sellFromPortfolio = functions.sellFromPortfolio;
 exports.saveStockPreferences = functions.saveStockPreferences;
 exports.getStockPreferences = functions.getStockPreferences;
+exports.saveInvestmentProfile = functions.saveInvestmentProfile;
+exports.getInvestmentProfile = functions.getInvestmentProfile;
 exports.finnhubWebhook = functions.finnhubWebhook;
 
 // ============================================================================

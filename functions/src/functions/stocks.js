@@ -596,6 +596,96 @@ const finnhubWebhook = onRequest(async (req, res) => {
   }
 });
 
+/**
+ * Save Investment Profile (AgntNrd)
+ *
+ * POST /saveInvestmentProfile { userId, amount, yearsToRetirement, riskTolerance, fundPreference, preciousMetals, individualStocks, allocation }
+ */
+const saveInvestmentProfile = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
+
+  try {
+    const {
+      userId,
+      amount,
+      yearsToRetirement,
+      riskTolerance,
+      fundPreference,
+      preciousMetals,
+      individualStocks,
+      allocation,
+    } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required',
+      });
+    }
+
+    logger.info('saveInvestmentProfile called', { userId, amount, yearsToRetirement, riskTolerance });
+
+    const stockService = new StockService();
+    const result = await stockService.saveInvestmentProfile(userId, {
+      amount,
+      yearsToRetirement,
+      riskTolerance,
+      fundPreference,
+      preciousMetals,
+      individualStocks,
+      allocation,
+      updatedAt: Date.now(),
+    });
+
+    res.status(200).json({
+      success: true,
+      profile: result,
+    });
+  } catch (error) {
+    logger.error('saveInvestmentProfile failed', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * Get Investment Profile (AgntNrd)
+ *
+ * GET /getInvestmentProfile?userId=xxx
+ */
+const getInvestmentProfile = onRequest(async (req, res) => {
+  if (handleCors(req, res)) return;
+
+  try {
+    const userId = req.query.userId || req.body.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required',
+      });
+    }
+
+    logger.info('getInvestmentProfile called', { userId });
+
+    const stockService = new StockService();
+    const profile = await stockService.getInvestmentProfile(userId);
+
+    res.status(200).json({
+      success: true,
+      profile,
+    });
+  } catch (error) {
+    logger.error('getInvestmentProfile failed', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   discoverStocks,
   analyzeStock,
@@ -610,5 +700,7 @@ module.exports = {
   sellFromPortfolio,
   saveStockPreferences,
   getStockPreferences,
+  saveInvestmentProfile,
+  getInvestmentProfile,
   finnhubWebhook,
 };

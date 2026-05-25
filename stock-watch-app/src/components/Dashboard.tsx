@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Stock, ScreeningCriteria, AnalysisFocus, DiscoveryMode } from '../lib/types';
 import { useTheme } from '../contexts/ThemeContext';
 import StockCard from './StockCard';
+import SwamiCard from './SwamiCard';
 import MarketTicker from './MarketTicker';
 import FrameworksGuide from './FrameworksGuide';
 
@@ -75,6 +76,9 @@ const Dashboard: React.FC<DashboardProps> = ({
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
       </svg>
+    )},
+    { value: 'swami', label: 'Swami', activeClass: 'from-violet-500 to-fuchsia-500', icon: (
+      <span className="text-sm">🔮</span>
     )},
   ];
 
@@ -425,35 +429,99 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
+        {/* Swami Mode Header */}
+        {selectedMode === 'swami' && stocks.length > 0 && (
+          <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-[#1a1033] via-[#2d1f4e] to-[#1a2744] border border-amber-900/30 relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl" />
+
+            <div className="relative flex items-center gap-4">
+              <div className="text-4xl">🔮</div>
+              <div>
+                <h2 className="text-xl font-bold text-amber-100 flex items-center gap-2">
+                  Swami's Vision
+                  <span className="text-amber-500/60 text-sm">✦</span>
+                </h2>
+                <p className="text-sm text-violet-300/70">
+                  Early entry opportunities • Strong fundamentals, favorable entry points
+                </p>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="relative mt-4 flex flex-wrap gap-4 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-teal-400" />
+                <span className="text-teal-300/80">Near 52w Low = Better Entry</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <span className="text-amber-300/80">Higher Score = Stronger Signal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-violet-400" />
+                <span className="text-violet-300/80">AI Score = Fundamental Quality</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stock Grid */}
         {stocks.length > 0 && (
           <>
             <div className="flex items-center justify-between mb-4">
-              <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-gray-500'}`}>
-                Showing {stocks.length} {modeTabs.find(t => t.value === selectedMode)?.label || 'stocks'}
-                {selectedFocus && ` • ${selectedFocus.charAt(0).toUpperCase() + selectedFocus.slice(1)} focus`}
+              <p className={`text-sm ${
+                selectedMode === 'swami'
+                  ? 'text-violet-300/70'
+                  : isDark ? 'text-slate-400' : 'text-gray-500'
+              }`}>
+                {selectedMode === 'swami' ? (
+                  <>Showing {stocks.length} early entry opportunities</>
+                ) : (
+                  <>
+                    Showing {stocks.length} {modeTabs.find(t => t.value === selectedMode)?.label || 'stocks'}
+                    {selectedFocus && ` • ${selectedFocus.charAt(0).toUpperCase() + selectedFocus.slice(1)} focus`}
+                  </>
+                )}
               </p>
               {loading && (
-                <span className={`flex items-center gap-2 text-sm ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                <span className={`flex items-center gap-2 text-sm ${
+                  selectedMode === 'swami'
+                    ? 'text-amber-400/60'
+                    : isDark ? 'text-slate-500' : 'text-gray-400'
+                }`}>
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Updating...
+                  {selectedMode === 'swami' ? 'Consulting the oracle...' : 'Updating...'}
                 </span>
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${
+              selectedMode === 'swami' ? 'xl:grid-cols-3' : 'xl:grid-cols-4'
+            }`}>
               {stocks.map((stock) => (
-                <StockCard
-                  key={stock.symbol}
-                  stock={stock}
-                  onClick={onStockSelect}
-                  onAddToWatchlist={onAddToWatchlist}
-                  isInWatchlist={isInWatchlist(stock.symbol)}
-                  showScore={true}
-                />
+                selectedMode === 'swami' ? (
+                  <SwamiCard
+                    key={stock.symbol}
+                    stock={stock}
+                    onClick={onStockSelect}
+                    onAddToWatchlist={onAddToWatchlist}
+                    isInWatchlist={isInWatchlist(stock.symbol)}
+                  />
+                ) : (
+                  <StockCard
+                    key={stock.symbol}
+                    stock={stock}
+                    onClick={onStockSelect}
+                    onAddToWatchlist={onAddToWatchlist}
+                    isInWatchlist={isInWatchlist(stock.symbol)}
+                    showScore={true}
+                  />
+                )
               ))}
             </div>
           </>

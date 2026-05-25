@@ -395,7 +395,7 @@ export interface SearchResult {
 }
 
 // View Types
-export type ViewType = 'discover' | 'watchlist' | 'portfolio' | 'detail';
+export type ViewType = 'discover' | 'watchlist' | 'portfolio' | 'detail' | 'agntnrd';
 
 // Screening Criteria
 export interface ScreeningCriteria {
@@ -414,4 +414,4 @@ export interface ScreeningCriteria {
 export type AnalysisFocus = 'value' | 'growth' | 'income' | 'momentum' | 'safety' | null;
 
 // Discovery Mode
-export type DiscoveryMode = 'trending' | 'bluechip' | 'gainers' | 'losers';
+export type DiscoveryMode = 'trending' | 'bluechip' | 'gainers' | 'losers' | 'swami';

@@ -5,6 +5,7 @@ import { usePortfolio } from './hooks/usePortfolio';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import Dashboard from './components/Dashboard';
 import StockDetailView from './components/StockDetailView';
+import AgntNrd from './components/AgntNrd';
 import { ViewType, ScreeningCriteria, AnalysisFocus, DiscoveryMode } from './lib/types';
 import './App.css';
 
@@ -571,6 +572,11 @@ function AppContent() {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     )},
+    { id: 'agntnrd', label: 'AgntNrd', icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    )},
   ];
 
   // Main Dashboard View
@@ -816,6 +822,16 @@ function AppContent() {
               )}
             </div>
           </div>
+        )}
+
+        {currentView === 'agntnrd' && (
+          <AgntNrd
+            userId={userId}
+            onSaveProfile={async (profile) => {
+              // TODO: Save to Firestore
+              console.log('Saving investment profile:', profile);
+            }}
+          />
         )}
       </div>
     </div>

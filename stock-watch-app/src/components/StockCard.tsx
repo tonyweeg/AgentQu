@@ -29,10 +29,40 @@ const strategyInfo: Record<string, { name: string; icon: string; max: number }> 
   sectoraffinity: { name: 'Sector', icon: '🎪', max: 20 },
 };
 
+// Recommendation descriptions
+const recommendationInfo: Record<string, { label: string; description: string; emoji: string }> = {
+  STRONG_BUY: {
+    label: 'Strong Buy',
+    description: 'Exceptional opportunity. Strong fundamentals, attractive valuation, and positive momentum. Consider adding to portfolio.',
+    emoji: '🚀'
+  },
+  BUY: {
+    label: 'Buy',
+    description: 'Good opportunity. Solid fundamentals with reasonable valuation. Worth considering for portfolio addition.',
+    emoji: '👍'
+  },
+  HOLD: {
+    label: 'Hold',
+    description: 'Neutral outlook. Neither compelling buy nor sell signals. If you own it, consider holding. If not, wait for better entry.',
+    emoji: '⏸️'
+  },
+  SELL: {
+    label: 'Sell',
+    description: 'Underperforming expectations. Consider reducing position or avoiding new purchases.',
+    emoji: '👎'
+  },
+  STRONG_SELL: {
+    label: 'Strong Sell',
+    description: 'Significant concerns. Poor fundamentals, overvaluation, or negative momentum. Consider exiting position.',
+    emoji: '🚨'
+  }
+};
+
 const StockCard: React.FC<StockCardProps> = memo(
   ({ stock, onClick, onAddToWatchlist, isInWatchlist = false, showScore = true }) => {
     const { isDark } = useTheme();
     const [showScoreTooltip, setShowScoreTooltip] = useState(false);
+    const [showRecTooltip, setShowRecTooltip] = useState(false);
     const { quote, profile, scoreData } = stock;
 
     // Price change styling
@@ -74,11 +104,69 @@ const StockCard: React.FC<StockCardProps> = memo(
       };
 
       const colorClass = colors[rec.action] || { dark: 'bg-slate-700 text-slate-400', light: 'bg-gray-100 text-gray-600' };
+      const info = recommendationInfo[rec.action];
 
       return (
-        <span className={`px-2 py-1 rounded-lg text-xs font-semibold border ${isDark ? colorClass.dark : colorClass.light}`}>
-          {rec.label}
-        </span>
+        <div
+          className="relative"
+          onMouseEnter={() => setShowRecTooltip(true)}
+          onMouseLeave={() => setShowRecTooltip(false)}
+        >
+          <span className={`px-2 py-1 rounded-lg text-xs font-semibold border cursor-help ${isDark ? colorClass.dark : colorClass.light}`}>
+            {rec.label}
+          </span>
+
+          {/* Recommendation Tooltip */}
+          {showRecTooltip && info && (
+            <div className={`absolute right-0 top-full mt-2 w-64 p-3 rounded-xl shadow-xl border z-50 ${
+              isDark ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-200'
+            }`}>
+              {/* Arrow */}
+              <div className={`absolute -top-2 right-4 w-3 h-3 rotate-45 border-l border-t ${
+                isDark ? 'bg-slate-800 border-slate-600' : 'bg-white border-gray-200'
+              }`} />
+
+              {/* Header */}
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{info.emoji}</span>
+                <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {info.label}
+                </span>
+              </div>
+
+              {/* Description */}
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-gray-600'}`}>
+                {info.description}
+              </p>
+
+              {/* Rating Scale */}
+              <div className={`mt-3 pt-2 border-t ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
+                <p className={`text-[10px] uppercase tracking-wider mb-1.5 ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>
+                  Rating Scale
+                </p>
+                <div className="flex gap-1">
+                  {['STRONG_BUY', 'BUY', 'HOLD', 'SELL', 'STRONG_SELL'].map((action) => (
+                    <div
+                      key={action}
+                      className={`flex-1 h-1.5 rounded-full ${
+                        action === rec.action
+                          ? action === 'STRONG_BUY' ? 'bg-emerald-500' :
+                            action === 'BUY' ? 'bg-green-500' :
+                            action === 'HOLD' ? 'bg-yellow-500' :
+                            action === 'SELL' ? 'bg-orange-500' : 'bg-red-500'
+                          : isDark ? 'bg-slate-700' : 'bg-gray-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span className={`text-[8px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Strong Buy</span>
+                  <span className={`text-[8px] ${isDark ? 'text-slate-500' : 'text-gray-400'}`}>Strong Sell</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       );
     };
 

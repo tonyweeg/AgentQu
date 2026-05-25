@@ -11,7 +11,9 @@ const logger = createLogger('YAHOO_FINANCE');
 class YahooFinanceClient {
   constructor() {
     // yahoo-finance2 v3.x requires instantiation
-    this.yf = new YahooFinance();
+    this.yf = new YahooFinance({
+      suppressNotices: ['yahooSurvey']
+    });
     logger.info('YahooFinanceClient initialized');
   }
 
@@ -76,9 +78,10 @@ class YahooFinanceClient {
     } catch (error) {
       logger.error('Failed to fetch quote', {
         symbol,
-        errorMessage: error.message,
-        errorName: error.name,
-        errorStack: error.stack?.substring(0, 500)
+        errorMessage: error?.message || String(error),
+        errorName: error?.name || 'UnknownError',
+        errorCode: error?.code,
+        errorStack: error?.stack?.substring(0, 500) || 'No stack'
       });
       return null;
     }
