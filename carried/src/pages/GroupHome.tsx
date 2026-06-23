@@ -146,7 +146,7 @@ export function GroupHome() {
     const file = e.dataTransfer.files?.[0];
     if (file) {
       const fileType = getFileType(file);
-      if (fileType === 'pdf' || fileType === 'docx' || fileType === 'txt') {
+      if (fileType === 'pdf' || fileType === 'docx' || fileType === 'txt' || fileType === 'xlsx') {
         const validation = validateFile(file);
         if (validation.valid) {
           console.log('CARRIED_DEBUG: File dropped on GroupHome, navigating to upload:', file.name);

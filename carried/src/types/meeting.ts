@@ -5,7 +5,7 @@
 
 import { Timestamp } from 'firebase/firestore';
 
-export type MeetingSource = 'paste' | 'pdf' | 'docx' | 'txt';
+export type MeetingSource = 'paste' | 'pdf' | 'docx' | 'txt' | 'xlsx';
 
 export type ProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
 

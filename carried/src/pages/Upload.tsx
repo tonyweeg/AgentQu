@@ -125,6 +125,8 @@ export function Upload() {
       setSource('pdf');
     } else if (fileType === 'docx') {
       setSource('docx');
+    } else if (fileType === 'xlsx') {
+      setSource('xlsx');
     } else {
       setSource('paste');
     }
@@ -590,7 +592,7 @@ export function Upload() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".docx,.pdf,.txt"
+                    accept=".docx,.pdf,.txt,.xlsx,.xls"
                     onChange={handleFileInputChange}
                     className="hidden"
                   />
@@ -599,7 +601,7 @@ export function Upload() {
                     Drop your file here or click to browse
                   </p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Supports DOCX, PDF, and TXT files (max 30MB)
+                    Supports DOCX, PDF, TXT, and XLSX files (max 30MB)
                   </p>
                   <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
                     <span className="flex items-center gap-1">
@@ -610,6 +612,9 @@ export function Upload() {
                     </span>
                     <span className="flex items-center gap-1">
                       <FileText className="w-4 h-4" /> TXT
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <FileText className="w-4 h-4" /> XLSX
                     </span>
                   </div>
                 </div>
