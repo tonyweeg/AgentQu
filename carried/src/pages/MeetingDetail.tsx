@@ -500,7 +500,7 @@ export function MeetingDetail() {
                             <FinancialContent content={segment.content} />
 
                             {/* Try disbursement summary visualization */}
-                            <DisbursementSummary content={segment.content} />
+                            <DisbursementSummary content={segment.content} rawMinutes={meeting?.rawMinutes} />
 
                             {/* Show raw text only if no visualizations rendered */}
                             {!segment.content.includes('Spending by Category') &&

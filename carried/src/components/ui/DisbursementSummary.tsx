@@ -3,9 +3,10 @@
  * Carried - Motions carry, memory too
  *
  * Renders disbursement summary reports with visual breakdowns
+ * Shows actual vendor line items and credit card details
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   DollarSign,
   Building2,
@@ -15,7 +16,23 @@ import {
   Calendar,
   Receipt,
   Zap,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
+  Package,
 } from 'lucide-react';
+
+interface VendorLineItem {
+  vendor: string;
+  category: string;
+  amount: number;
+  description: string;
+}
+
+interface CreditCardItem {
+  cardholder: string;
+  balance: number;
+}
 
 interface DisbursementData {
   meetingDate?: string;
@@ -25,23 +42,29 @@ interface DisbursementData {
   combinedTotal?: number;
   pdfStatedTotal?: number;
   reconciliationStatus?: 'OK' | 'MISMATCH' | 'UNKNOWN';
+  vendorLineItems: VendorLineItem[];
+  creditCards: CreditCardItem[];
 }
 
 interface DisbursementSummaryProps {
   content: string;
+  rawMinutes?: string;
   className?: string;
 }
 
-// Parse disbursement summary from text
-function parseDisbursementSummary(content: string): DisbursementData | null {
+// Parse disbursement summary from segment content AND raw meeting data
+function parseDisbursementSummary(content: string, rawMinutes?: string): DisbursementData | null {
   // Check if this looks like a disbursement summary
   if (!content.includes('Disbursement') && !content.includes('disbursed')) {
     return null;
   }
 
-  const data: DisbursementData = {};
+  const data: DisbursementData = {
+    vendorLineItems: [],
+    creditCards: [],
+  };
 
-  // Extract meeting date
+  // Extract meeting date from segment content
   const dateMatch = content.match(/(?:Meeting Date|meeting on)\s*(\d{1,2}[\.\/]\d{1,2}[\.\/]\d{2,4})/i);
   if (dateMatch) {
     data.meetingDate = dateMatch[1];
@@ -86,6 +109,61 @@ function parseDisbursementSummary(content: string): DisbursementData | null {
     data.reconciliationStatus = 'UNKNOWN';
   }
 
+  // If we have raw minutes, extract the actual line items for this meeting date
+  if (rawMinutes && data.meetingDate) {
+    const normalizedDate = data.meetingDate.replace(/\//g, '.');
+
+    // Parse vendor line items from raw data
+    // Format: "Meeting Date: XX.XX.XXXX | Vendor (as printed): NAME | Category: CAT | Amount: XXX | Description: DESC"
+    const lines = rawMinutes.split('\n');
+
+    for (const line of lines) {
+      // Check if this line is for our meeting date
+      if (line.includes(normalizedDate) || line.includes(data.meetingDate)) {
+        // Parse pipe-delimited format from Excel parser
+        const parts = line.split(' | ');
+        const lineData: Record<string, string> = {};
+
+        for (const part of parts) {
+          const colonIdx = part.indexOf(':');
+          if (colonIdx > 0) {
+            const key = part.substring(0, colonIdx).trim().toLowerCase();
+            const value = part.substring(colonIdx + 1).trim();
+            lineData[key] = value;
+          }
+        }
+
+        // Check if this is a vendor line item
+        if (lineData['vendor (as printed)'] || lineData['vendor (normalized)'] || lineData['vendor']) {
+          const vendor = lineData['vendor (as printed)'] || lineData['vendor (normalized)'] || lineData['vendor'] || '';
+          const amount = parseFloat((lineData['amount'] || '0').replace(/[$,]/g, ''));
+
+          if (vendor && amount > 0) {
+            data.vendorLineItems.push({
+              vendor: vendor,
+              category: lineData['category'] || 'Uncategorized',
+              amount: amount,
+              description: lineData['description'] || '',
+            });
+          }
+        }
+
+        // Check if this is a credit card line
+        if (lineData['cardholder / account'] || lineData['cardholder']) {
+          const cardholder = lineData['cardholder / account'] || lineData['cardholder'] || '';
+          const balance = parseFloat((lineData['new balance'] || lineData['balance'] || '0').replace(/[$,]/g, ''));
+
+          if (cardholder && balance > 0) {
+            data.creditCards.push({
+              cardholder: cardholder,
+              balance: balance,
+            });
+          }
+        }
+      }
+    }
+  }
+
   // Only return if we found meaningful data
   if (data.apVendorPayments || data.combinedTotal || data.utilityRefunds) {
     return data;
@@ -103,8 +181,11 @@ function formatCurrency(value: number): string {
   }).format(value);
 }
 
-export function DisbursementSummary({ content, className = '' }: DisbursementSummaryProps) {
-  const data = useMemo(() => parseDisbursementSummary(content), [content]);
+export function DisbursementSummary({ content, rawMinutes, className = '' }: DisbursementSummaryProps) {
+  const [showAllVendors, setShowAllVendors] = useState(false);
+  const [showAllCards, setShowAllCards] = useState(false);
+
+  const data = useMemo(() => parseDisbursementSummary(content, rawMinutes), [content, rawMinutes]);
 
   if (!data) {
     return null;
@@ -120,6 +201,34 @@ export function DisbursementSummary({ content, className = '' }: DisbursementSum
   const hasBreakdown = data.apVendorPayments && data.utilityRefunds && data.combinedTotal;
   const apPercentage = hasBreakdown ? (data.apVendorPayments! / data.combinedTotal!) * 100 : 0;
   const utilityPercentage = hasBreakdown ? (data.utilityRefunds! / data.combinedTotal!) * 100 : 0;
+
+  // Group vendors by category
+  const vendorsByCategory = data.vendorLineItems.reduce((acc, item) => {
+    if (!acc[item.category]) {
+      acc[item.category] = [];
+    }
+    acc[item.category].push(item);
+    return acc;
+  }, {} as Record<string, VendorLineItem[]>);
+
+  // Sort categories by total amount
+  const sortedCategories = Object.entries(vendorsByCategory)
+    .map(([category, items]) => ({
+      category,
+      items,
+      total: items.reduce((sum, item) => sum + item.amount, 0),
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  const displayVendors = showAllVendors
+    ? data.vendorLineItems
+    : data.vendorLineItems.slice(0, 10);
+
+  const displayCards = showAllCards
+    ? data.creditCards
+    : data.creditCards.slice(0, 5);
+
+  const totalCreditCards = data.creditCards.reduce((sum, card) => sum + card.balance, 0);
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -179,7 +288,7 @@ export function DisbursementSummary({ content, className = '' }: DisbursementSum
         </div>
       </div>
 
-      {/* Breakdown visualization */}
+      {/* Payment Breakdown Chart */}
       {hasBreakdown && (
         <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700">
           <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">Payment Breakdown</h4>
@@ -217,6 +326,130 @@ export function DisbursementSummary({ content, className = '' }: DisbursementSum
               </span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Vendor Line Items Table */}
+      {data.vendorLineItems.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100">Vendor Line Items</h4>
+            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {data.vendorLineItems.length} items
+            </span>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-slate-700">
+                  <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">Vendor</th>
+                  <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">Category</th>
+                  <th className="text-right py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">Amount</th>
+                  <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium hidden md:table-cell">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayVendors.map((item, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                    <td className="py-2 px-2 text-gray-900 dark:text-gray-100 font-medium">{item.vendor}</td>
+                    <td className="py-2 px-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right font-mono text-gray-900 dark:text-gray-100">{formatCurrency(item.amount)}</td>
+                    <td className="py-2 px-2 text-gray-600 dark:text-gray-400 text-xs hidden md:table-cell truncate max-w-xs">{item.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {data.vendorLineItems.length > 10 && (
+            <button
+              onClick={() => setShowAllVendors(!showAllVendors)}
+              className="mt-4 flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+            >
+              {showAllVendors ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Show all {data.vendorLineItems.length} items
+                </>
+              )}
+            </button>
+          )}
+
+          {/* Category Summary */}
+          {sortedCategories.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+              <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">By Category</h5>
+              <div className="space-y-2">
+                {sortedCategories.slice(0, 5).map(({ category, items, total }) => (
+                  <div key={category} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{category}</span>
+                      <span className="text-xs text-gray-400">({items.length} items)</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(total)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Credit Cards Section */}
+      {data.creditCards.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-gray-200 dark:border-slate-700">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100">Credit Card Balances</h4>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-gray-500 dark:text-gray-400">{data.creditCards.length} accounts</div>
+              <div className="text-sm font-bold text-purple-600 dark:text-purple-400">{formatCurrency(totalCreditCards)}</div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {displayCards.map((card, idx) => (
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-slate-700/50 last:border-0">
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[70%]">{card.cardholder}</span>
+                <span className="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(card.balance)}</span>
+              </div>
+            ))}
+          </div>
+
+          {data.creditCards.length > 5 && (
+            <button
+              onClick={() => setShowAllCards(!showAllCards)}
+              className="mt-3 flex items-center gap-1 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300"
+            >
+              {showAllCards ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Show all {data.creditCards.length} accounts
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 
