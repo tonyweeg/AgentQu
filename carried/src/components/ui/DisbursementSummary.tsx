@@ -3,7 +3,7 @@
  * Carried - Motions carry, memory too
  *
  * Renders disbursement summary reports with visual breakdowns
- * Shows actual vendor line items and credit card details
+ * Shows actual vendor line items, credit cards, and interfund transfers
  */
 
 import { useMemo, useState } from 'react';
@@ -20,6 +20,7 @@ import {
   ChevronUp,
   CreditCard,
   Package,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 interface VendorLineItem {
@@ -34,6 +35,13 @@ interface CreditCardItem {
   balance: number;
 }
 
+interface InterfundTransfer {
+  from: string;
+  to: string;
+  amount: number;
+  description: string;
+}
+
 interface DisbursementData {
   meetingDate?: string;
   apVendorPayments?: number;
@@ -44,6 +52,7 @@ interface DisbursementData {
   reconciliationStatus?: 'OK' | 'MISMATCH' | 'UNKNOWN';
   vendorLineItems: VendorLineItem[];
   creditCards: CreditCardItem[];
+  interfundTransfers: InterfundTransfer[];
 }
 
 interface DisbursementSummaryProps {
@@ -62,6 +71,7 @@ function parseDisbursementSummary(content: string, rawMinutes?: string): Disburs
   const data: DisbursementData = {
     vendorLineItems: [],
     creditCards: [],
+    interfundTransfers: [],
   };
 
   // Extract meeting date from segment content
@@ -136,15 +146,29 @@ function parseDisbursementSummary(content: string, rawMinutes?: string): Disburs
         // Check if this is a vendor line item
         if (lineData['vendor (as printed)'] || lineData['vendor (normalized)'] || lineData['vendor']) {
           const vendor = lineData['vendor (as printed)'] || lineData['vendor (normalized)'] || lineData['vendor'] || '';
+          const category = lineData['category'] || 'Uncategorized';
           const amount = parseFloat((lineData['amount'] || '0').replace(/[$,]/g, ''));
+          const description = lineData['description'] || '';
 
           if (vendor && amount > 0) {
-            data.vendorLineItems.push({
-              vendor: vendor,
-              category: lineData['category'] || 'Uncategorized',
-              amount: amount,
-              description: lineData['description'] || '',
-            });
+            // Check if this is an interfund transfer
+            if (category.toLowerCase().includes('interfund') ||
+                category.toLowerCase().includes('transfer') ||
+                vendor.toLowerCase().includes('town of berlin')) {
+              data.interfundTransfers.push({
+                from: 'General Fund',
+                to: vendor,
+                amount: amount,
+                description: description,
+              });
+            } else {
+              data.vendorLineItems.push({
+                vendor: vendor,
+                category: category,
+                amount: amount,
+                description: description,
+              });
+            }
           }
         }
 
@@ -184,6 +208,7 @@ function formatCurrency(value: number): string {
 export function DisbursementSummary({ content, rawMinutes, className = '' }: DisbursementSummaryProps) {
   const [showAllVendors, setShowAllVendors] = useState(false);
   const [showAllCards, setShowAllCards] = useState(false);
+  const [showAllTransfers, setShowAllTransfers] = useState(false);
 
   const data = useMemo(() => parseDisbursementSummary(content, rawMinutes), [content, rawMinutes]);
 
@@ -202,7 +227,7 @@ export function DisbursementSummary({ content, rawMinutes, className = '' }: Dis
   const apPercentage = hasBreakdown ? (data.apVendorPayments! / data.combinedTotal!) * 100 : 0;
   const utilityPercentage = hasBreakdown ? (data.utilityRefunds! / data.combinedTotal!) * 100 : 0;
 
-  // Group vendors by category
+  // Group vendors by category (excluding interfund)
   const vendorsByCategory = data.vendorLineItems.reduce((acc, item) => {
     if (!acc[item.category]) {
       acc[item.category] = [];
@@ -228,7 +253,12 @@ export function DisbursementSummary({ content, rawMinutes, className = '' }: Dis
     ? data.creditCards
     : data.creditCards.slice(0, 5);
 
+  const displayTransfers = showAllTransfers
+    ? data.interfundTransfers
+    : data.interfundTransfers.slice(0, 5);
+
   const totalCreditCards = data.creditCards.reduce((sum, card) => sum + card.balance, 0);
+  const totalInterfund = data.interfundTransfers.reduce((sum, t) => sum + t.amount, 0);
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -326,6 +356,75 @@ export function DisbursementSummary({ content, rawMinutes, className = '' }: Dis
               </span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Interfund Transfers Section - Highlighted */}
+      {data.interfundTransfers.length > 0 && (
+        <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-xl p-5 border-2 border-orange-200 dark:border-orange-800">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <ArrowLeftRight className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              <h4 className="font-semibold text-gray-900 dark:text-gray-100">Interfund Transfers</h4>
+            </div>
+            <div className="text-right">
+              <div className="text-xs text-gray-500 dark:text-gray-400">{data.interfundTransfers.length} transfers</div>
+              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{formatCurrency(totalInterfund)}</div>
+            </div>
+          </div>
+
+          {/* Transfers Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-orange-200 dark:border-orange-800">
+                  <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">To</th>
+                  <th className="text-right py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">Amount</th>
+                  <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium hidden md:table-cell">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayTransfers.map((transfer, idx) => (
+                  <tr key={idx} className="border-b border-orange-100 dark:border-orange-900/50 hover:bg-orange-100/50 dark:hover:bg-orange-900/30">
+                    <td className="py-2 px-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-300">
+                          {transfer.from}
+                        </span>
+                        <ArrowLeftRight className="w-3 h-3 text-orange-400" />
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{transfer.to}</span>
+                      </div>
+                    </td>
+                    <td className="py-2 px-2 text-right font-mono font-semibold text-orange-600 dark:text-orange-400">
+                      {formatCurrency(transfer.amount)}
+                    </td>
+                    <td className="py-2 px-2 text-gray-600 dark:text-gray-400 text-xs hidden md:table-cell truncate max-w-xs">
+                      {transfer.description}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {data.interfundTransfers.length > 5 && (
+            <button
+              onClick={() => setShowAllTransfers(!showAllTransfers)}
+              className="mt-3 flex items-center gap-1 text-sm text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300"
+            >
+              {showAllTransfers ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  Show all {data.interfundTransfers.length} transfers
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
 
