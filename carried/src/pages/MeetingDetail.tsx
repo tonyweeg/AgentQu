@@ -41,6 +41,8 @@ import { AppHeader } from '../components/layout/AppHeader';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Loading } from '../components/ui/Loading';
+import { FinancialContent } from '../components/ui/FinancialContent';
+import { FinancialAnalytics } from '../components/ui/FinancialAnalytics';
 import { Meeting, Segment, SegmentType, MotionOutcome, SEGMENT_TYPE_INFO } from '../types';
 import { getSegmentsByMeeting, deleteSegmentsByMeeting, saveSegments } from '../lib/firestore/segments';
 import { extractSegments } from '../lib/ai/extraction';
@@ -236,7 +238,7 @@ export function MeetingDetail() {
   }, {} as Record<SegmentType, Segment[]>);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
       <AppHeader />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -409,17 +411,20 @@ export function MeetingDetail() {
             {/* Segment summary */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {Object.entries(segmentsByType).map(([type, segs]) => (
-                <div key={type} className="bg-white rounded-xl p-3 shadow-sm">
+                <div key={type} className="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm">
                   <div className="flex items-center gap-2 mb-1">
                     {SEGMENT_ICONS[type as SegmentType]}
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       {SEGMENT_TYPE_INFO[type as SegmentType]?.label || type}
                     </span>
                   </div>
-                  <span className="text-2xl font-bold text-gray-900">{segs.length}</span>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-gray-100">{segs.length}</span>
                 </div>
               ))}
             </div>
+
+            {/* Financial Analytics Dashboard */}
+            <FinancialAnalytics segments={segments} />
 
             {/* All segments in order */}
             <div className="space-y-3">
@@ -486,7 +491,27 @@ export function MeetingDetail() {
                         {/* Expanded: show full content and all details */}
                         {isExpanded && (
                           <div className="space-y-3">
-                            <p className="text-sm text-gray-600 whitespace-pre-wrap">{segment.content}</p>
+                            {/* Try to render as financial content first */}
+                            <FinancialContent content={segment.content} />
+                            {/* Show raw text if not financial, or as fallback */}
+                            {!segment.content.toLowerCase().includes('previous balance') &&
+                             !segment.content.toLowerCase().includes('new balance') &&
+                             !segment.content.toLowerCase().includes('credit limit') && (
+                              <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{segment.content}</p>
+                            )}
+                            {/* Collapsible raw text for financial content */}
+                            {(segment.content.toLowerCase().includes('previous balance') ||
+                              segment.content.toLowerCase().includes('new balance') ||
+                              segment.content.toLowerCase().includes('credit limit')) && (
+                              <details className="mt-2">
+                                <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">
+                                  View raw text
+                                </summary>
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap bg-gray-50 dark:bg-slate-700 p-3 rounded-lg">
+                                  {segment.content}
+                                </p>
+                              </details>
+                            )}
 
                             {/* Context if available */}
                             {segment.context && (
