@@ -43,6 +43,7 @@ import { Card } from '../components/ui/Card';
 import { Loading } from '../components/ui/Loading';
 import { FinancialContent } from '../components/ui/FinancialContent';
 import { FinancialAnalytics } from '../components/ui/FinancialAnalytics';
+import { CheckRunSummary } from '../components/ui/CheckRunSummary';
 import { Meeting, Segment, SegmentType, MotionOutcome, SEGMENT_TYPE_INFO } from '../types';
 import { getSegmentsByMeeting, deleteSegmentsByMeeting, saveSegments } from '../lib/firestore/segments';
 import { extractSegments } from '../lib/ai/extraction';
@@ -491,23 +492,30 @@ export function MeetingDetail() {
                         {/* Expanded: show full content and all details */}
                         {isExpanded && (
                           <div className="space-y-3">
-                            {/* Try to render as financial content first */}
+                            {/* Try check run summary first (spending by category, top vendors) */}
+                            <CheckRunSummary content={segment.content} />
+
+                            {/* Try credit card visualization */}
                             <FinancialContent content={segment.content} />
-                            {/* Show raw text if not financial, or as fallback */}
-                            {!segment.content.toLowerCase().includes('previous balance') &&
+
+                            {/* Show raw text only if no visualizations rendered */}
+                            {!segment.content.includes('Spending by Category') &&
+                             !segment.content.toLowerCase().includes('previous balance') &&
                              !segment.content.toLowerCase().includes('new balance') &&
                              !segment.content.toLowerCase().includes('credit limit') && (
                               <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{segment.content}</p>
                             )}
-                            {/* Collapsible raw text for financial content */}
-                            {(segment.content.toLowerCase().includes('previous balance') ||
+
+                            {/* Collapsible raw text for visualized content */}
+                            {(segment.content.includes('Spending by Category') ||
+                              segment.content.toLowerCase().includes('previous balance') ||
                               segment.content.toLowerCase().includes('new balance') ||
                               segment.content.toLowerCase().includes('credit limit')) && (
                               <details className="mt-2">
                                 <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">
                                   View raw text
                                 </summary>
-                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap bg-gray-50 dark:bg-slate-700 p-3 rounded-lg">
+                                <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap bg-gray-50 dark:bg-slate-700 p-3 rounded-lg font-mono text-xs">
                                   {segment.content}
                                 </p>
                               </details>
