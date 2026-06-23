@@ -15,13 +15,23 @@ import {
   ArrowRightLeft,
   Calendar,
   Receipt,
+  User,
+  Building2,
+  Hash,
 } from 'lucide-react';
 
 interface FinancialData {
   type: 'credit_card' | 'check_run' | 'budget' | 'unknown';
+  // Account identification
+  accountHolder?: string;
+  bankName?: string;
+  accountNumber?: string;  // Last 4 or masked
+  cardType?: string;       // Visa, Mastercard, etc.
+  // Balances
   previousBalance?: number;
   payments?: number;
   purchases?: number;
+  otherCredits?: number;
   newBalance?: number;
   creditLimit?: number;
   availableCredit?: number;
@@ -49,11 +59,76 @@ function parseFinancialData(content: string): FinancialData | null {
   ) {
     const data: FinancialData = { type: 'credit_card' };
 
+    // Extract account identification info
+    // Look for bank names
+    const bankPatterns = [
+      /\b(bank of [a-z\s]+)\b/i,
+      /\b(chase|citibank|wells fargo|capital one|american express|amex|discover|barclays|usaa|navy federal|pnc|td bank|us bank)\b/i,
+      /\b([a-z]+\s+(?:bank|credit union|federal))\b/i,
+    ];
+    for (const pattern of bankPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        data.bankName = match[1].trim();
+        break;
+      }
+    }
+
+    // Look for cardholder/account holder
+    const holderPatterns = [
+      /(?:cardholder|account holder|account|card member)[:\s|]*([A-Z][A-Z\s,\.]+?)(?:\s*\||$|\n)/i,
+      /(?:cardholder|account)[:\s\/]*\s*([A-Z][a-zA-Z\s]+?)(?:\s*[-\|]|\s+account|\s+\()/i,
+    ];
+    for (const pattern of holderPatterns) {
+      const match = content.match(pattern);
+      if (match && match[1].length > 2 && match[1].length < 50) {
+        // Clean up the name
+        let name = match[1].trim();
+        // Remove common suffixes
+        name = name.replace(/\s*(account|card|xxxx|unidentified).*$/i, '').trim();
+        if (name.length > 2) {
+          data.accountHolder = name;
+          break;
+        }
+      }
+    }
+
+    // Look for masked account numbers (last 4 digits)
+    const accountPatterns = [
+      /account[:\s#]*(?:xxxx\s*){0,3}(\d{4})/i,
+      /(?:card|acct)[:\s#]*(?:x+\s*)*(\d{4})/i,
+      /\*{4,}\s*(\d{4})/,
+      /xxxx\s+xxxx\s+xxxx\s+(\d{4})/i,
+      /ending[:\s]+(?:in\s+)?(\d{4})/i,
+    ];
+    for (const pattern of accountPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        data.accountNumber = `****${match[1]}`;
+        break;
+      }
+    }
+
+    // Detect card type
+    const cardTypes = [
+      { pattern: /\b(visa)\b/i, type: 'Visa' },
+      { pattern: /\b(mastercard|master card)\b/i, type: 'Mastercard' },
+      { pattern: /\b(amex|american express)\b/i, type: 'American Express' },
+      { pattern: /\b(discover)\b/i, type: 'Discover' },
+    ];
+    for (const { pattern, type } of cardTypes) {
+      if (pattern.test(content)) {
+        data.cardType = type;
+        break;
+      }
+    }
+
     // Extract values using regex
     const patterns = {
       previousBalance: /previous balance[:\s]*\$?([\d,]+\.?\d*)/i,
       payments: /payments[:\s]*\$?([\d,]+\.?\d*)/i,
       purchases: /purchases[:\s]*\$?([\d,]+\.?\d*)/i,
+      otherCredits: /other credits[:\s]*\$?([\d,]+\.?\d*)/i,
       newBalance: /new balance[:\s]*\$?([\d,]+\.?\d*)/i,
       creditLimit: /credit limit[:\s]*\$?([\d,]+\.?\d*)/i,
       availableCredit: /available credit[:\s]*\$?([\d,]+\.?\d*)/i,
@@ -199,15 +274,59 @@ export function FinancialContent({ content, className = '' }: FinancialContentPr
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Header */}
-      <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-        <CreditCard className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-        <span>Credit Card Statement</span>
-        {financialData.statementDate && (
-          <span className="text-gray-500 dark:text-gray-400">
-            - Ending {financialData.statementDate}
-          </span>
-        )}
+      {/* Header with Account Info */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-lg p-4 border border-indigo-100 dark:border-indigo-800">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0">
+              <CreditCard className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-gray-900 dark:text-gray-100">
+                  Credit Card Statement
+                </span>
+                {financialData.cardType && (
+                  <span className="text-xs px-2 py-0.5 bg-white dark:bg-slate-700 rounded-full text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-600">
+                    {financialData.cardType}
+                  </span>
+                )}
+              </div>
+
+              {/* Account Details Row */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm">
+                {financialData.bankName && (
+                  <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                    <Building2 className="w-3.5 h-3.5" />
+                    {financialData.bankName}
+                  </span>
+                )}
+                {financialData.accountHolder && (
+                  <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                    <User className="w-3.5 h-3.5" />
+                    {financialData.accountHolder}
+                  </span>
+                )}
+                {financialData.accountNumber && (
+                  <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 font-mono text-xs">
+                    <Hash className="w-3.5 h-3.5" />
+                    {financialData.accountNumber}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Statement Date Badge */}
+          {financialData.statementDate && (
+            <div className="text-right flex-shrink-0">
+              <span className="text-xs text-gray-500 dark:text-gray-400">Statement Ending</span>
+              <div className="font-medium text-gray-900 dark:text-gray-100">
+                {financialData.statementDate}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Key Metrics Grid */}
