@@ -44,6 +44,7 @@ import { Loading } from '../components/ui/Loading';
 import { FinancialContent } from '../components/ui/FinancialContent';
 import { FinancialAnalytics } from '../components/ui/FinancialAnalytics';
 import { CheckRunSummary } from '../components/ui/CheckRunSummary';
+import { DisbursementSummary } from '../components/ui/DisbursementSummary';
 import { Meeting, Segment, SegmentType, MotionOutcome, SEGMENT_TYPE_INFO } from '../types';
 import { getSegmentsByMeeting, deleteSegmentsByMeeting, saveSegments } from '../lib/firestore/segments';
 import { extractSegments } from '../lib/ai/extraction';
@@ -498,11 +499,16 @@ export function MeetingDetail() {
                             {/* Try credit card visualization */}
                             <FinancialContent content={segment.content} />
 
+                            {/* Try disbursement summary visualization */}
+                            <DisbursementSummary content={segment.content} />
+
                             {/* Show raw text only if no visualizations rendered */}
                             {!segment.content.includes('Spending by Category') &&
                              !segment.content.toLowerCase().includes('previous balance') &&
                              !segment.content.toLowerCase().includes('new balance') &&
-                             !segment.content.toLowerCase().includes('credit limit') && (
+                             !segment.content.toLowerCase().includes('credit limit') &&
+                             !segment.content.toLowerCase().includes('disbursement') &&
+                             !segment.content.toLowerCase().includes('disbursed') && (
                               <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{segment.content}</p>
                             )}
 
@@ -510,7 +516,9 @@ export function MeetingDetail() {
                             {(segment.content.includes('Spending by Category') ||
                               segment.content.toLowerCase().includes('previous balance') ||
                               segment.content.toLowerCase().includes('new balance') ||
-                              segment.content.toLowerCase().includes('credit limit')) && (
+                              segment.content.toLowerCase().includes('credit limit') ||
+                              segment.content.toLowerCase().includes('disbursement') ||
+                              segment.content.toLowerCase().includes('disbursed')) && (
                               <details className="mt-2">
                                 <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">
                                   View raw text
