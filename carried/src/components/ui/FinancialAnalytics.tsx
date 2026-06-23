@@ -60,14 +60,25 @@ interface FinancialAnalyticsProps {
   segments: Segment[];
 }
 
-// Words that indicate summary/total lines, not actual vendors
-const SUMMARY_KEYWORDS = [
-  'TOTAL', 'TOTALED', 'COMBINED', 'DISBURSED', 'SUMMARY', 'GRAND',
-  'SUBTOTAL', 'NET', 'GROSS', 'BALANCE', 'AMOUNT', 'PAID', 'STATED',
-  'PDF', 'REPORT', 'FROM', 'THE', 'WAS', 'IS', 'ARE', 'WERE',
-  'PREVIOUS', 'NEW', 'CREDIT', 'AVAILABLE', 'MINIMUM', 'PAYMENT',
-  'AP VENDOR', 'ACCOUNTS PAYABLE', 'CHECK RUN', 'IDENTICAL',
-  'HEADERS', 'SHEET', 'COLUMN', 'ROW',
+// Phrases that indicate this is a summary line, not a real vendor
+// These must match the FULL vendor field to be excluded
+const SUMMARY_PHRASES = [
+  'THE COMBINED DISBURSED TOTAL WAS',
+  'AP VENDOR PAYMENTS TOTALED',
+  'THE STATED TOTAL FROM PDF WAS',
+  'TOTAL PAID',
+  'GRAND TOTAL',
+  'SUBTOTAL',
+  'COMBINED TOTAL',
+  'ACCOUNTS PAYABLE TOTAL',
+  'CHECK RUN TOTAL',
+  'IDENTICAL',
+  'GENERAL',  // Category names, not vendors
+  'PAYROLL, TAXES & BENEFITS',
+  'VEHICLES, FLEET & EQUIPMENT',
+  'UTILITIES',
+  'PROFESSIONAL SERVICES',
+  'MATERIALS & SUPPLIES',
 ];
 
 // Parse all financial transactions from segments
@@ -77,32 +88,38 @@ function extractTransactions(segments: Segment[]): FinancialTransaction[] {
   for (const segment of segments) {
     const content = segment.content;
 
-    // Extract from "Vendor: X | Amount: Y" format (Excel import)
-    // This is the most reliable pattern for structured data
-    const excelPattern = /Vendor[^:]*:\s*([A-Z][A-Z0-9\s\-\&\'\.\,]+?)\s*\|[^|]*(?:Amount|Total Paid)[:\s]*\$?([\d,]+\.?\d*)/gi;
+    // Primary pattern: "Vendor: X | ... | Total Paid: Y" or "Vendor: X | ... | Amount: Y"
+    // This matches the Excel import format from the file parser
+    const vendorAmountPattern = /Vendor[^:]*:\s*([^\|]+?)\s*\|.*?(?:Total Paid|Amount)[:\s]*\$?([\d,]+\.?\d{0,2})/gi;
 
     let match;
 
-    // Try Excel format - most reliable
-    while ((match = excelPattern.exec(content)) !== null) {
+    while ((match = vendorAmountPattern.exec(content)) !== null) {
       const vendor = match[1].trim().replace(/\s+/g, ' ');
       const amount = parseFloat(match[2].replace(/,/g, ''));
 
-      // Skip if vendor name contains summary keywords
-      const isSummaryLine = SUMMARY_KEYWORDS.some(keyword =>
-        vendor.toUpperCase().includes(keyword)
+      // Check if this is a summary phrase (exact or near match)
+      const isSummary = SUMMARY_PHRASES.some(phrase =>
+        vendor.toUpperCase().includes(phrase) ||
+        phrase.includes(vendor.toUpperCase())
       );
 
+      // Valid transaction criteria
       if (
-        amount > 0.01 &&  // Skip $0.00 and tiny amounts
-        amount < 500000 && // Skip unreasonably large single transactions
+        !isSummary &&
+        amount > 0.01 &&
+        amount < 1000000 &&
         vendor.length > 2 &&
-        vendor.length < 50 &&
-        !isSummaryLine
+        vendor.length < 80 &&
+        // Exclude obvious non-vendors
+        !vendor.match(/^(HEADERS|SHEET|===|---)/i)
       ) {
         // Avoid duplicates
+        const normalizedVendor = vendor.toUpperCase();
         const exists = transactions.some(
-          t => t.vendor === vendor && t.amount === amount && t.source === segment.title
+          t => t.vendor.toUpperCase() === normalizedVendor &&
+               Math.abs(t.amount - amount) < 0.01 &&
+               t.source === segment.title
         );
         if (!exists) {
           transactions.push({
@@ -115,44 +132,24 @@ function extractTransactions(segments: Segment[]): FinancialTransaction[] {
       }
     }
 
-    // If no Excel format found, try line-by-line parsing for check register format
-    // Look for patterns like: "VENDOR NAME | ... | $1,234.56"
-    if (transactions.filter(t => t.source === segment.title).length === 0) {
-      const lines = content.split('\n');
-      for (const line of lines) {
-        // Skip header lines and summary lines
-        if (line.includes('HEADERS:') || line.includes('---')) continue;
+    // Secondary pattern: Look for credit card transactions
+    // Format: "VENDOR NAME $123.45 on MM/DD"
+    const creditCardPattern = /Transactions?:.*?([A-Z][A-Z\s\*\#\d\.\-]+?)\s+\$?([\d,]+\.\d{2})\s+on\s+\d+\/\d+/gi;
+    while ((match = creditCardPattern.exec(content)) !== null) {
+      const vendor = match[1].trim().replace(/\s+/g, ' ');
+      const amount = parseFloat(match[2].replace(/,/g, ''));
 
-        const isSummaryLine = SUMMARY_KEYWORDS.some(keyword =>
-          line.toUpperCase().includes(keyword)
+      if (amount > 0.01 && amount < 100000 && vendor.length > 3) {
+        const exists = transactions.some(
+          t => t.vendor === vendor && t.amount === amount && t.source === segment.title
         );
-        if (isSummaryLine) continue;
-
-        // Look for vendor and amount in same line
-        // Pattern: Name followed by dollar amount
-        const lineMatch = line.match(/^([A-Z][A-Z0-9\s\-\&\'\.\,]{2,40}?)\s*[\|\:]?\s*.*?\$?([\d,]+\.\d{2})\s*$/i);
-        if (lineMatch) {
-          const vendor = lineMatch[1].trim().replace(/\s+/g, ' ');
-          const amount = parseFloat(lineMatch[2].replace(/,/g, ''));
-
-          if (
-            amount > 0.01 &&
-            amount < 500000 &&
-            vendor.length > 2 &&
-            !SUMMARY_KEYWORDS.some(k => vendor.toUpperCase().includes(k))
-          ) {
-            const exists = transactions.some(
-              t => t.vendor === vendor && t.amount === amount && t.source === segment.title
-            );
-            if (!exists) {
-              transactions.push({
-                vendor,
-                amount,
-                source: segment.title,
-                category: segment.tags?.[0],
-              });
-            }
-          }
+        if (!exists) {
+          transactions.push({
+            vendor,
+            amount,
+            source: segment.title,
+            category: 'credit_card',
+          });
         }
       }
     }
