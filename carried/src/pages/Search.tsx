@@ -40,6 +40,7 @@ import { AppHeader } from '../components/layout/AppHeader';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Loading } from '../components/ui/Loading';
+import { FinancialContent } from '../components/ui/FinancialContent';
 import { SegmentMatch, SegmentType, SEGMENT_TYPE_INFO } from '../types';
 import { searchSegments } from '../lib/ai/search';
 import { generateNarrative, NarrativeResponse } from '../lib/ai/narrative';
@@ -602,7 +603,7 @@ export function Search() {
 
                                 {/* Preview (collapsed) */}
                                 {!isExpanded && (
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{result.segment.content}</p>
+                                  <p className="text-sm text-gray-700 dark:text-gray-400 line-clamp-2">{result.segment.content}</p>
                                 )}
 
                                 {/* Meta */}
@@ -625,20 +626,37 @@ export function Search() {
 
                           {/* Expanded Content */}
                           {isExpanded && (
-                            <div className="border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/30 p-4">
-                              {/* Full Content */}
+                            <div className="border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-700/30 p-4">
+                              {/* Full Content - Try financial visualization first */}
                               <div className="mb-4">
-                                <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Full Content</h4>
-                                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                                  {result.segment.content}
-                                </p>
+                                <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Full Content</h4>
+                                <FinancialContent content={result.segment.content} />
+                                {/* Fallback to raw text if no financial data detected */}
+                                {!result.segment.content.toLowerCase().includes('previous balance') &&
+                                 !result.segment.content.toLowerCase().includes('new balance') && (
+                                  <p className="text-sm text-gray-800 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                                    {result.segment.content}
+                                  </p>
+                                )}
+                                {/* Show raw text toggle for financial content */}
+                                {(result.segment.content.toLowerCase().includes('previous balance') ||
+                                  result.segment.content.toLowerCase().includes('new balance')) && (
+                                  <details className="mt-4">
+                                    <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">
+                                      View raw text
+                                    </summary>
+                                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-400 whitespace-pre-wrap leading-relaxed bg-gray-50 dark:bg-slate-800 p-3 rounded-lg">
+                                      {result.segment.content}
+                                    </p>
+                                  </details>
+                                )}
                               </div>
 
                               {/* Context */}
                               {result.segment.context && (
                                 <div className="mb-4">
-                                  <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Context</h4>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400 italic">{result.segment.context}</p>
+                                  <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Context</h4>
+                                  <p className="text-sm text-gray-700 dark:text-gray-400 italic">{result.segment.context}</p>
                                 </div>
                               )}
 
