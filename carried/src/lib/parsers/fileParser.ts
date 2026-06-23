@@ -8,6 +8,7 @@
 
 import mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
+import * as XLSX from 'xlsx';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { extractVotingTables, formatVotesAsText, VoteTableResult } from './voteTableExtractor';
 
@@ -19,7 +20,7 @@ const workerUrl = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.wo
 console.log('CARRIED_DEBUG: PDF.js version:', pdfjsLib.version, 'worker URL:', workerUrl);
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
-export type SupportedFileType = 'docx' | 'pdf' | 'txt';
+export type SupportedFileType = 'docx' | 'pdf' | 'txt' | 'xlsx';
 
 export interface ParseResult {
   text: string;
@@ -28,6 +29,9 @@ export interface ParseResult {
   pagesSkipped?: number;
   voteTablesExtracted?: number;
   votingData?: VoteTableResult[];
+  sheetCount?: number;
+  sheetsProcessed?: string[];
+  rowCount?: number;
   error?: string;
 }
 
@@ -44,6 +48,9 @@ export function getFileType(file: File): SupportedFileType | null {
       return 'pdf';
     case 'txt':
       return 'txt';
+    case 'xlsx':
+    case 'xls':
+      return 'xlsx';
     default:
       return null;
   }
@@ -308,6 +315,113 @@ async function parseTxt(file: File): Promise<ParseResult> {
 }
 
 /**
+ * Parse an Excel file (XLSX/XLS) and extract text
+ * Converts spreadsheet data to readable text format
+ */
+async function parseXlsx(file: File): Promise<ParseResult> {
+  console.log('CARRIED_DEBUG: parseXlsx called for', file.name, file.size, 'bytes');
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+    console.log('CARRIED_DEBUG: Excel workbook loaded, sheets:', workbook.SheetNames);
+
+    const textParts: string[] = [];
+    let totalRows = 0;
+
+    // Process each sheet
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+
+      // Get sheet range
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
+      const rowCount = range.e.r - range.s.r + 1;
+      totalRows += rowCount;
+
+      console.log(`CARRIED_DEBUG: Processing sheet "${sheetName}" with ${rowCount} rows`);
+
+      // Convert sheet to array of arrays for better control
+      const data: (string | number | boolean | null)[][] = XLSX.utils.sheet_to_json(sheet, {
+        header: 1,
+        defval: '',
+        blankrows: false,
+      });
+
+      if (data.length === 0) {
+        console.log(`CARRIED_DEBUG: Sheet "${sheetName}" is empty, skipping`);
+        continue;
+      }
+
+      // Add sheet header
+      textParts.push(`\n=== Sheet: ${sheetName} ===\n`);
+
+      // First row is likely headers
+      const headers = data[0] as string[];
+
+      // Format data as readable text
+      // For structured data like check runs, create a clear format
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+
+        // Skip completely empty rows
+        if (row.every(cell => cell === '' || cell === null || cell === undefined)) {
+          continue;
+        }
+
+        // If first row (headers), format as header line
+        if (i === 0) {
+          const headerLine = row.filter(h => h !== '').join(' | ');
+          textParts.push(`HEADERS: ${headerLine}`);
+          textParts.push('---');
+          continue;
+        }
+
+        // For data rows, create key-value pairs using headers
+        const rowParts: string[] = [];
+        for (let j = 0; j < row.length; j++) {
+          const cellValue = row[j];
+          if (cellValue !== '' && cellValue !== null && cellValue !== undefined) {
+            const header = headers[j] || `Column${j + 1}`;
+            // Format dates if detected (Excel stores dates as numbers)
+            let displayValue = cellValue;
+            if (typeof cellValue === 'number' && cellValue > 40000 && cellValue < 50000) {
+              // Likely an Excel date serial number
+              try {
+                const date = XLSX.SSF.parse_date_code(cellValue);
+                displayValue = `${date.m}/${date.d}/${date.y}`;
+              } catch {
+                displayValue = cellValue;
+              }
+            }
+            rowParts.push(`${header}: ${displayValue}`);
+          }
+        }
+
+        if (rowParts.length > 0) {
+          textParts.push(rowParts.join(' | '));
+        }
+      }
+    }
+
+    const fullText = textParts.join('\n');
+    console.log(`CARRIED_DEBUG: Excel parsing complete, ${totalRows} total rows, ${fullText.length} chars extracted`);
+
+    return {
+      text: fullText,
+      sheetCount: workbook.SheetNames.length,
+      sheetsProcessed: workbook.SheetNames,
+      rowCount: totalRows,
+    };
+  } catch (error) {
+    console.error('CARRIED_DEBUG: Excel parsing error:', error);
+    return {
+      text: '',
+      error: `Failed to parse Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/**
  * Parse a file and extract text content
  */
 export async function parseFile(file: File): Promise<ParseResult> {
@@ -316,7 +430,7 @@ export async function parseFile(file: File): Promise<ParseResult> {
   if (!fileType) {
     return {
       text: '',
-      error: `Unsupported file type. Please upload a DOCX, PDF, or TXT file.`,
+      error: `Unsupported file type. Please upload a DOCX, PDF, TXT, or XLSX file.`,
     };
   }
 
@@ -329,6 +443,8 @@ export async function parseFile(file: File): Promise<ParseResult> {
       return parsePdf(file);
     case 'txt':
       return parseTxt(file);
+    case 'xlsx':
+      return parseXlsx(file);
     default:
       return {
         text: '',
@@ -354,7 +470,7 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
   if (!fileType) {
     return {
       valid: false,
-      error: 'Unsupported file type. Please upload a DOCX, PDF, or TXT file.',
+      error: 'Unsupported file type. Please upload a DOCX, PDF, TXT, or XLSX file.',
     };
   }
 
