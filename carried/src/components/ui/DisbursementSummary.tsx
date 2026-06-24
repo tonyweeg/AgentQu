@@ -454,7 +454,7 @@ export function DisbursementSummary({ content, rawMinutes, className = '' }: Dis
               </thead>
               <tbody>
                 {displayVendors.map((item, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-600">
+                  <tr key={idx} className="border-b border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-black/5 dark:hover:bg-white/10">
                     <td className="py-2 px-2 text-gray-900 dark:text-gray-100 font-medium">{item.vendor}</td>
                     <td className="py-2 px-2">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">

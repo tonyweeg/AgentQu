@@ -289,7 +289,7 @@ export function PDFCheckRunSummary({ content, rawMinutes, className = '' }: PDFC
               </thead>
               <tbody>
                 {displayVendors.map((payment, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 dark:border-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-600">
+                  <tr key={idx} className="border-b border-gray-100 dark:border-slate-700/50 transition-colors hover:bg-black/5 dark:hover:bg-white/10">
                     <td className="py-2 px-2 text-gray-900 dark:text-gray-100 font-medium">{payment.vendor}</td>
                     <td className="py-2 px-2 text-right font-mono text-gray-900 dark:text-gray-100">
                       {formatCurrency(payment.amount)}

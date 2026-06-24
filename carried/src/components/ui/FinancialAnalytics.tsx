@@ -436,7 +436,7 @@ export function FinancialAnalytics({ segments }: FinancialAnalyticsProps) {
           {topVendors.map((vendor, idx) => (
             <div key={vendor.vendor}>
               <div
-                className={`flex items-center gap-3 ${showVendorDetails ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-600 p-2 -m-2 rounded-lg' : ''}`}
+                className={`flex items-center gap-3 ${showVendorDetails ? 'cursor-pointer transition-colors hover:bg-black/5 dark:hover:bg-white/10 p-2 -m-2 rounded-lg' : ''}`}
                 onClick={() => showVendorDetails && setExpandedVendor(
                   expandedVendor === vendor.vendor ? null : vendor.vendor
                 )}
