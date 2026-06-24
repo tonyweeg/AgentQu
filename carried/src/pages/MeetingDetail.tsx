@@ -45,6 +45,7 @@ import { FinancialContent } from '../components/ui/FinancialContent';
 import { FinancialAnalytics } from '../components/ui/FinancialAnalytics';
 import { CheckRunSummary } from '../components/ui/CheckRunSummary';
 import { DisbursementSummary } from '../components/ui/DisbursementSummary';
+import { PDFCheckRunSummary } from '../components/ui/PDFCheckRunSummary';
 import { Meeting, Segment, SegmentType, MotionOutcome, SEGMENT_TYPE_INFO } from '../types';
 import { getSegmentsByMeeting, deleteSegmentsByMeeting, saveSegments } from '../lib/firestore/segments';
 import { extractSegments } from '../lib/ai/extraction';
@@ -448,7 +449,14 @@ export function MeetingDetail() {
                   <Card
                     key={segment.id}
                     className={`p-4 cursor-pointer transition-all hover:shadow-md ${isExpanded ? 'ring-2 ring-indigo-200' : ''}`}
-                    onClick={toggleExpand}
+                    onClick={(e: React.MouseEvent<HTMLDivElement>) => {
+                      // Don't toggle if clicking inside details, pre, or other interactive elements
+                      const target = e.target as HTMLElement;
+                      if (target.closest('details') || target.closest('pre') || target.closest('summary') || target.closest('button')) {
+                        return;
+                      }
+                      toggleExpand();
+                    }}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex items-center gap-2 text-xs text-gray-400 w-6 shrink-0">
@@ -495,6 +503,9 @@ export function MeetingDetail() {
                           <div className="space-y-3">
                             {/* Try check run summary first (spending by category, top vendors) */}
                             <CheckRunSummary content={segment.content} rawMinutes={meeting?.rawMinutes} />
+
+                            {/* Try PDF check run visualization (for raw PDF uploads) */}
+                            <PDFCheckRunSummary content={segment.content} rawMinutes={meeting?.rawMinutes} />
 
                             {/* Try credit card visualization */}
                             <FinancialContent content={segment.content} rawMinutes={meeting?.rawMinutes} />
