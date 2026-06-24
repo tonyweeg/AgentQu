@@ -33,6 +33,8 @@ interface PDFCheckRunData {
   totalAmount: number;
   vendorPayments: VendorPayment[];
   pageCount?: number;
+  checkCount?: number;      // Number of checks
+  payableCount?: number;    // Number of payables
 }
 
 interface PDFCheckRunSummaryProps {
@@ -48,6 +50,8 @@ function parsePDFCheckRun(content: string, rawMinutes?: string): PDFCheckRunData
   const hasCheckRunKeywords =
     lowerContent.includes('check run') ||
     lowerContent.includes('payment register') ||
+    lowerContent.includes('payment summary') ||
+    (lowerContent.includes('checks for') && lowerContent.includes('$')) ||
     (lowerContent.includes('vendor') && lowerContent.includes('paid'));
 
   if (!hasCheckRunKeywords) {
@@ -63,6 +67,19 @@ function parsePDFCheckRun(content: string, rawMinutes?: string): PDFCheckRunData
     totalAmount: 0,
     vendorPayments: [],
   };
+
+  // Try to parse "Payment Summary: XX Checks for $XXX.XX payable count XX. Bank Code: XXX"
+  const summaryMatch = content.match(/Payment Summary[:\s]*(\d+)\s*Checks?\s+for\s+\$([\d,]+\.?\d*)\s*(?:payable count\s*(\d+))?.*?(?:Bank\s*Code[:\s]*([A-Z\s]+))?/i);
+  if (summaryMatch) {
+    data.checkCount = parseInt(summaryMatch[1]);
+    data.totalAmount = parseFloat(summaryMatch[2].replace(/,/g, ''));
+    if (summaryMatch[3]) {
+      data.payableCount = parseInt(summaryMatch[3]);
+    }
+    if (summaryMatch[4]) {
+      data.bankName = summaryMatch[4].trim();
+    }
+  }
 
   // Extract date from content
   const dateMatch = content.match(/(\d{1,2}[\.\/]\d{1,2}[\.\/]\d{2,4})/);
@@ -171,7 +188,7 @@ function parsePDFCheckRun(content: string, rawMinutes?: string): PDFCheckRunData
   }
 
   // Only return if we found meaningful data
-  if (data.vendorPayments.length > 0 || data.totalAmount > 0) {
+  if (data.vendorPayments.length > 0 || data.totalAmount > 0 || data.checkCount) {
     return data;
   }
 
@@ -226,13 +243,32 @@ export function PDFCheckRunSummary({ content, rawMinutes, className = '' }: PDFC
             </div>
             <div className="text-2xl font-bold">{formatCurrency(data.totalAmount)}</div>
           </div>
-          <div className="bg-white/10 rounded-lg p-3">
-            <div className="text-slate-200 text-xs flex items-center gap-1">
-              <Building2 className="w-3 h-3" />
-              Vendors
+          {data.checkCount ? (
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-slate-200 text-xs flex items-center gap-1">
+                <FileText className="w-3 h-3" />
+                Checks
+              </div>
+              <div className="text-xl font-bold">{data.checkCount}</div>
             </div>
-            <div className="text-xl font-bold">{data.vendorPayments.length}</div>
-          </div>
+          ) : (
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-slate-200 text-xs flex items-center gap-1">
+                <Building2 className="w-3 h-3" />
+                Vendors
+              </div>
+              <div className="text-xl font-bold">{data.vendorPayments.length}</div>
+            </div>
+          )}
+          {data.payableCount && (
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-slate-200 text-xs flex items-center gap-1">
+                <Hash className="w-3 h-3" />
+                Payables
+              </div>
+              <div className="text-xl font-bold">{data.payableCount}</div>
+            </div>
+          )}
           {data.bankName && (
             <div className="bg-white/10 rounded-lg p-3">
               <div className="text-slate-200 text-xs flex items-center gap-1">
