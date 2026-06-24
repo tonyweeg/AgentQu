@@ -43,6 +43,7 @@ interface FinancialData {
 
 interface FinancialContentProps {
   content: string;
+  rawMinutes?: string;
   className?: string;
 }
 
@@ -256,7 +257,7 @@ function CreditUtilization({ used, limit }: { used: number; limit: number }) {
   );
 }
 
-export function FinancialContent({ content, className = '' }: FinancialContentProps) {
+export function FinancialContent({ content, rawMinutes: _rawMinutes, className = '' }: FinancialContentProps) {
   const financialData = useMemo(() => parseFinancialData(content), [content]);
 
   // If no financial data detected, return null (caller should fall back to raw text)

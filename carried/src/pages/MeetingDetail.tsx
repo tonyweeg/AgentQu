@@ -494,10 +494,10 @@ export function MeetingDetail() {
                         {isExpanded && (
                           <div className="space-y-3">
                             {/* Try check run summary first (spending by category, top vendors) */}
-                            <CheckRunSummary content={segment.content} />
+                            <CheckRunSummary content={segment.content} rawMinutes={meeting?.rawMinutes} />
 
                             {/* Try credit card visualization */}
-                            <FinancialContent content={segment.content} />
+                            <FinancialContent content={segment.content} rawMinutes={meeting?.rawMinutes} />
 
                             {/* Try disbursement summary visualization */}
                             <DisbursementSummary content={segment.content} rawMinutes={meeting?.rawMinutes} />
@@ -508,7 +508,10 @@ export function MeetingDetail() {
                              !segment.content.toLowerCase().includes('new balance') &&
                              !segment.content.toLowerCase().includes('credit limit') &&
                              !segment.content.toLowerCase().includes('disbursement') &&
-                             !segment.content.toLowerCase().includes('disbursed') && (
+                             !segment.content.toLowerCase().includes('disbursed') &&
+                             !segment.content.toLowerCase().includes('check run') &&
+                             !segment.content.toLowerCase().includes('ap vendor') &&
+                             !segment.content.toLowerCase().includes('vendor payments') && (
                               <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">{segment.content}</p>
                             )}
 
@@ -518,7 +521,10 @@ export function MeetingDetail() {
                               segment.content.toLowerCase().includes('new balance') ||
                               segment.content.toLowerCase().includes('credit limit') ||
                               segment.content.toLowerCase().includes('disbursement') ||
-                              segment.content.toLowerCase().includes('disbursed')) && (
+                              segment.content.toLowerCase().includes('disbursed') ||
+                              segment.content.toLowerCase().includes('check run') ||
+                              segment.content.toLowerCase().includes('ap vendor') ||
+                              segment.content.toLowerCase().includes('vendor payments')) && (
                               <details className="mt-2">
                                 <summary className="text-xs text-gray-500 dark:text-gray-400 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">
                                   View raw text

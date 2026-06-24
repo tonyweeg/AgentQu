@@ -3,6 +3,7 @@
  * Carried - Motions carry, memory too
  *
  * Renders check run analysis summaries with charts and visual breakdowns
+ * Parses both AI-generated summaries AND raw Excel data formats
  */
 
 import { useMemo, useState } from 'react';
@@ -46,6 +47,7 @@ interface CheckRunData {
 
 interface CheckRunSummaryProps {
   content: string;
+  rawMinutes?: string;
   className?: string;
 }
 
@@ -69,78 +71,167 @@ const CATEGORY_COLORS = [
   'bg-green-500',
 ];
 
-// Parse check run summary from text
-function parseCheckRunSummary(content: string): CheckRunData | null {
-  // Check if this looks like a check run summary
-  if (!content.includes('Spending by Category') && !content.includes('Top') && !content.includes('Vendors')) {
-    return null;
-  }
-
+// Parse check run summary from text AND/OR raw Excel data
+function parseCheckRunSummary(content: string, rawMinutes?: string): CheckRunData | null {
   const data: CheckRunData = {
     categories: [],
     topVendors: [],
   };
 
-  // Extract total amounts from description
-  const totalAPMatch = content.match(/Total AP Vendor Payments[^$]*\$([\d,]+\.?\d*)/i);
-  if (totalAPMatch) {
-    data.totalAP = parseFloat(totalAPMatch[1].replace(/,/g, ''));
+  // Try parsing from AI-generated content first
+  const hasCheckRunKeywords =
+    content.includes('Spending by Category') ||
+    content.includes('Top') && content.includes('Vendors') ||
+    content.toLowerCase().includes('check run') ||
+    content.toLowerCase().includes('ap vendor');
+
+  if (hasCheckRunKeywords) {
+    // Extract total amounts from AI summary
+    const totalAPMatch = content.match(/(?:Total )?AP Vendor Payments[^$]*\$([\d,]+\.?\d*)/i);
+    if (totalAPMatch) {
+      data.totalAP = parseFloat(totalAPMatch[1].replace(/,/g, ''));
+    }
+
+    const utilityMatch = content.match(/Utility Refunds[^$]*\$([\d,]+\.?\d*)/i);
+    if (utilityMatch) {
+      data.totalUtilityRefunds = parseFloat(utilityMatch[1].replace(/,/g, ''));
+    }
+
+    const disbursedMatch = content.match(/(?:combined total|total)[^$]*disbursed[^$]*\$([\d,]+\.?\d*)/i) ||
+                           content.match(/disbursed[^$]*\$([\d,]+\.?\d*)/i);
+    if (disbursedMatch) {
+      data.totalDisbursed = parseFloat(disbursedMatch[1].replace(/,/g, ''));
+    }
+
+    const vendorCountMatch = content.match(/(\d+)\s*vendors?/i);
+    if (vendorCountMatch) {
+      data.vendorCount = parseInt(vendorCountMatch[1]);
+    }
+
+    const lineItemMatch = content.match(/(\d+)\s*(?:vendor\s*)?line(?:\s*items)?/i);
+    if (lineItemMatch) {
+      data.lineItemCount = parseInt(lineItemMatch[1]);
+    }
+
+    const meetingMatch = content.match(/(?:across|over|from)\s*(\d+)\s*(?:council\s*)?meetings?/i);
+    if (meetingMatch) {
+      data.meetingCount = parseInt(meetingMatch[1]);
+    }
+
+    // Extract date range
+    const dateMatch = content.match(/from\s+([A-Za-z]+\s+\d+,?\s+\d+)[,\s]+to\s+([A-Za-z]+\s+\d+,?\s+\d+)/i);
+    if (dateMatch) {
+      data.dateRange = `${dateMatch[1]} - ${dateMatch[2]}`;
+    }
+
+    // Parse categories: "- Category Name: $X,XXX.XX (XX.XX% of AP)"
+    const categoryPattern = /[-•]\s*([^:$\n]+?):\s*\$([\d,]+\.?\d*)\s*\((\d+\.?\d*)%/g;
+    let match;
+    while ((match = categoryPattern.exec(content)) !== null) {
+      const name = match[1].trim();
+      // Skip if it looks like a vendor (all caps)
+      if (name === name.toUpperCase() && name.length > 3) continue;
+      data.categories.push({
+        name: name,
+        amount: parseFloat(match[2].replace(/,/g, '')),
+        percentage: parseFloat(match[3]),
+      });
+    }
+
+    // Parse top vendors: "- VENDOR NAME: $X,XXX.XX (# Pmts: X)" or similar patterns
+    const vendorPattern = /[-•]\s*([A-Z][A-Z0-9\s\&\,\.\-\/]+?):\s*\$([\d,]+\.?\d*)\s*\((?:#?\s*Pmts?:?\s*)?(\d+)(?:\s*payments?)?\)/gi;
+    while ((match = vendorPattern.exec(content)) !== null) {
+      data.topVendors.push({
+        name: match[1].trim(),
+        amount: parseFloat(match[2].replace(/,/g, '')),
+        paymentCount: parseInt(match[3]),
+      });
+    }
   }
 
-  const utilityMatch = content.match(/Utility Refunds[^$]*\$([\d,]+\.?\d*)/i);
-  if (utilityMatch) {
-    data.totalUtilityRefunds = parseFloat(utilityMatch[1].replace(/,/g, ''));
-  }
+  // If we have rawMinutes, also try parsing Excel format directly
+  if (rawMinutes) {
+    // Look for Summary sheet data
+    const summaryMatch = rawMinutes.match(/=== Sheet: Summary ===/);
+    if (summaryMatch) {
+      // Parse "By Category" sheet for category totals
+      const byCategoryMatch = rawMinutes.match(/=== Sheet: By Category ===([\s\S]*?)(?:=== Sheet:|$)/);
+      if (byCategoryMatch && data.categories.length === 0) {
+        const categoryLines = byCategoryMatch[1].split('\n');
+        for (const line of categoryLines) {
+          // Format: "Category: NAME | Total Paid: XXX | # Line Items: XX | % of AP: XX"
+          const parts = line.split(' | ');
+          const lineData: Record<string, string> = {};
+          for (const part of parts) {
+            const colonIdx = part.indexOf(':');
+            if (colonIdx > 0) {
+              const key = part.substring(0, colonIdx).trim().toLowerCase();
+              const value = part.substring(colonIdx + 1).trim();
+              lineData[key] = value;
+            }
+          }
+          if (lineData['category'] && lineData['total paid']) {
+            const amount = parseFloat(lineData['total paid'].replace(/[$,]/g, ''));
+            const percentage = parseFloat((lineData['% of ap'] || '0').replace(/%/g, '')) * 100;
+            if (amount > 0 && lineData['category'] !== 'GRAND TOTAL') {
+              data.categories.push({
+                name: lineData['category'],
+                amount: amount,
+                percentage: percentage,
+              });
+            }
+          }
+        }
+      }
 
-  const disbursedMatch = content.match(/(?:combined total|total) disbursed[^$]*\$([\d,]+\.?\d*)/i);
-  if (disbursedMatch) {
-    data.totalDisbursed = parseFloat(disbursedMatch[1].replace(/,/g, ''));
-  }
+      // Parse "By Vendor" sheet for top vendors
+      const byVendorMatch = rawMinutes.match(/=== Sheet: By Vendor ===([\s\S]*?)(?:=== Sheet:|$)/);
+      if (byVendorMatch && data.topVendors.length === 0) {
+        const vendorLines = byVendorMatch[1].split('\n');
+        const vendorList: VendorData[] = [];
+        for (const line of vendorLines) {
+          const parts = line.split(' | ');
+          const lineData: Record<string, string> = {};
+          for (const part of parts) {
+            const colonIdx = part.indexOf(':');
+            if (colonIdx > 0) {
+              const key = part.substring(0, colonIdx).trim().toLowerCase();
+              const value = part.substring(colonIdx + 1).trim();
+              lineData[key] = value;
+            }
+          }
+          if (lineData['vendor (normalized)'] || lineData['vendor']) {
+            const vendor = lineData['vendor (normalized)'] || lineData['vendor'];
+            const amount = parseFloat((lineData['total paid'] || '0').replace(/[$,]/g, ''));
+            const pmts = parseInt(lineData['# pmts'] || lineData['# line items'] || '1');
+            if (amount > 0) {
+              vendorList.push({
+                name: vendor,
+                amount: amount,
+                paymentCount: pmts,
+              });
+            }
+          }
+        }
+        // Sort by amount and take top 15
+        vendorList.sort((a, b) => b.amount - a.amount);
+        data.topVendors = vendorList.slice(0, 15);
+      }
 
-  const vendorCountMatch = content.match(/(\d+)\s*vendors/i);
-  if (vendorCountMatch) {
-    data.vendorCount = parseInt(vendorCountMatch[1]);
-  }
-
-  const lineItemMatch = content.match(/(\d+)\s*line items/i);
-  if (lineItemMatch) {
-    data.lineItemCount = parseInt(lineItemMatch[1]);
-  }
-
-  const meetingMatch = content.match(/(?:across|over)\s*(\d+)\s*(?:council\s*)?meetings/i);
-  if (meetingMatch) {
-    data.meetingCount = parseInt(meetingMatch[1]);
-  }
-
-  // Extract date range
-  const dateMatch = content.match(/from\s+([A-Za-z]+\s+\d+,?\s+\d+)[,\s]+to\s+([A-Za-z]+\s+\d+,?\s+\d+)/i);
-  if (dateMatch) {
-    data.dateRange = `${dateMatch[1]} - ${dateMatch[2]}`;
-  }
-
-  // Parse categories: "- Category Name: $X,XXX.XX (XX.XX% of AP)"
-  const categoryPattern = /[-•]\s*([^:$]+):\s*\$([\d,]+\.?\d*)\s*\((\d+\.?\d*)%/g;
-  let match;
-  while ((match = categoryPattern.exec(content)) !== null) {
-    data.categories.push({
-      name: match[1].trim(),
-      amount: parseFloat(match[2].replace(/,/g, '')),
-      percentage: parseFloat(match[3]),
-    });
-  }
-
-  // Parse top vendors: "- VENDOR NAME: $X,XXX.XX (# Pmts: X)"
-  const vendorPattern = /[-•]\s*([A-Z][A-Z\s\&\,\.]+?):\s*\$([\d,]+\.?\d*)\s*\(#?\s*Pmts?:?\s*(\d+)\)/g;
-  while ((match = vendorPattern.exec(content)) !== null) {
-    data.topVendors.push({
-      name: match[1].trim(),
-      amount: parseFloat(match[2].replace(/,/g, '')),
-      paymentCount: parseInt(match[3]),
-    });
+      // Get grand totals from Summary sheet
+      const grandTotalMatch = rawMinutes.match(/AP Vendor Payments[^\d]*?([\d,]+\.?\d*)/);
+      if (grandTotalMatch && !data.totalAP) {
+        data.totalAP = parseFloat(grandTotalMatch[1].replace(/,/g, ''));
+      }
+    }
   }
 
   // Only return if we found meaningful data
-  if (data.categories.length > 0 || data.topVendors.length > 0) {
+  if (data.categories.length > 0 || data.topVendors.length > 0 || data.totalAP || data.totalDisbursed) {
+    // Calculate totalDisbursed if we have parts
+    if (!data.totalDisbursed && data.totalAP) {
+      data.totalDisbursed = data.totalAP + (data.totalUtilityRefunds || 0);
+    }
     return data;
   }
 
@@ -171,11 +262,11 @@ function formatFullCurrency(value: number): string {
   }).format(value);
 }
 
-export function CheckRunSummary({ content, className = '' }: CheckRunSummaryProps) {
+export function CheckRunSummary({ content, rawMinutes, className = '' }: CheckRunSummaryProps) {
   const [showAllCategories, setShowAllCategories] = useState(false);
   const [showAllVendors, setShowAllVendors] = useState(false);
 
-  const data = useMemo(() => parseCheckRunSummary(content), [content]);
+  const data = useMemo(() => parseCheckRunSummary(content, rawMinutes), [content, rawMinutes]);
 
   if (!data) {
     return null;
