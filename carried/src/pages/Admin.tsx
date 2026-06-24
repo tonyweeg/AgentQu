@@ -436,7 +436,7 @@ export function Admin() {
                     </tr>
                   ) : (
                     filteredSubscribers.map((sub) => (
-                      <tr key={sub.user.uid} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                      <tr key={sub.user.uid} className="hover:bg-gray-100 dark:hover:bg-slate-600">
                         {/* User Info */}
                         <td className="px-4 py-4">
                           <div className="flex items-center gap-3">
