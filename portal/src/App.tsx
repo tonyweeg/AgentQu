@@ -20,7 +20,9 @@ import {
   ExternalLink,
   Trophy,
   Activity,
+  Music,
 } from 'lucide-react';
+import AudioTools from './components/AudioTools';
 
 // Firebase config
 const firebaseConfig = {
@@ -43,6 +45,7 @@ interface AppCard {
   url: string;
   icon: React.ReactNode;
   gradient: string;
+  internal?: boolean;
 }
 
 const apps: AppCard[] = [
@@ -102,6 +105,15 @@ const apps: AppCard[] = [
     icon: <Activity className="w-8 h-8" />,
     gradient: 'from-rose-500 to-pink-500',
   },
+  {
+    id: 'audio-tools',
+    name: 'Audio Tools',
+    description: 'Download YouTube audio and remove vocals using AI. Create karaoke tracks instantly.',
+    url: '/audio-tools',
+    icon: <Music className="w-8 h-8" />,
+    gradient: 'from-purple-500 to-pink-500',
+    internal: true,
+  },
 ];
 
 function App() {
@@ -109,6 +121,21 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState<string>(window.location.pathname);
+
+  // Handle browser back/forward
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPage(window.location.pathname);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPage(path);
+  };
 
   useEffect(() => {
     // Check for redirect result first
@@ -181,6 +208,11 @@ function App() {
         </div>
       </div>
     );
+  }
+
+  // Route to Audio Tools page
+  if (currentPage === '/audio-tools' && user) {
+    return <AudioTools onBack={() => navigateTo('/')} />;
   }
 
   return (
@@ -296,34 +328,60 @@ function App() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {apps.map((appCard) => (
-                  <a
-                    key={appCard.id}
-                    href={appCard.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300"
-                  >
-                    <div className="flex items-start gap-5">
-                      <div
-                        className={`w-16 h-16 rounded-xl bg-gradient-to-br ${appCard.gradient} flex items-center justify-center text-white flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                      >
-                        {appCard.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h2 className="text-xl font-semibold text-white">
-                            {appCard.name}
-                          </h2>
-                          <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors" />
+                {apps.map((appCard) =>
+                  appCard.internal ? (
+                    <button
+                      key={appCard.id}
+                      onClick={() => navigateTo(appCard.url)}
+                      className="group block p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300 text-left"
+                    >
+                      <div className="flex items-start gap-5">
+                        <div
+                          className={`w-16 h-16 rounded-xl bg-gradient-to-br ${appCard.gradient} flex items-center justify-center text-white flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                        >
+                          {appCard.icon}
                         </div>
-                        <p className="text-slate-400 text-sm leading-relaxed">
-                          {appCard.description}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h2 className="text-xl font-semibold text-white">
+                              {appCard.name}
+                            </h2>
+                          </div>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            {appCard.description}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </a>
-                ))}
+                    </button>
+                  ) : (
+                    <a
+                      key={appCard.id}
+                      href={appCard.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group block p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300"
+                    >
+                      <div className="flex items-start gap-5">
+                        <div
+                          className={`w-16 h-16 rounded-xl bg-gradient-to-br ${appCard.gradient} flex items-center justify-center text-white flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                        >
+                          {appCard.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h2 className="text-xl font-semibold text-white">
+                              {appCard.name}
+                            </h2>
+                            <ExternalLink className="w-4 h-4 text-slate-500 group-hover:text-slate-300 transition-colors" />
+                          </div>
+                          <p className="text-slate-400 text-sm leading-relaxed">
+                            {appCard.description}
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  )
+                )}
               </div>
 
               {/* Footer */}
