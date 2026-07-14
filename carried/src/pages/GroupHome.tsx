@@ -18,7 +18,6 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import {
-  ArrowLeft,
   Plus,
   FileText,
   Vote,
@@ -49,12 +48,13 @@ import {
   Edit3,
   Video,
   X,
+  Zap,
 } from 'lucide-react';
 import { db, COLLECTIONS } from '../config/firebase';
 import { AppHeader } from '../components/layout/AppHeader';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
 import { Loading } from '../components/ui/Loading';
+import { Breadcrumb } from '../components/ui/Breadcrumb';
 import { Group, Meeting, Segment, SegmentType, MotionOutcome, GroupVisibility, SEGMENT_TYPE_INFO, VISIBILITY_INFO } from '../types';
 import { clearGroupData, deleteGroupCompletely } from '../lib/firestore/groups';
 import { deleteOrphanedSegments, deleteSegmentsByGroup } from '../lib/firestore/segments';
@@ -83,6 +83,48 @@ const SEGMENT_ICONS: Record<SegmentType, React.ReactNode> = {
   procedural: <Gavel className="w-4 h-4 text-gray-600" />,
   other: <MoreHorizontal className="w-4 h-4 text-slate-600" />,
 };
+
+/**
+ * Extract meeting type and topics from title
+ * e.g., "Town of Berlin Town Council Meeting 2026-06-22 + Check Run"
+ *    -> { type: "COUNCIL MEETING", topics: "Check Run" }
+ */
+function parseMeetingTitle(title: string): { type: string; topics: string | null } {
+  // Define meeting type patterns (order matters - more specific first)
+  const patterns: { regex: RegExp; label: string }[] = [
+    { regex: /MAYOR\s*(?:AND|&)\s*COUNCIL/i, label: 'M/C MEETING' },
+    { regex: /TOWN\s*COUNCIL/i, label: 'M/C MEETING' },
+    { regex: /CITY\s*COUNCIL/i, label: 'M/C MEETING' },
+    { regex: /COUNCIL/i, label: 'M/C MEETING' },
+    { regex: /WORK\s*SESSION/i, label: 'WORK SESSION' },
+    { regex: /PUBLIC\s*HEARING/i, label: 'PUBLIC HEARING' },
+    { regex: /SPECIAL\s*MEETING/i, label: 'SPECIAL MEETING' },
+    { regex: /BOARD\s*MEETING/i, label: 'BOARD MEETING' },
+    { regex: /COMMITTEE/i, label: 'COMMITTEE' },
+    { regex: /PLANNING\s*(?:COMMISSION|BOARD)/i, label: 'PLANNING' },
+    { regex: /ZONING/i, label: 'ZONING' },
+    { regex: /BUDGET/i, label: 'BUDGET' },
+    { regex: /CLOSED\s*SESSION/i, label: 'CLOSED SESSION' },
+  ];
+
+  // Find matching type
+  let meetingType = 'MEETING';
+  for (const { regex, label } of patterns) {
+    if (regex.test(title)) {
+      meetingType = label;
+      break;
+    }
+  }
+
+  // Extract topics after "+" or after date pattern
+  let topics: string | null = null;
+  const plusMatch = title.match(/\+\s*(.+)$/);
+  if (plusMatch) {
+    topics = plusMatch[1].trim();
+  }
+
+  return { type: meetingType, topics };
+}
 
 export function GroupHome() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -376,7 +418,7 @@ export function GroupHome() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
         <AppHeader />
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
           <Loading size="lg" text="Loading group..." />
@@ -392,7 +434,7 @@ export function GroupHome() {
 
   return (
     <div
-      className={`min-h-screen bg-gray-50 transition-colors ${dragActive ? 'bg-blue-50' : ''}`}
+      className={`min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors ${dragActive ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
       onDragEnter={handleDrag}
       onDragLeave={handleDrag}
       onDragOver={handleDrag}
@@ -414,7 +456,7 @@ export function GroupHome() {
             </div>
             <button
               onClick={() => setSuccessToast(null)}
-              className="ml-2 p-1 hover:bg-green-100 rounded-full transition-colors"
+              className="ml-2 p-1 hover:bg-green-100 dark:hover:bg-green-900/50 rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -434,33 +476,30 @@ export function GroupHome() {
       )}
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Back button */}
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Groups
-        </button>
+        {/* Breadcrumb navigation */}
+        <Breadcrumb
+          items={[{ label: group.name }]}
+          className="mb-6"
+        />
 
         {/* Group Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 mb-8">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
               {group.description && (
                 <p className="text-gray-500 mt-1">{group.description}</p>
               )}
-              <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1.5">
-                  <FileText className="w-4 h-4" />
-                  {meetings.length} meetings
+              <div className="flex items-center gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-slate-700 rounded-full">
+                  <FileText className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                  <span className="font-medium">{meetings.length}</span> meetings
                 </div>
                 {/* Segments stat - only show to owner */}
                 {user && group && user.uid === group.createdBy && (
-                  <div className="flex items-center gap-1.5">
-                    <Vote className="w-4 h-4" />
-                    {segmentCount} segments
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 dark:bg-slate-700 rounded-full">
+                    <Vote className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <span className="font-medium">{segmentCount.toLocaleString()}</span> segments
                   </div>
                 )}
               </div>
@@ -471,7 +510,7 @@ export function GroupHome() {
               <div className="relative">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors"
                 >
                   <MoreHorizontal className="w-5 h-5" />
                 </button>
@@ -482,13 +521,13 @@ export function GroupHome() {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowMenu(false)}
                     />
-                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 py-1 z-20">
                       <button
                         onClick={() => {
                           setShowMenu(false);
                           openEditModal();
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2"
                       >
                         <Edit3 className="w-4 h-4" />
                         Edit Group
@@ -498,7 +537,7 @@ export function GroupHome() {
                           setShowMenu(false);
                           setShowVisibilityModal(true);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2"
                       >
                         <Settings className="w-4 h-4" />
                         Visibility Settings
@@ -509,7 +548,7 @@ export function GroupHome() {
                           setShowMenu(false);
                           setShowClearModal(true);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2"
                       >
                         <RefreshCw className="w-4 h-4" />
                         Clear All Data
@@ -520,7 +559,7 @@ export function GroupHome() {
                           setShowMenu(false);
                           setShowDeleteModal(true);
                         }}
-                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2"
                       >
                         <Trash2 className="w-4 h-4" />
                         Delete Group
@@ -534,10 +573,10 @@ export function GroupHome() {
           </div>
         </div>
 
-        {/* Search bar + Add Meeting - discrete, above content */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {/* Search bar + Add Meeting - Design System */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="ds-search flex-1 max-w-md">
+            <Search className="ds-search-icon w-4 h-4" />
             <input
               type="text"
               value={searchQuery}
@@ -548,13 +587,13 @@ export function GroupHome() {
                 }
               }}
               placeholder="Search meetings..."
-              className="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white/80"
+              className="ds-input pl-10"
             />
           </div>
           {canAddMeetings && (
             <button
               onClick={() => navigate(`/groups/${groupId}/upload`)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium text-sm rounded-lg transition-colors"
+              className="ds-btn ds-btn-primary"
             >
               <Plus className="w-4 h-4" />
               Add Meeting
@@ -563,20 +602,28 @@ export function GroupHome() {
         </div>
 
         <div className="space-y-6">
-          {/* Meetings */}
-          <div>
-            <h2 className="text-base font-bold text-gray-900 mb-3">Meetings</h2>
+          {/* Meetings Section */}
+          <div className="ds-card overflow-hidden ds-animate-slide-up">
+            <div className="ds-section-header">
+              <div className="ds-section-title">
+                <FileText className="w-5 h-5 ds-section-icon" />
+                <span>Meetings</span>
+              </div>
+              <span className="ds-badge">{meetings.length}</span>
+            </div>
             {meetings.length === 0 ? (
-              <Card className="p-8 text-center">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 mb-4">No meetings yet</p>
-                <Button size="sm" onClick={() => navigate(`/groups/${groupId}/upload`)}>
-                  <Plus className="w-4 h-4" />
-                  Add First Meeting
-                </Button>
-              </Card>
+              <div className="p-8 text-center">
+                <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400 mb-4">No meetings yet</p>
+                {canAddMeetings && (
+                  <Button size="sm" onClick={() => navigate(`/groups/${groupId}/upload`)}>
+                    <Plus className="w-4 h-4" />
+                    Add First Meeting
+                  </Button>
+                )}
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="divide-y divide-gray-100 dark:divide-slate-700">
                 {(() => {
                   // Group meetings by year
                   const meetingsByYear: Record<number, Meeting[]> = {};
@@ -617,86 +664,121 @@ export function GroupHome() {
 
                     return (
                       <div key={year}>
-                        {/* Year Header */}
+                        {/* Year Header - Design System */}
                         <button
                           onClick={() => toggleYear(year)}
-                          className="flex items-center gap-2 w-full px-2 py-1.5 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                          className={`ds-accordion-header ${isExpanded ? 'ds-accordion-header-expanded' : ''}`}
                         >
-                          <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
-                          {year}
-                          <span className="text-xs font-normal text-gray-400">({yearMeetings.length})</span>
+                          <div className="flex items-center gap-2">
+                            <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
+                            <span className="text-base">{year}</span>
+                          </div>
+                          <span className={`ds-badge ${isExpanded ? 'ds-badge-primary' : ''}`}>
+                            {yearMeetings.length}
+                          </span>
                         </button>
 
-                        {/* Meetings for this year */}
+                        {/* Meetings for this year - Card Grid */}
                         {isExpanded && (
-                          <div className="ml-2 border-l border-gray-200 pl-2 space-y-0.5">
+                          <div className="ds-meeting-grid">
                             {yearMeetings.map((meeting) => {
                               const meetingDate = meeting.meetingDate?.toDate?.() || meeting.date?.toDate?.() || new Date();
                               const stats = meetingStats[meeting.id] || {};
                               const totalSegments = Object.values(stats).reduce((sum, count) => sum + count, 0);
 
+                              // Parse meeting title for type and topics
+                              const { type: meetingType, topics } = parseMeetingTitle(meeting.title);
+
+                              // Get preview segments for this meeting
+                              const meetingSegments = recentSegments.filter(s => s.meetingId === meeting.id);
+                              const previewText = topics || meetingSegments.slice(0, 3).map(s => s.title).join(' • ') || 'Click to view meeting details';
+
                               return (
                                 <div
                                   key={meeting.id}
                                   onClick={() => navigate(`/groups/${groupId}/meetings/${meeting.id}`)}
-                                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 cursor-pointer transition-colors group"
+                                  className="ds-meeting-card group relative"
                                 >
-                                  {/* Date (no year since grouped) */}
-                                  <div className="w-14 text-xs text-gray-500 shrink-0">
-                                    {meetingDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  {/* Header with date and content */}
+                                  <div className="ds-meeting-card-header">
+                                    {/* Date badge */}
+                                    <div className="ds-meeting-card-date">
+                                      <span className="ds-meeting-card-date-day">
+                                        {meetingDate.getDate()}
+                                      </span>
+                                      <span className="ds-meeting-card-date-month">
+                                        {meetingDate.toLocaleDateString('en-US', { month: 'short' })}
+                                      </span>
+                                    </div>
+
+                                    {/* Meeting Type + Topics */}
+                                    <div className="ds-meeting-card-content">
+                                      <div className="ds-meeting-card-type">
+                                        {meetingType}
+                                      </div>
+                                      <div className="ds-meeting-card-topics ds-line-clamp-2">
+                                        {topics || meetingDate.toLocaleDateString('en-US', { weekday: 'long' })}
+                                      </div>
+                                    </div>
+
+                                    {/* Video icon if available */}
+                                    {meeting.videoUrl && (
+                                      <a
+                                        href={meeting.videoUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="p-2 text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 rounded-lg transition-colors shrink-0"
+                                        title="Watch video"
+                                      >
+                                        <Video className="w-5 h-5" />
+                                      </a>
+                                    )}
                                   </div>
 
-                                  {/* Title */}
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-gray-900 truncate">{meeting.title}</p>
+                                  {/* Preview text - expands on hover */}
+                                  <div className="ds-meeting-card-preview">
+                                    {previewText}
                                   </div>
 
-                                  {/* Stats pills */}
-                                  <div className="flex items-center gap-1 shrink-0">
+                                  {/* Stats row */}
+                                  <div className="ds-meeting-card-stats">
                                     {stats.motion > 0 && (
-                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-blue-50 text-blue-700 rounded">
-                                        <Vote className="w-2.5 h-2.5" />
-                                        {stats.motion}
+                                      <span className="ds-chip ds-chip-blue">
+                                        <Vote className="w-3 h-3" />
+                                        {stats.motion} motions
                                       </span>
                                     )}
                                     {stats.discussion > 0 && (
-                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-purple-50 text-purple-700 rounded">
-                                        <MessageSquare className="w-2.5 h-2.5" />
+                                      <span className="ds-chip ds-chip-purple">
+                                        <MessageSquare className="w-3 h-3" />
                                         {stats.discussion}
                                       </span>
                                     )}
                                     {stats.report > 0 && (
-                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-green-50 text-green-700 rounded">
-                                        <FileText className="w-2.5 h-2.5" />
+                                      <span className="ds-chip ds-chip-green">
+                                        <FileText className="w-3 h-3" />
                                         {stats.report}
                                       </span>
                                     )}
                                     {stats.action_item > 0 && (
-                                      <span className="flex items-center gap-0.5 text-xs px-1 py-0.5 bg-red-50 text-red-700 rounded">
-                                        <CheckSquare className="w-2.5 h-2.5" />
+                                      <span className="ds-chip ds-chip-red">
+                                        <CheckSquare className="w-3 h-3" />
                                         {stats.action_item}
                                       </span>
                                     )}
                                     {totalSegments === 0 && (
-                                      <span className="text-xs text-gray-400">—</span>
+                                      <span className="ds-caption italic">Processing...</span>
+                                    )}
+                                    {totalSegments > 0 && (
+                                      <span className="ds-caption ml-auto">
+                                        {totalSegments} items
+                                      </span>
                                     )}
                                   </div>
 
-                                  {/* Video link */}
-                                  {meeting.videoUrl && (
-                                    <a
-                                      href={meeting.videoUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => e.stopPropagation()}
-                                      className="p-1 text-gray-400 hover:text-teal-600 hover:bg-teal-50 rounded transition-colors shrink-0"
-                                      title="Watch video"
-                                    >
-                                      <Video className="w-3.5 h-3.5" />
-                                    </a>
-                                  )}
-
-                                  <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 shrink-0" />
+                                  {/* Arrow on hover */}
+                                  <ChevronRight className="ds-meeting-card-arrow w-5 h-5" />
                                 </div>
                               );
                             })}
@@ -710,60 +792,93 @@ export function GroupHome() {
             )}
           </div>
 
-          {/* Recent Segments */}
-          <div>
-            <h2 className="text-base font-bold text-gray-900 mb-3">Recent Content</h2>
+          {/* Recent Activity Section */}
+          <div className="ds-card overflow-hidden ds-animate-slide-up" style={{ animationDelay: '100ms' }}>
+            <div className="ds-section-header">
+              <div className="ds-section-title">
+                <Zap className="w-5 h-5 ds-section-icon" />
+                <span>Recent Activity</span>
+              </div>
+              <span className="ds-badge">{recentSegments.length}</span>
+            </div>
             {recentSegments.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Vote className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">
+              <div className="p-8 text-center">
+                <Vote className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
                   Content will appear here after you upload meeting minutes
                 </p>
-              </Card>
+              </div>
             ) : (
-              <div className="space-y-1">
-                {recentSegments.map((segment) => (
-                  <div
-                    key={segment.id}
-                    className="flex items-start gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="shrink-0 mt-0.5">
-                      {segment.type === 'motion' && segment.outcome && segment.outcome in OUTCOME_ICONS
-                        ? OUTCOME_ICONS[segment.outcome as MotionOutcome]
-                        : SEGMENT_ICONS[segment.type]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 truncate">
-                        {segment.title}
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        <span className={`text-xs px-1.5 py-0.5 rounded ${
-                          segment.type === 'motion' ? 'bg-blue-50 text-blue-700' :
-                          segment.type === 'discussion' ? 'bg-purple-50 text-purple-700' :
-                          segment.type === 'report' ? 'bg-green-50 text-green-700' :
-                          segment.type === 'action_item' ? 'bg-red-50 text-red-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {SEGMENT_TYPE_INFO[segment.type]?.label || segment.type}
-                        </span>
-                        {segment.type === 'motion' && segment.outcome && (
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${
-                            segment.outcome === 'carried' ? 'bg-green-50 text-green-700' :
-                            segment.outcome === 'defeated' ? 'bg-red-50 text-red-700' :
-                            'bg-gray-100 text-gray-600'
-                          }`}>
-                            {segment.outcome.charAt(0).toUpperCase() + segment.outcome.slice(1)}
-                          </span>
-                        )}
-                        {segment.tags.slice(0, 1).map((tag) => (
-                          <span key={tag} className="text-xs px-1.5 py-0.5 bg-indigo-50 text-indigo-600 rounded hidden sm:inline">
-                            {tag}
-                          </span>
-                        ))}
+              <div className="divide-y divide-gray-100 dark:divide-slate-700">
+                {recentSegments.map((segment) => {
+                  // Find the meeting for context
+                  const meeting = meetings.find(m => m.id === segment.meetingId);
+                  const meetingDate = meeting?.meetingDate?.toDate?.() || meeting?.date?.toDate?.();
+
+                  return (
+                    <div
+                      key={segment.id}
+                      onClick={() => navigate(`/groups/${groupId}/meetings/${segment.meetingId}?segment=${segment.id}`)}
+                      className="ds-list-item items-start group"
+                    >
+                      {/* Icon */}
+                      <div className="shrink-0 mt-1">
+                        {segment.type === 'motion' && segment.outcome && segment.outcome in OUTCOME_ICONS
+                          ? OUTCOME_ICONS[segment.outcome as MotionOutcome]
+                          : SEGMENT_ICONS[segment.type]}
                       </div>
+
+                      {/* Content - 3 line layout */}
+                      <div className="flex-1 min-w-0">
+                        {/* Line 1: Title */}
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
+                          {segment.title}
+                        </p>
+
+                        {/* Line 2: Type + Outcome badges */}
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          <span className={`ds-chip ${
+                            segment.type === 'motion' ? 'ds-chip-blue' :
+                            segment.type === 'discussion' ? 'ds-chip-purple' :
+                            segment.type === 'report' ? 'ds-chip-green' :
+                            segment.type === 'action_item' ? 'ds-chip-red' :
+                            ''
+                          }`}>
+                            {SEGMENT_TYPE_INFO[segment.type]?.label || segment.type}
+                          </span>
+                          {segment.type === 'motion' && segment.outcome && (
+                            <span className={`ds-chip ${
+                              segment.outcome === 'carried' ? 'ds-chip-green' :
+                              segment.outcome === 'defeated' ? 'ds-chip-red' :
+                              ''
+                            }`}>
+                              {segment.outcome.charAt(0).toUpperCase() + segment.outcome.slice(1)}
+                            </span>
+                          )}
+                          {segment.tags.slice(0, 1).map((tag) => (
+                            <span key={tag} className="ds-chip ds-chip-teal hidden sm:inline-flex">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Line 3: Meeting context */}
+                        {meeting && (
+                          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <FileText className="w-3 h-3" />
+                            <span className="truncate">
+                              {meetingDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              {' • '}
+                              {meeting.title}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-teal-500 dark:group-hover:text-teal-400 shrink-0 mt-1 transition-colors" />
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

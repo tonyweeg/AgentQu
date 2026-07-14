@@ -1,15 +1,16 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import "./styles/design-system.css";
 
 /* ============================================
-   CARRIED - SoCal Beach Theme
-   Bright, warm, sunny California vibes
+   CARRIED - Clean Professional Theme
+   Modern, crisp, Google Cloud-inspired
    ============================================ */
 
-/* Custom CSS variables for beach theme */
+/* Custom CSS variables */
 :root {
-  --sand: #fef7ed;
-  --sand-dark: #fef3e2;
+  --bg-page: #f8f9fa;
+  --bg-subtle: #f1f3f4;
   --ocean: #0d9488;
   --ocean-light: #14b8a6;
   --coral: #f97316;
@@ -18,7 +19,7 @@
 
 /* Base styles */
 body {
-  background-color: var(--sand);
+  background-color: var(--bg-page);
   color: #1f2937;
   -webkit-font-smoothing: antialiased;
   font-family: 'Atkinson Hyperlegible', sans-serif;
@@ -30,13 +31,13 @@ body {
   font-family: 'Atkinson Hyperlegible', sans-serif;
 }
 
-/* Light mode - Beach theme overrides using CSS variables */
+/* Light mode - Clean gray backgrounds */
 .bg-gray-50 {
-  background-color: var(--sand);
+  background-color: var(--bg-page);
 }
 
 .bg-gray-100 {
-  background-color: var(--sand-dark);
+  background-color: var(--bg-subtle);
 }
 
 /* Ocean teal accents - override indigo with teal */
@@ -200,4 +201,143 @@ html.dark body {
 .animate-spin,
 .transition-transform {
   transition-property: transform;
+}
+
+/* ============================================
+   MUI-LIKE ANIMATIONS
+   ============================================ */
+
+/* Segment highlight pulse animation */
+.segment-highlight {
+  animation: segment-pulse 2s ease-out;
+}
+
+@keyframes segment-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4);
+  }
+  25% {
+    box-shadow: 0 0 0 10px rgba(20, 184, 166, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(20, 184, 166, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+  }
+}
+
+/* Slide down animation for expanding content */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.2s ease-out;
+}
+
+/* Slide up animation for collapsing */
+@keyframes slide-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Scale in animation for cards/modals */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Ripple effect for buttons */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* List item hover transition */
+.list-item-hover {
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.list-item-hover:active {
+  transform: scale(0.98);
+}
+
+/* Breadcrumb separator transition */
+.breadcrumb-separator {
+  transition: opacity 0.15s ease;
+}
+
+/* Card elevation on hover */
+.card-elevate {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card-elevate:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Dark mode card elevation */
+.dark .card-elevate:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth expand/collapse for segments */
+.segment-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+}
+
+.segment-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.segment-content.expanded {
+  max-height: 2000px;
+  opacity: 1;
 }

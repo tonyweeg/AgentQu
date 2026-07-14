@@ -19,11 +19,11 @@ export function AppHeader() {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-gray-900 hover:text-indigo-600 transition-colors">
+          <Link to="/" className="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-teal-400 transition-colors">
             <Vote className="w-7 h-7 text-indigo-600" />
             <span className="font-bold text-xl">Carried</span>
           </Link>
@@ -33,14 +33,14 @@ export function AppHeader() {
             <nav className="hidden md:flex items-center gap-1">
               <Link
                 to="/"
-                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors"
               >
                 Groups
               </Link>
               {(user.email && ADMIN_EMAILS.includes(user.email.toLowerCase()) || ADMIN_UIDS.includes(user.uid)) && (
                 <Link
                   to="/admin"
-                  className="px-3 py-2 text-sm text-purple-600 hover:text-purple-900 hover:bg-purple-50 rounded-lg transition-colors flex items-center gap-1"
+                  className="px-3 py-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors flex items-center gap-1"
                 >
                   <Shield className="w-3.5 h-3.5" />
                   Admin
@@ -54,7 +54,7 @@ export function AppHeader() {
             {/* Theme toggle - always visible */}
             <button
               onClick={toggleTheme}
-              className="p-1.5 text-gray-400 hover:text-gray-600 rounded transition-colors"
+              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors"
               title={theme === 'light' ? 'Dark mode' : 'Light mode'}
             >
               {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
@@ -80,7 +80,7 @@ export function AppHeader() {
                   )}
                   <button
                     onClick={signOut}
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    className="p-2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 rounded-lg transition-colors"
                     title="Sign out"
                   >
                     <LogOut className="w-4 h-4" />
