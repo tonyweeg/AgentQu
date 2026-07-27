@@ -66,3 +66,6 @@ functions/.env.*
 firebase-debug.log
 docs/weeg-family-wide-two-groups.jpg
 carried/scripts/scraped-meetings/
+
+# Isolated Codex worktrees
+.worktrees/
