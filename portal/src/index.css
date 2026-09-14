@@ -10,11 +10,45 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #0f172a;
+  background-color: #0a0d0c;
+}
+
+.site-shell {
+  color: #f1f5ec;
+  background-color: #0a0d0c;
+  background-image: linear-gradient(rgba(181, 255, 69, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(181, 255, 69, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.site-header { border-bottom: 1px solid #303630; }
+.brand-name, .eyebrow, .section-heading, .project-discipline, .footer-line {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: .08em;
+}
+.brand-name { color: #b5ff45; font-size: .8rem; font-weight: 600; }
+.hero { max-width: 1000px; }
+.eyebrow { color: #b5ff45; font-size: .75rem; text-transform: uppercase; margin-bottom: 1.5rem; }
+.hero-title { font-size: clamp(2.8rem, 7vw, 6.4rem); line-height: .94; letter-spacing: -.065em; font-weight: 600; max-width: 1100px; }
+.hero-support { display: grid; grid-template-columns: 2fr 1fr; gap: 3rem; max-width: 880px; margin-top: 3rem; color: #aeb8ad; line-height: 1.7; }
+.proof-note { color: #dfe7da; border-left: 2px solid #b5ff45; padding-left: 1.25rem; }
+.section-heading { display: flex; justify-content: space-between; border-bottom: 1px solid #515951; padding-bottom: .8rem; color: #879087; font-size: .7rem; }
+.project-grid { gap: 1px; background: #303630; border: 1px solid #303630; }
+.project-card { display: block; padding: 2rem; background: #101411; transition: background .2s ease, color .2s ease; width: 100%; }
+.project-card:hover { background: #182018; }
+.project-card:hover .project-icon { color: #0a0d0c; background: #b5ff45; }
+.project-icon { width: 3.5rem; height: 3.5rem; border: 1px solid #465046; display: flex; align-items: center; justify-content: center; color: #b5ff45; flex-shrink: 0; transition: all .2s ease; }
+.project-discipline { color: #7f8a7f; text-transform: uppercase; font-size: .65rem; margin: 0 0 .5rem; }
+.footer-line { color: #687168; font-size: .7rem; text-transform: uppercase; }
+
+@media (max-width: 767px) {
+  .hero-support { grid-template-columns: 1fr; gap: 1.5rem; }
+  .hero-title { letter-spacing: -.05em; }
+  .project-card { padding: 1.5rem; }
 }
 
 #root {

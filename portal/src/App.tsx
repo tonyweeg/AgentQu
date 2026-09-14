@@ -46,73 +46,82 @@ interface AppCard {
   icon: React.ReactNode;
   gradient: string;
   internal?: boolean;
+  discipline: string;
 }
 
 const apps: AppCard[] = [
   {
     id: 'agentqu',
     name: 'AgentQu',
-    description: 'AI-powered activity discovery. Find things to do nearby based on your interests.',
+    description: 'A context-aware discovery engine for finding worthwhile things to do nearby.',
     url: 'https://agentqu-platform.web.app',
     icon: <Compass className="w-8 h-8" />,
     gradient: 'from-blue-500 to-cyan-500',
+    discipline: 'Discovery systems',
   },
   {
     id: 'carried',
     name: 'Carried',
-    description: 'Semantic memory bank for organizational decisions. Meeting minutes made searchable.',
+    description: 'Organizational memory that turns meeting minutes into searchable decisions and context.',
     url: 'https://carried-app.web.app',
     icon: <FileText className="w-8 h-8" />,
     gradient: 'from-indigo-500 to-purple-500',
+    discipline: 'Knowledge systems',
   },
   {
     id: 'stockwatch',
     name: 'Stock Watch',
-    description: 'AI-powered stock analysis and portfolio tracking with real-time insights.',
+    description: 'Stock analysis and portfolio tracking built to turn live signals into usable decisions.',
     url: 'https://agentqu-stockwatch.web.app',
     icon: <TrendingUp className="w-8 h-8" />,
     gradient: 'from-green-500 to-emerald-500',
+    discipline: 'Financial analysis',
   },
   {
     id: 'poliscai',
     name: 'PolisCAI',
-    description: 'AI-assisted constitutional analysis and civic document review.',
+    description: 'Constitutional analysis and civic document review with evidence kept in view.',
     url: 'https://poliscai-democracy.web.app',
     icon: <Scale className="w-8 h-8" />,
     gradient: 'from-amber-500 to-orange-500',
+    discipline: 'Civic technology',
   },
   {
     id: 'nerdfootball',
     name: 'NerdFootball',
-    description: 'Fantasy football tools, survivor pools, and NFL analytics for the data-driven fan.',
+    description: 'Fantasy football, survivor pools, and NFL analytics for people who want the numbers.',
     url: 'https://nerdfootball.com',
     icon: <Trophy className="w-8 h-8" />,
     gradient: 'from-emerald-600 to-teal-500',
+    discipline: 'Sports analytics',
   },
   {
     id: 'nerdbasketball',
     name: 'NerdBasketball',
-    description: 'NBA analytics, fantasy basketball tools, and bracket predictions.',
+    description: 'NBA analytics, fantasy tools, and bracket predictions in one focused product.',
     url: 'https://nerdbasketball.com',
     icon: <Trophy className="w-8 h-8" />,
     gradient: 'from-orange-500 to-red-500',
+    discipline: 'Sports analytics',
   },
   {
     id: 'pattern',
     name: 'Pattern Clinical',
-    description: 'AI-powered health insights from wearable data. HRV, sleep, and recovery analytics.',
+    description: 'Wearable data translated into careful, actionable views of HRV, sleep, and recovery.',
     url: 'https://patternclinical.com',
     icon: <Activity className="w-8 h-8" />,
     gradient: 'from-rose-500 to-pink-500',
+    discipline: 'Health technology',
   },
   {
     id: 'audio-tools',
     name: 'Audio Tools',
-    description: 'Download YouTube audio and remove vocals using AI. Create karaoke tracks instantly.',
+    description: 'A practical audio workspace for source capture, stem separation, and karaoke tracks.',
     url: '/audio-tools',
     icon: <Music className="w-8 h-8" />,
     gradient: 'from-purple-500 to-pink-500',
     internal: true,
+    discipline: 'Creative tooling',
   },
 ];
 
@@ -216,17 +225,17 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="site-shell min-h-screen">
       {/* Header */}
-      <header className="px-6 py-4 border-b border-slate-700/50">
+      <header className="site-header px-6 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
               src="/agentqu-glyph.png"
               alt="AgentQu"
-              className="w-10 h-10 rounded-xl shadow-lg shadow-blue-500/20"
+              className="w-10 h-10 rounded-lg"
             />
-            <span className="text-white font-semibold text-xl tracking-tight">AgentQu</span>
+            <span className="brand-name">TONY WEEG / BUILDER</span>
           </div>
 
           {user && (
@@ -256,7 +265,7 @@ function App() {
       </header>
 
       {/* Main content */}
-      <main className="px-6 py-12">
+      <main className="px-6 py-12 md:py-20">
         <div className="max-w-6xl mx-auto">
           {!user ? (
             /* Login Screen */
@@ -264,13 +273,13 @@ function App() {
               <img
                 src="/agentqu-glyph.png"
                 alt="AgentQu"
-                className="w-24 h-24 rounded-2xl mb-8 shadow-2xl shadow-purple-500/30"
+                className="w-20 h-20 rounded-xl mb-8"
               />
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                Welcome to AgentQu
+                The workshop is private.
               </h1>
               <p className="text-slate-400 text-lg mb-10 max-w-md leading-relaxed">
-                Your AI-powered app suite. Sign in to access all your apps.
+                Sign in to see the products, experiments, and working tools collected here.
               </p>
 
               {error && (
@@ -318,30 +327,43 @@ function App() {
           ) : (
             /* Apps Grid */
             <>
-              <div className="text-center mb-12">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-                  Your Apps
+              <section className="hero mb-16">
+                <p className="eyebrow">Independent product builder · AI generalist</p>
+                <h1 className="hero-title">
+                  I use the right intelligence<br className="hidden md:block" /> for the problem at hand.
                 </h1>
-                <p className="text-slate-400 text-lg">
-                  Choose an app to get started
-                </p>
+                <div className="hero-support">
+                  <p>
+                    I build across models, platforms, and disciplines. Claude, ChatGPT, Gemini,
+                    open models, specialized APIs—each is a tool, not a tribe. The work decides
+                    what belongs in the stack.
+                  </p>
+                  <p className="proof-note">
+                    The proof is below: shipped products spanning civic tech, health, finance,
+                    discovery, sports, and creative tooling.
+                  </p>
+                </div>
+              </section>
+
+              <div className="section-heading">
+                <span>SELECTED WORK</span>
+                <span>{String(apps.length).padStart(2, '0')} PROJECTS</span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="project-grid grid grid-cols-1 md:grid-cols-2">
                 {apps.map((appCard) =>
                   appCard.internal ? (
                     <button
                       key={appCard.id}
                       onClick={() => navigateTo(appCard.url)}
-                      className="group block p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300 text-left"
+                      className="project-card group text-left"
                     >
                       <div className="flex items-start gap-5">
-                        <div
-                          className={`w-16 h-16 rounded-xl bg-gradient-to-br ${appCard.gradient} flex items-center justify-center text-white flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                        >
+                        <div className="project-icon">
                           {appCard.icon}
                         </div>
                         <div className="flex-1 min-w-0">
+                          <p className="project-discipline">{appCard.discipline}</p>
                           <div className="flex items-center gap-2 mb-2">
                             <h2 className="text-xl font-semibold text-white">
                               {appCard.name}
@@ -359,15 +381,14 @@ function App() {
                       href={appCard.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group block p-6 rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1 transition-all duration-300"
+                      className="project-card group"
                     >
                       <div className="flex items-start gap-5">
-                        <div
-                          className={`w-16 h-16 rounded-xl bg-gradient-to-br ${appCard.gradient} flex items-center justify-center text-white flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300`}
-                        >
+                        <div className="project-icon">
                           {appCard.icon}
                         </div>
                         <div className="flex-1 min-w-0">
+                          <p className="project-discipline">{appCard.discipline}</p>
                           <div className="flex items-center gap-2 mb-2">
                             <h2 className="text-xl font-semibold text-white">
                               {appCard.name}
@@ -386,7 +407,7 @@ function App() {
 
               {/* Footer */}
               <div className="mt-16 text-center">
-                <p className="text-slate-500 text-sm">Built with AI by AgentQu</p>
+                <p className="footer-line">Built with judgment. Accelerated by whichever AI earns the job.</p>
               </div>
             </>
           )}
