@@ -68,3 +68,10 @@ docs/weeg-family-wide-two-groups.jpg
 
 # Isolated Codex worktrees
 .worktrees/
+
+# Local Codex agent config
+AGENTS.md
+.codex/
+
+# Superpowers brainstorm/session scratch
+.superpowers/
