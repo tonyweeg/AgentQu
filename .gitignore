@@ -65,4 +65,3 @@ functions/.env.*
 *.flac
 firebase-debug.log
 docs/weeg-family-wide-two-groups.jpg
-carried/scripts/scraped-meetings/
